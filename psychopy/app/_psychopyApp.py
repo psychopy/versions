@@ -76,13 +76,13 @@ class PsychoPyApp(wx.App):
         wx.App.__init__(self, arg)
         self.onInit(**kwargs)
 
-    def onInit(self, showSplash=True, interactive=True):
+    def onInit(self, showSplash=True, testMode=False):
         """
         :Parameters:
 
-          interactive: bool
-            Either invoke dialogs.  Might need to be set to False
-            for the purpose of testing.
+          testMode: bool
+            If set to True then startup wizard won't appear and stdout/stderr
+            won't be redirected to the Coder
         """
         self.version=psychopy.__version__
         self.SetAppName('PsychoPy2')
@@ -90,6 +90,7 @@ class PsychoPyApp(wx.App):
         self.prefs = psychopy.prefs
         if self.prefs.app['debugMode']:
             logging.console.setLevel(logging.DEBUG)
+        self.testMode = testMode #indicates whether we're running for testing purposes
 
         if showSplash:
             #show splash screen
@@ -124,7 +125,7 @@ class PsychoPyApp(wx.App):
         else:
             last=self.prefs.appData['lastVersion']
 
-        if self.firstRun and interactive:
+        if self.firstRun and not self.testMode:
             self.firstrunWizard()
 
         #setup links for URLs
@@ -147,7 +148,8 @@ class PsychoPyApp(wx.App):
         else: scripts=[]
         if self.prefs.builder['reloadPrevExp'] and ('prevFiles' in self.prefs.appData['builder'].keys()):
             exps=self.prefs.appData['builder']['prevFiles']
-        else: exps=[]
+        else:
+            exps=[]
         #then override the prev files by command options and passed files
         if len(sys.argv)>1:
             if sys.argv[1]==__name__:
@@ -180,8 +182,10 @@ class PsychoPyApp(wx.App):
         self.builderFrames = []
         self.copiedRoutine=None
         self.allFrames=[]#these are ordered and the order is updated with self.onNewTopWindow
-        if mainFrame in ['both', 'coder']: self.showCoder(fileList=scripts)
-        if mainFrame in ['both', 'builder']: self.showBuilder(fileList=exps)
+        if mainFrame in ['both', 'coder']:
+            self.showCoder(fileList=scripts)
+        if mainFrame in ['both', 'builder']:
+            self.showBuilder(fileList=exps)
 
         #send anonymous info to www.psychopy.org/usage.php
         #please don't disable this - it's important for PsychoPy's development
@@ -196,7 +200,7 @@ class PsychoPyApp(wx.App):
             dlg = dialogs.MessageDialog(parent=None,message=msg,type='Info', title="Compatibility information")
             dlg.ShowModal()
 
-        if self.prefs.app['showStartupTips'] and interactive:
+        if self.prefs.app['showStartupTips'] and not self.testMode:
             tipIndex = self.prefs.appData['tipIndex']
             tp = wx.CreateFileTipProvider(os.path.join(self.prefs.paths['resources'],"tips.txt"), tipIndex)
             showTip = wx.ShowTip(None, tp)
@@ -333,8 +337,8 @@ class PsychoPyApp(wx.App):
         return new_rgb
     def openMonitorCenter(self,event):
         from psychopy.monitors import MonitorCenter
-        frame = MonitorCenter.MainFrame(None,'PsychoPy2 Monitor Center')
-        frame.Show(True)
+        self.monCenter = MonitorCenter.MainFrame(None,'PsychoPy2 Monitor Center')
+        self.monCenter.Show(True)
     def MacOpenFile(self,fileName):
         logging.debug('PsychoPyApp: Received Mac file dropped event')
         if fileName.endswith('.py'):
@@ -343,6 +347,40 @@ class PsychoPyApp(wx.App):
             self.coder.setCurrentDoc(fileName)
         elif fileName.endswith('.psyexp'):
             self.newBuilderFrame(fileName=fileName)
+    def terminateHubProcess(self):
+        """
+        Send a UPD message to iohub informing it to exit. 
+        
+        Use this when force quiting the experiment script process so iohub
+        knows to exit as well.
+        
+        If message is not sent within 1 second, or the iohub server 
+        address in incorrect,the issue is logged.
+        """
+        sock=None
+        try:
+            logging.debug('PsychoPyApp: terminateHubProcess called.')
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(1.0)     
+            iohub_address='127.0.0.1', 9034        
+            import msgpack
+            tx_data=msgpack.Packer().pack(('STOP_IOHUB_SERVER',))
+            return sock.sendto(tx_data,iohub_address)
+        except socket.error,e:
+            logging.debug('PsychoPyApp: terminateHubProcess socket.error: %s'%(str(e)))
+        except socket.herror,e:
+            logging.debug('PsychoPyApp: terminateHubProcess socket.herror: %s'%(str(e)))
+        except socket.gaierror,e:
+            logging.debug('PsychoPyApp: terminateHubProcess socket.gaierror: %s'%(str(e)))
+        except socket.timeout,e:
+            logging.debug('PsychoPyApp: terminateHubProcess socket.timeout: %s'%(str(e)))
+        except Exception, e:
+            logging.debug('PsychoPyApp: terminateHubProcess exception: %s'%(str(e)))
+        finally:
+            if sock:
+                sock.close()
+            logging.debug('PsychoPyApp: terminateHubProcess completed.')      
     def quit(self, event=None):
         logging.debug('PsychoPyApp: Quitting...')
         self.quitting=True
@@ -366,17 +404,17 @@ class PsychoPyApp(wx.App):
             self.prefs.appData['lastFrame']='both'
 
         self.prefs.appData['lastVersion']=self.version
-
         #update app data while closing each frame
         self.prefs.appData['builder']['prevFiles']=[]#start with an empty list to be appended by each frame
         self.prefs.appData['coder']['prevFiles']=[]
-        for frame in list(self.allFrames):
-            frame.Close(force=True)
-            self.prefs.saveAppData()#must do this before destroying the frame?
-        if sys.platform=='darwin':
-            self.menuFrame.Destroy()
 
-        sys.exit()#really force a quit
+        for frame in list(self.allFrames):
+            try:
+                frame.closeFrame(event=event, checkSave=False)
+                self.prefs.saveAppData()#must do this before destroying the frame?
+            except:
+                pass #we don't care if this fails - we're quitting anyway
+        self.Exit()
 
     def showPrefs(self, event):
         from psychopy.app.preferencesDlg import PreferencesDlg
@@ -414,8 +452,8 @@ let me/us know at psychopy-users@googlegroups.com"""
         info.AddDocWriter('Jonathan Peirce')
         info.AddDocWriter('Jeremy Gray')
         info.AddDocWriter('Rebecca Sharman')
-
-        wx.AboutBox(info)
+        if not self.testMode:
+            wx.AboutBox(info)
 
     def followLink(self, event=None, url=None):
         """Follow either an event id (which should be a key to a url defined in urls.py)
