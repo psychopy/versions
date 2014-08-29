@@ -91,7 +91,7 @@ def _onPygletKey(symbol, modifiers, emulated=False):
     """
 
     global useText
-    keyTime=psychopy.clock.getTime() #capture when the key was pressed
+    keyTime=psychopy.core.getTime() #capture when the key was pressed
     if emulated:
         thisKey = unicode(symbol)
         keySource = 'EmulatedKey'
@@ -433,7 +433,7 @@ class Mouse:
     def mouseMoveTime(self):
         global mouseMove
         if mouseMove:
-                return psychopy.core.getTime()-mouseMove.getLastResetTime()
+                return mouseMove.getTime()
         else: return 0 # mouseMove clock not started
 
     def getRel(self):
