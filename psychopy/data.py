@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Routines for handling data structures and analysis"""
 # Part of the PsychoPy library
-# Copyright (C) 2013 Jonathan Peirce
+# Copyright (C) 2014 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from psychopy import gui, logging
@@ -11,7 +11,6 @@ import psychopy
 import cPickle, string, sys, platform, os, time, copy, csv
 import numpy
 from scipy import optimize, special
-from matplotlib import mlab    #used for importing csv files
 from contrib.quest import *    #used for QuestHandler
 import inspect #so that Handlers can find the script that called them
 import codecs, locale
@@ -48,7 +47,8 @@ class ExperimentHandler(object):
                 originPath=None,
                 savePickle=True,
                 saveWideText=True,
-                dataFileName=''):
+                dataFileName='',
+                autoLog=True):
         """
         :parameters:
 
@@ -95,11 +95,15 @@ class ExperimentHandler(object):
         self.entries=[]#chronological list of entries
         self._paramNamesSoFar=[]
         self.dataNames=[]#names of all the data (eg. resp.keys)
+        self.autoLog = autoLog
         if dataFileName in ['', None]:
             logging.warning('ExperimentHandler created with no dataFileName parameter. No data will be saved in the event of a crash')
+        else:
+            checkValidFilePath(dataFileName, makeValid=True) #fail now if we fail at all!
     def __del__(self):
         if self.dataFileName not in ['', None]:
-            logging.debug('Saving data for %s ExperimentHandler' %self.name)
+            if self.autoLog:
+                logging.debug('Saving data for %s ExperimentHandler' %self.name)
             if self.savePickle==True:
                 self.saveAsPickle(self.dataFileName)
             if self.saveWideText==True:
@@ -275,7 +279,7 @@ class ExperimentHandler(object):
             for name in names:
                 entry.keys()
                 if name in entry.keys():
-                    if ',' in unicode(entry[name]):
+                    if ',' in unicode(entry[name]) or '\n' in unicode(entry[name]):
                         f.write(u'"%s"%s' %(entry[name],delim))
                     else:
                         f.write(u'%s%s' %(entry[name],delim))
@@ -370,7 +374,8 @@ class _BaseTrialHandler(object):
             fileCollisionMethod: Collision method passed to :func:`~psychopy.tools.fileerrortools.handleFileCollision`
         """
         if self.thisTrialN<1 and self.thisRepN<1:#if both are <1 we haven't started
-            logging.info('.saveAsPickle() called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.info('.saveAsPickle() called but no trials completed. Nothing saved')
             return -1
         #otherwise use default location
         if not fileName.endswith('.psydat'):
@@ -423,7 +428,8 @@ class _BaseTrialHandler(object):
 
         """
         if self.thisTrialN<1 and self.thisRepN<1:#if both are <1 we haven't started
-            logging.info('TrialHandler.saveAsText called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.info('TrialHandler.saveAsText called but no trials completed. Nothing saved')
             return -1
 
         dataArray = self._createOutputArray(stimOut=[],
@@ -462,7 +468,8 @@ class _BaseTrialHandler(object):
             f.write("\n")#add an EOL at end of each line
         if f != sys.stdout:
             f.close()
-            logging.info('saved data to %s' %f.name)
+            if self.autoLog:
+                logging.info('saved data to %s' %f.name)
     def printAsText(self, stimOut=[],
                     dataOut=('all_mean', 'all_std', 'all_raw'),
                     delim='\t',
@@ -520,7 +527,8 @@ class _BaseTrialHandler(object):
         """
 
         if self.thisTrialN<1 and self.thisRepN<1:#if both are <1 we haven't started
-            logging.info('TrialHandler.saveAsExcel called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.info('TrialHandler.saveAsExcel called but no trials completed. Nothing saved')
             return -1
 
         #NB this was based on the limited documentation (1 page wiki) for openpyxl v1.0
@@ -545,7 +553,8 @@ class _BaseTrialHandler(object):
             newWorkbook=False
         else:
             if not appendFile: #the file exists but we're not appending, so will be overwritten
-                logging.warning('Data file, %s, will be overwritten' %fileName)
+                if self.autoLog:
+                    logging.warning('Data file, %s, will be overwritten' %fileName)
             wb = Workbook()#create new workbook
             wb.properties.creator='PsychoPy'+psychopy.__version__
             newWorkbook=True
@@ -597,9 +606,11 @@ class _BaseTrialHandler(object):
         if originPath==None or not os.path.isfile(originPath):
             try:
                 originPath = inspect.getouterframes(inspect.currentframe())[1][1]
-                logging.debug("Using %s as origin file" %originPath)
+                if self.autoLog:
+                    logging.debug("Using %s as origin file" %originPath)
             except:
-                logging.debug("Failed to find origin file using inspect.getouterframes")
+                if self.autoLog:
+                    logging.debug("Failed to find origin file using inspect.getouterframes")
                 return '',''
         if os.path.isfile(originPath):#do we NOW have a path?
             origin = codecs.open(originPath,"r", encoding = "utf-8").read()
@@ -632,7 +643,8 @@ class TrialHandler(_BaseTrialHandler):
                  extraInfo=None,
                  seed=None,
                  originPath=None,
-                 name=''):
+                 name='',
+                 autoLog=True):
         """
 
         :Parameters:
@@ -694,6 +706,8 @@ class TrialHandler(_BaseTrialHandler):
 
         """
         self.name=name
+        self.autoLog = autoLog
+
         if trialList in [None, []]:#user wants an empty trialList
             self.trialList = [None]#which corresponds to a list with a single empty entry
         else:
@@ -814,7 +828,8 @@ class TrialHandler(_BaseTrialHandler):
             sequential = numpy.repeat(indices, self.nReps,1) # = sequential
             randomFlat = shuffleArray(sequential.flat, seed=self.seed)
             sequenceIndices = numpy.reshape(randomFlat, (len(indices), self.nReps))
-        logging.exp('Created sequence: %s, trialTypes=%d, nReps=%i, seed=%s' %
+        if self.autoLog:
+            logging.exp('Created sequence: %s, trialTypes=%d, nReps=%i, seed=%s' %
                 (self.method, len(indices), self.nReps, str(self.seed) )  )
         return sequenceIndices
 
@@ -888,7 +903,8 @@ class TrialHandler(_BaseTrialHandler):
             self.thisTrial = self.trialList[self.thisIndex]
             self.data.add('ran',1)
             self.data.add('order',self.thisN)
-        logging.exp('New trial (rep=%i, index=%i): %s' %(self.thisRepN, self.thisTrialN, self.thisTrial), obj=self.thisTrial)
+        if self.autoLog:
+            logging.exp('New trial (rep=%i, index=%i): %s' %(self.thisRepN, self.thisTrialN, self.thisTrial), obj=self.thisTrial)
         return self.thisTrial
 
     def getFutureTrial(self, n=1):
@@ -1248,16 +1264,9 @@ def importConditions(fileName, returnFieldNames=False):
     if fileName.endswith('.csv'):
         #use csv import library to fetch the fieldNames
         f = open(fileName, 'rU')#the U converts line endings to os.linesep (not unicode!)
-        #lines = f.read().split(os.linesep)#csv module is temperamental with line endings
-        try:
-            reader = csv.reader(f)#.split(os.linesep))
-        except:
-            raise ImportError, 'Could not open %s as conditions' % fileName
-        fieldNames = reader.next() # first row
+        trialsArr = numpy.recfromcsv(f, case_sensitive=True)
+        fieldNames = trialsArr.dtype.names
         _assertValidVarNames(fieldNames, fileName)
-        #use matplotlib to import data and intelligently check for data types
-        #all data in one column will be given a single type (e.g. if one cell is string, all will be set to string)
-        trialsArr = mlab.csv2rec(f) # data = non-header row x col
         f.close()
         #convert the record array into a list of dicts
         trialList = []
@@ -1396,7 +1405,8 @@ class StairHandler(_BaseTrialHandler):
                  minVal=None,
                  maxVal=None,
                  originPath=None,
-                 name=''):
+                 name='',
+                 autoLog=True):
         """
         :Parameters:
 
@@ -1485,6 +1495,7 @@ class StairHandler(_BaseTrialHandler):
         self._warnUseOfNext=True
         self.minVal = minVal
         self.maxVal = maxVal
+        self.autoLog = autoLog
 
         #self.originPath and self.origin (the contents of the origin file)
         self.originPath, self.origin = self.getOriginPathAndFile(originPath)
@@ -1694,7 +1705,8 @@ class StairHandler(_BaseTrialHandler):
         """
 
         if self.thisTrialN<1:
-            logging.debug('StairHandler.saveAsText called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.debug('StairHandler.saveAsText called but no trials completed. Nothing saved')
             return -1
 
         #create the file or print to stdout
@@ -1746,7 +1758,8 @@ class StairHandler(_BaseTrialHandler):
         f.write("\n")
         if f != sys.stdout:
             f.close()
-            logging.info('saved data to %s' %f.name)
+            if self.autoLog:
+                logging.info('saved data to %s' %f.name)
 
     def saveAsExcel(self,fileName, sheetName='data',
                    matrixOnly=False, appendFile=True,
@@ -1785,7 +1798,8 @@ class StairHandler(_BaseTrialHandler):
         """
 
         if self.thisTrialN<1:
-            logging.debug('StairHandler.saveAsExcel called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.debug('StairHandler.saveAsExcel called but no trials completed. Nothing saved')
             return -1
         #NB this was based on the limited documentation (1 page wiki) for openpyxl v1.0
         if not haveOpenpyxl:
@@ -1843,7 +1857,8 @@ class StairHandler(_BaseTrialHandler):
                 rowN+=1
 
         ew.save(filename = fileName)
-        logging.info('saved data to %s' %fileName)
+        if self.autoLog:
+            logging.info('saved data to %s' %fileName)
 
     def saveAsPickle(self,fileName):
         """Basically just saves a copy of self (with data) to a pickle file.
@@ -1851,7 +1866,8 @@ class StairHandler(_BaseTrialHandler):
         This can be reloaded if necess and further analyses carried out.
         """
         if self.thisTrialN<1:
-            logging.debug('StairHandler.saveAsPickle called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.debug('StairHandler.saveAsPickle called but no trials completed. Nothing saved')
             return -1
         #otherwise use default location
         f = open(fileName+'.psydat', "wb")
@@ -1925,7 +1941,8 @@ class QuestHandler(StairHandler):
                  maxVal=None,
                  staircase=None,
                  originPath=None,
-                 name=''):
+                 name='',
+                 autoLog=True):
         """
         Typical values for pThreshold are:
             * 0.82 which is equivalent to a 3 up 1 down standard staircase
@@ -2006,7 +2023,7 @@ class QuestHandler(StairHandler):
 
         # Initialize using parent class first
         StairHandler.__init__(self, startVal, nTrials=nTrials, extraInfo=extraInfo, method=method,
-                                stepType=stepType, minVal=minVal, maxVal=maxVal, name=name)
+                                stepType=stepType, minVal=minVal, maxVal=maxVal, name=name, autoLog=autoLog)
 
         # Setup additional values
         self.stopInterval = stopInterval
@@ -2025,6 +2042,7 @@ class QuestHandler(StairHandler):
         #store the origin file and its path
         self.originPath, self.origin = self.getOriginPathAndFile(originPath)
         self._exp=None
+        self.autoLog = autoLog
 
     def addResponse(self, result, intensity=None):
         """Add a 1 or 0 to signify a correct/detected or incorrect/missed trial
@@ -2038,8 +2056,12 @@ class QuestHandler(StairHandler):
             intensity = self._questNextIntensity
         else:
             intensity = self._intensity2scale(intensity)
-            #update the intensity
-            self.intensities.pop()#remove the one that had been auto-generated
+            # Update the intensity.
+            #
+            # During the first trial, self.intensities will be of length 0,
+            # so pop() would not work.
+            if len(self.intensities) != 0:
+                self.intensities.pop()  #remove the one that had been auto-generated
             self.intensities.append(intensity)
         # Update quest
         self._quest.update(intensity, result)
@@ -2189,7 +2211,7 @@ class QuestHandler(StairHandler):
 
 class MultiStairHandler(_BaseTrialHandler):
     def __init__(self, stairType='simple', method='random',
-            conditions=None, nTrials=50, originPath=None, name=''):
+            conditions=None, nTrials=50, originPath=None, name='', autoLog=True):
         """A Handler to allow easy interleaved staircase procedures (simple or
         QUEST).
 
@@ -2249,6 +2271,7 @@ class MultiStairHandler(_BaseTrialHandler):
 
         """
         self.name=name
+        self.autoLog = autoLog
         self.type=stairType
         self.method=method #'random' or 'sequential'
         self.conditions=conditions
@@ -2362,7 +2385,7 @@ class MultiStairHandler(_BaseTrialHandler):
             self._nextIntensity =self.currentStaircase.next()#gets updated by self.addData()
         except:
             self.runningStaircases.remove(self.currentStaircase)
-            if len(self.runningStaircases)==0: #If finished,set finished flag 
+            if len(self.runningStaircases)==0: #If finished,set finished flag
                 self.finished=True
         #return value
         if not self.finished:
@@ -2422,13 +2445,15 @@ class MultiStairHandler(_BaseTrialHandler):
         This can be reloaded later and further analyses carried out.
         """
         if self.totalTrials<1:
-            logging.debug('StairHandler.saveAsPickle called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.debug('StairHandler.saveAsPickle called but no trials completed. Nothing saved')
             return -1
         #otherwise use default location
         f = open(fileName+'.psydat', "wb")
         cPickle.dump(self, f)
         f.close()
-        logging.info('saved data to %s' %f.name)
+        if self.autoLog:
+            logging.info('saved data to %s' %f.name)
     def saveAsExcel(self, fileName, matrixOnly=False, appendFile=False):
         """
         Save a summary data file in Excel OpenXML format workbook (:term:`xlsx`) for processing
@@ -2460,7 +2485,8 @@ class MultiStairHandler(_BaseTrialHandler):
 
         """
         if self.totalTrials<1:
-            logging.debug('StairHandler.saveAsExcel called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.debug('StairHandler.saveAsExcel called but no trials completed. Nothing saved')
             return -1
         for stairN, thisStair in enumerate(self.staircases):
             if stairN==0: append=appendFile
@@ -2493,7 +2519,8 @@ class MultiStairHandler(_BaseTrialHandler):
                 If True, prevents the output of the `extraInfo` provided at initialisation.
         """
         if self.totalTrials<1:
-            logging.debug('StairHandler.saveAsText called but no trials completed. Nothing saved')
+            if self.autoLog:
+                logging.debug('StairHandler.saveAsText called but no trials completed. Nothing saved')
             return -1
         for stairN, thisStair in enumerate(self.staircases):
             #make a filename
@@ -2635,6 +2662,7 @@ class _baseFunctionFit:
         self.yy = numpy.asarray(yy)
         self.sems = numpy.asarray(sems)
         self.expectedMin = expectedMin
+        self.guess = guess
         # for holding error calculations:
         self.ssq=0
         self.rms=0
@@ -2650,7 +2678,7 @@ class _baseFunctionFit:
         #self.params = optimize.fmin_bfgs(self._getErr, self.params, None, (self.xx,self.yy,self.sems),disp=self.display)
         global _chance
         _chance = self.expectedMin
-        self.params, self.covar = optimize.curve_fit(self._eval, self.xx, self.yy)
+        self.params, self.covar = optimize.curve_fit(self._eval, self.xx, self.yy, p0=self.guess, sigma=self.sems)
         self.ssq = self._getErr(self.params, self.xx, self.yy, 1.0)
         self.chi = self._getErr(self.params, self.xx, self.yy, self.sems)
         self.rms = self.ssq/len(self.xx)
@@ -2772,11 +2800,11 @@ class FitCumNormal(_baseFunctionFit):
     """Fit a Cumulative Normal function (aka error function or erf)
     of the form::
 
-        y = chance + (1-chance)*(special.erf(xx*xScale - xShift)/2.0+0.5)
+        y = chance + (1-chance)*((special.erf((xx-xShift)/(sqrt(2)*sd))+1)*0.5)
 
     and with inverse::
 
-        x = (erfinv((yy-chance)/(1-chance)*2.0-1)+xShift)/xScale
+        x = xShift+sqrt(2)*sd*(erfinv(((yy-chance)/(1-chance)-.5)*2))
 
     After fitting the function you can evaluate an array of x-values
     with fit.eval(x), retrieve the inverse of the function with
@@ -2795,14 +2823,14 @@ class FitCumNormal(_baseFunctionFit):
     def _eval(xx, xShift, sd):
         global _chance
         xx = numpy.asarray(xx)
-        yy = _chance + (1-_chance)*(special.erf((xx-xShift)/sd)/2.0+0.5)#NB numpy.special.erf() goes from -1:1
+        yy = _chance + (1-_chance)*((special.erf((xx-xShift)/(numpy.sqrt(2)*sd))+1)*0.5)#NB numpy.special.erf() goes from -1:1
         return yy
     @staticmethod
     def _inverse(yy, xShift, sd):
         global _chance
         yy = numpy.asarray(yy)
         #xx = (special.erfinv((yy-chance)/(1-chance)*2.0-1)+xShift)/xScale#NB numpy.special.erfinv() goes from -1:1
-        xx = xShift+sd*special.erfinv(( (yy-_chance)/(1-_chance) - 0.5 )*2)
+        xx = xShift+numpy.sqrt(2)*sd*special.erfinv(( (yy-_chance)/(1-_chance) - 0.5 )*2)
         return xx
 
 ########################## End psychopy.data classes ##########################
@@ -2917,6 +2945,19 @@ def getDateStr(format="%Y_%b_%d_%H%M"):
 
     return now_dec
 
+def checkValidFilePath(filepath, makeValid=True):
+    """Checks whether file path location (e.g. is a valid folder)
+
+    This should also check whether we have write-permissions to the folder
+    but doesn't currently do that!
+
+    added in: 1.90.00
+    """
+    folder = os.path.split(os.path.abspath(filepath))[0]
+    if not os.path.isdir(folder):
+        os.makedirs(folder) #spit an error if we fail
+    return True
+
 def isValidVariableName(name):
     """Checks whether a certain string could be used as a valid variable.
 
@@ -2966,4 +3007,3 @@ def _getExcelCellName(col, row):
     'C2'
     """
     return "%s%i" %(get_column_letter(col+1), row+1)#BEWARE - openpyxl uses indexing at 1, to fit with Excel
-
