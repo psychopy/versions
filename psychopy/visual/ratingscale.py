@@ -17,7 +17,7 @@ from psychopy.visual.shape import ShapeStim
 from psychopy.visual.text import TextStim
 from psychopy.visual.basevisual import MinimalStim
 from psychopy.visual.helpers import pointInPolygon, groupFlipVert
-from psychopy.tools.attributetools import attributeSetter, setWithOperation
+from psychopy.tools.attributetools import attributeSetter, setWithOperation, logAttrib
 from psychopy.constants import FINISHED, STARTED, NOT_STARTED
 
 
@@ -320,7 +320,7 @@ class RatingScale(MinimalStim):
             logging.exp("Created %s = %s" %(self.name, repr(self)))
 
     def __repr__(self, complete=False):
-        return self.__str__(complete=complete)  # from MinimalVisualStim
+        return self.__str__(complete=complete)  # from MinimalStim
 
     def _initFirst(self, showAccept, mouseOnly, singleClick, acceptKeys,
                    marker, markerStart, low, high, precision, choices,
@@ -887,11 +887,9 @@ class RatingScale(MinimalStim):
             self.flipVert = not self.flipVert
             self.markerYpos *= -1
             groupFlipVert([self.nearLine, self.marker] + self.visualDisplayElements)
-        if log and self.autoLog:
-            self.win.logOnFlip("Set %s flipVert=%s" % (self.name, self.flipVert),
-                level=logging.EXP, obj=self)
+        logAttrib(self, log, 'flipVert')
 
-    # autoDraw and setAutoDraw are inherited from MinimalVisualStim
+    # autoDraw and setAutoDraw are inherited from basevisual.MinimalStim
 
     def draw(self, log=True):
         """Update the visual display, check for response (key, mouse, skip).

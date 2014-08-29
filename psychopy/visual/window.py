@@ -32,9 +32,12 @@ if sys.platform == 'win32':
         from pyglet.media import avbin
         haveAvbin = True
     except ImportError:
+        haveAvbin = False
         # either avbin isn't installed or scipy.stats has been imported
         # (prevents avbin loading)
+    except WindowsError, e:
         haveAvbin = False
+
 
 import psychopy  # so we can get the __path__
 from psychopy import core, platform_specific, logging, prefs, monitors, event
@@ -938,12 +941,14 @@ class Window:
                 self._progSignedTex = self._shaders['signedTex']
                 self._progSignedTexMask = self._shaders['signedTexMask']
                 self._progSignedTexMask1D = self._shaders['signedTexMask1D']
+                self._progImageStim = self._shaders['imageStim']
         elif blendMode=='add':
             GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE)
             if hasattr(self, '_shaders'):
                 self._progSignedTex = self._shaders['signedTex_adding']
                 self._progSignedTexMask = self._shaders['signedTexMask_adding']
                 self._progSignedTexMask1D = self._shaders['signedTexMask1D_adding']
+                self._progImageStim = self._shaders['imageStim_adding']
 
     def setColor(self, color, colorSpace=None, operation=''):
         """Set the color of the window.
@@ -1034,43 +1039,44 @@ class Window:
     def setRGB(self, newRGB):
         """Deprecated: As of v1.61.00 please use `setColor()` instead
         """
-        global GL, currWindow
+        global GL
         self.rgb = val2array(newRGB, False, length=3)
         if self.winType == 'pyglet' and currWindow != self:
             self.winHandle.switch_to()
+            glob_vars.currWindow = self
         GL.glClearColor((self.rgb[0]+1.0)/2.0,
                         (self.rgb[1]+1.0)/2.0,
                         (self.rgb[2]+1.0)/2.0,
                         1.0)
 
     def _setupGamma(self):
+        """A private method to work out how to handle gamma for this Window
+        given that the user might have specified an explicit value, or maybe
+        gave a Monitor
+        """
+        self.origGammaRamp = None
+        # determine which gamma value to use (or native ramp)
         if self.gamma is not None:
             self._checkGamma()
             self.useNativeGamma = False
-        elif self.monitor.getGamma() is not None:
-            if hasattr(self.monitor.getGammaGrid(), 'dtype'):
-                self.gamma = self.monitor.getGammaGrid()[1:, 2]
-                # are we using the default gamma for all monitors?
-                if self.monitor.gammaIsDefault():
-                    self.useNativeGamma = True
-                else:
-                    self.useNativeGamma = False
-            else:
+        elif not self.monitor.gammaIsDefault():
+            if self.monitor.getGamma() is not None:
                 self.gamma = self.monitor.getGamma()
                 self.useNativeGamma = False
         else:
             self.gamma = None  # gamma wasn't set anywhere
             self.useNativeGamma = True
-
-        try:
-            self.origGammaRamp = getGammaRamp(self.winHandle)
-        except:
-            self.origGammaRamp = None
-
+        #then try setting it
         if self.useNativeGamma:
             if self.autoLog:
                 logging.info('Using gamma table of operating system')
         else:
+            #try to retrieve previous so we can reset later
+            try:
+                self.origGammaRamp = getGammaRamp(self.winHandle)
+            except:
+                self.origGammaRamp = None
+
             if self.autoLog:
                 logging.info('Using gamma: self.gamma' + str(self.gamma))
             self.setGamma(self.gamma)  # using either pygame or bits++
@@ -1209,10 +1215,13 @@ class Window:
         if self.stereo and not GL.gl_info.have_extension('GL_STEREO'):
             logging.warning('A stereo window was requested but the graphics '
                             'card does not appear to support GL_STEREO')
-
-        if self.useFBO and not GL.gl_info.have_extension('GL_EXT_framebuffer_object'):
-            logging.warn("Trying to use a framebuffer pbject but GL_EXT_framebuffer_object is not supported. Disabling")
+        if self.useFBO: #check for necessary extensions
+            if not GL.gl_info.have_extension('GL_EXT_framebuffer_object'):
+                logging.warn("Trying to use a framebuffer pbject but GL_EXT_framebuffer_object is not supported. Disabling")
             self.useFBO=False
+            if not GL.gl_info.have_extension('GL_ARB_texture_float'):
+                logging.warn("Trying to use a framebuffer pbject but GL_ARB_texture_float is not supported. Disabling")
+                self.useFBO=False
         #add these methods to the pyglet window
         self.winHandle.setGamma = setGamma
         self.winHandle.setGammaRamp = setGammaRamp
@@ -1389,6 +1398,8 @@ class Window:
         self._shaders['signedTex_adding'] = _shaders.compileProgram(_shaders.vertSimple, _shaders.fragSignedColorTex_adding)
         self._shaders['signedTexMask_adding'] = _shaders.compileProgram(_shaders.vertSimple, _shaders.fragSignedColorTexMask_adding)
         self._shaders['signedTexMask1D_adding'] = _shaders.compileProgram(_shaders.vertSimple, _shaders.fragSignedColorTexMask1D_adding)
+        self._shaders['imageStim'] = _shaders.compileProgram(_shaders.vertSimple, _shaders.fragImageStim)
+        self._shaders['imageStim_adding'] = _shaders.compileProgram(_shaders.vertSimple, _shaders.fragImageStim_adding)
 
     def _setupFrameBuffer(self):
         # Setup framebuffer
@@ -1414,11 +1425,6 @@ class Window:
         GL.glFramebufferTexture2DEXT(GL.GL_FRAMEBUFFER_EXT,
                                      GL.GL_COLOR_ATTACHMENT0_EXT,
                                      GL.GL_TEXTURE_2D, self.frameTexture, 0)
-
-        status = GL.glCheckFramebufferStatusEXT (GL.GL_FRAMEBUFFER_EXT);
-        if status != GL.GL_FRAMEBUFFER_COMPLETE_EXT:
-            print "Error in framebuffer activation"
-            return
         status = GL.glCheckFramebufferStatusEXT(GL.GL_FRAMEBUFFER_EXT)
         if status != GL.GL_FRAMEBUFFER_COMPLETE_EXT:
             logging.error("Error in framebuffer activation")
@@ -1630,5 +1636,5 @@ def getMsPerFrame(myWin, nFrames=60, showVisual=False, msg='', msDelay=0.):
     :Author:
         - 2010 written by Jeremy Gray
     """
-    return myWin.getMsPerFrame(nFrames=60, showVisual=False, msg='',
+    return myWin.getMsPerFrame(nFrames=60, showVisual=showVisual, msg='',
                                msDelay=0.)

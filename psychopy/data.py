@@ -367,7 +367,7 @@ class _BaseTrialHandler(object):
     def saveAsPickle(self,fileName, fileCollisionMethod = 'rename'):
         """Basically just saves a copy of the handler (with data) to a pickle file.
 
-        This can be reloaded if necessesary and further analyses carried out.
+        This can be reloaded if necessary and further analyses carried out.
 
         :Parameters:
 
@@ -432,7 +432,7 @@ class _BaseTrialHandler(object):
                 logging.info('TrialHandler.saveAsText called but no trials completed. Nothing saved')
             return -1
 
-        dataArray = self._createOutputArray(stimOut=[],
+        dataArray = self._createOutputArray(stimOut=stimOut,
             dataOut=dataOut,
             matrixOnly=matrixOnly)
 
@@ -537,7 +537,7 @@ class _BaseTrialHandler(object):
             return -1
 
         #create the data array to be sent to the Excel file
-        dataArray = self._createOutputArray(stimOut=[],
+        dataArray = self._createOutputArray(stimOut=stimOut,
             dataOut=dataOut,
             matrixOnly=matrixOnly)
 
@@ -1265,6 +1265,8 @@ def importConditions(fileName, returnFieldNames=False):
         #use csv import library to fetch the fieldNames
         f = open(fileName, 'rU')#the U converts line endings to os.linesep (not unicode!)
         trialsArr = numpy.recfromcsv(f, case_sensitive=True)
+        if trialsArr.shape == ():  # convert 0-D to 1-D with one element:
+            trialsArr = trialsArr[numpy.newaxis]
         fieldNames = trialsArr.dtype.names
         _assertValidVarNames(fieldNames, fileName)
         f.close()
@@ -1540,7 +1542,7 @@ class StairHandler(_BaseTrialHandler):
         self.calculateNextIntensity()
 
     def addOtherData(self, dataName, value):
-        """Add additonal data to the handler, to be tracked alongside the result
+        """Add additional data to the handler, to be tracked alongside the result
         data but not affecting the value of the staircase
         """
         if not dataName in self.otherData: #init the list
@@ -1965,7 +1967,7 @@ class QuestHandler(StairHandler):
             pThreshold
                 Your threshold criterion expressed as probability of response==1. An intensity
                 offset is introduced into the psychometric function so that the threshold (i.e.,
-                the midpoint of the table) yields pThreshold..
+                the midpoint of the table) yields pThreshold.
 
             nTrials: *None* or a number
                 The maximum number of trials to be conducted.
@@ -2239,7 +2241,7 @@ class MultiStairHandler(_BaseTrialHandler):
 
             conditions: a list of dictionaries specifying conditions
                 Can be used to control parameters for the different staicases.
-                Can be imported from an Excel file using `psychopy.data.importTrialTypes`
+                Can be imported from an Excel file using `psychopy.data.importConditions`
                 MUST include keys providing, 'startVal', 'label' and 'startValSd' (QUEST only).
                 The 'label' will be used in data file saving so should be unique.
                 See Example Usage below.
@@ -2425,7 +2427,7 @@ class MultiStairHandler(_BaseTrialHandler):
             self.getExp().addData(self.name+".response", result)
         self.totalTrials+=1
     def addOtherData(self, name, value):
-        """Add some data about the curent trial that will not be used to control the
+        """Add some data about the current trial that will not be used to control the
         staircase(s) such as reaction time data
         """
         self.currentStaircase.addOtherData(name, value)
@@ -2721,7 +2723,7 @@ class FitWeibull(_baseFunctionFit):
     with ``fit.eval(x)``, retrieve the inverse of the function with
     ``fit.inverse(y)`` or retrieve the parameters from ``fit.params``
     (a list with ``[alpha, beta]``)"""
-    #static mathods have no `self` and this is important for optimise.curve_fit
+    #static methods have no `self` and this is important for optimise.curve_fit
     @staticmethod
     def _eval(xx, alpha, beta):
         global _chance
@@ -2748,7 +2750,7 @@ class FitNakaRushton(_baseFunctionFit):
     Note that this differs from most of the other functions in
     not using a value for the expected minimum. Rather, it fits this
     as one of the parameters of the model."""
-    #static mathods have no `self` and this is important for optimise.curve_fit
+    #static methods have no `self` and this is important for optimise.curve_fit
     @staticmethod
     def _eval(xx, c50, n, rMin, rMax):
         xx = numpy.asarray(xx)
@@ -2781,7 +2783,7 @@ class FitLogistic(_baseFunctionFit):
     ``fit.inverse(y)`` or retrieve the parameters from ``fit.params``
     (a list with ``[PSE, JND]``)
     """
-    #static mathods have no `self` and this is important for optimise.curve_fit
+    #static methods have no `self` and this is important for optimise.curve_fit
     @staticmethod
     def _eval(xx, PSE, JND):
         global _chance
@@ -2818,7 +2820,7 @@ class FitCumNormal(_baseFunctionFit):
     1.74.00 the parameters became the [centre,sd] of the normal distribution.
 
     """
-    #static mathods have no `self` and this is important for optimise.curve_fit
+    #static methods have no `self` and this is important for optimise.curve_fit
     @staticmethod
     def _eval(xx, xShift, sd):
         global _chance
@@ -2869,30 +2871,32 @@ def bootStraps(dat, n=1):
     return resamples
 
 def functionFromStaircase(intensities, responses, bins = 10):
-    """Create a psychometric function by binning data from a staircase procedure
+    """Create a psychometric function by binning data from a staircase procedure.
+    Although the default is 10 bins Jon now always uses 'unique' bins
+    (fewer bins looks pretty but leads to errors in slope estimation)
 
     usage::
 
-        [intensity, meanCorrect, n] = functionFromStaircase(intensities, responses, bins)
+        intensity, meanCorrect, n = functionFromStaircase(intensities, responses, bins)
 
     where:
             intensities
-                are a list of intensities to be binned
+                are a list (or array) of intensities to be binned
 
             responses
                 are a list of 0,1 each corresponding to the equivalent intensity value
 
             bins
-                can be an integer (giving that number of bins) or 'unique' (where each bin is made from ALL data for exactly one intensity value)
+                can be an integer (giving that number of bins) or 'unique' (each bin is made from aa data for exactly one intensity value)
 
             intensity
-                is the center of an intensity bin
+                a numpy array of intensity values (where each is the center of an intensity bin)
 
             meanCorrect
-                is mean % correct in that bin
+                a numpy aray of mean % correct in each bin
 
             n
-                is number of responses contributing to that mean
+                a numpy array of number of responses contributing to each mean
     """
     #convert to arrays
     try:#concatenate if multidimensional
