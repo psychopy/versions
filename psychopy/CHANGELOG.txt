@@ -7,8 +7,51 @@ Changelog
   In general, when a new feature is added the second number is incremented (e.g. 1.00.05 -> 1.01.00). Those releases might break previous code you've written because new features often need slight changes to other things.
   Changes to the final digit (1.00.05 -> 1.00.06) indicate a bug-fixing release or very minor new features that shouldn't require code changes from the user.
 
+PsychoPy 1.81
+------------------------------
+
+PsychoPy 1.81.00
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(in repository)
+
+
+* FIXED: MovieStim was right-left flipping movies and this has been corrected. If you had been working around that by setting flipVertical=True then you'll need to undo that correction
+
+* IMPROVED: better unit tests for visual stimuli to prevent further regressions of the issues above
+
+* IMPROVED: All stimulus attributes now support new syntax, e.g. stim.pos = [0,0] as well as the previous stim.setPos([0,0])
+
+* ADDED: Support for CRS devices:
+    
+    * both Bits# and Bits++ now supported and using advanced rendering modes (mono++ and color++)
+    
+    * Bits# also supports use of the infra-red button box
+
+
+    
 PsychoPy 1.80
 ------------------------------
+
+PsychoPy 1.80.05
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Released June 2014
+
+* FIXED: further fixes to greyscale coloring (some images were not correctly detected as greyscale by PIL so tests weren't working)
+* FIXED: machines that didn't support shaders or framebuffer objects were raising an error on win.flip() if the useFBO argument was not manually set to False. Machines that don't support the new rendering methods are now handled more gracefully
+* FIXED: named colors were not interpreted correctly by the visual.Window (but worked fine for stimuli)
+* FIXED: the error message about TextBox/FontManager not working doesn't show up any more
+* FIXED: reinstated the requirement that wx is version 2.8.x only until we get time to check 3.0 compatibility more deeply 
+
+PsychoPy 1.80.04
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Released April 2014
+
+* FIXED: buglets in logging. Logging wasn't encoding unicode correctly for console targets (but file targets were OK) and some duplicate messages were occurring for stimulus autologs
+* FIXED: buglet with GratingStim/PatchStim when texture was not a square power of two (was crashing due to incorrect global variable)
+* FIXED: ElementArrayStim was not updating its position using .setFieldPos()
 
 PsychoPy 1.80.03
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

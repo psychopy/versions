@@ -41,6 +41,8 @@ from numpy import pi
 
 from psychopy.constants import NOT_STARTED, STARTED, STOPPED
 
+reportNImageResizes = 5 #permitted number of resizes
+
 """
 There are several base and mix-in visual classes for mulitple inheritance:
   - MinimalStim:       non-visual house-keeping code common to all visual stim
@@ -178,7 +180,7 @@ class MinimalStim(object):
     def setAutoLog(self, value=True):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message"""
-        self.autoLog = value
+        self.__dict__['autoLog'] = value
 
 class LegacyVisualMixin(object):
     """Class to hold deprecated visual methods and attributes.
@@ -303,10 +305,10 @@ class ColorMixin(object):
 
         Examples::
 
-            stim.contrast = 1.0  # unchanged contrast
-            stim.contrast = 0.5  # decrease contrast
-            stim.contrast = 0.0  # uniform, no contrast
-            stim.contrast = -0.5 # slightly inverted
+            stim.contrast =  1.0  # unchanged contrast
+            stim.contrast =  0.5  # decrease contrast
+            stim.contrast =  0.0  # uniform, no contrast
+            stim.contrast = -0.5  # slightly inverted
             stim.contrast = -1   # totally inverted
 
         Setting contrast outside range -1 to 1 is permitted, but may
@@ -508,7 +510,6 @@ class TextureMixin(object):
         """
         Create an intensity texture, ranging -1:1.0
         """
-        global _nImageResizes
         notSqr=False #most of the options will be creating a sqr texture
         wasImage=False #change this if image loading works
         useShaders = stim.useShaders
@@ -544,6 +545,8 @@ class TextureMixin(object):
                     logging.error("Requiring a square power of two (e.g. 16x16, 256x256) texture but didn't receive one")
                     core.quit()
                 res=tex.shape[0]
+            if useShaders:
+                dataType=GL.GL_FLOAT
         elif tex in [None,"none", "None"]:
             res=1 #4x4 (2x2 is SUPPOSED to be fine but generates wierd colors!)
             intensity = numpy.ones([res,res],numpy.float32)
@@ -676,20 +679,21 @@ class TextureMixin(object):
                 if im.size[0]!=powerOf2 or im.size[1]!=powerOf2:
                     if not forcePOW2:
                         notSqr=True
-                    elif _nImageResizes<reportNImageResizes:
+                    elif glob_vars.nImageResizes<reportNImageResizes:
                         logging.warning("Image '%s' was not a square power-of-two image. Linearly interpolating to be %ix%i" %(tex, powerOf2, powerOf2))
-                        _nImageResizes+=1
+                        glob_vars.nImageResizes+=1
                         im=im.resize([powerOf2,powerOf2],Image.BILINEAR)
-                    elif _nImageResizes==reportNImageResizes:
+                    elif glob_vars.nImageResizes==reportNImageResizes:
                         logging.warning("Multiple images have needed resizing - I'll stop bothering you!")
                         im=im.resize([powerOf2,powerOf2],Image.BILINEAR)
-
             #is it Luminance or RGB?
             if pixFormat==GL.GL_ALPHA and im.mode!='L':#we have RGB and need Lum
                 wasLum = True
                 im = im.convert("L")#force to intensity (in case it was rgb)
             elif im.mode=='L': #we have lum and no need to change
                 wasLum = True
+                if useShaders:
+                    dataType=GL.GL_FLOAT
             elif pixFormat==GL.GL_RGB: #we want RGB and might need to convert from CMYK or Lm
                 #texture = im.tostring("raw", "RGB", 0, -1)
                 im = im.convert("RGBA")
@@ -699,7 +703,6 @@ class TextureMixin(object):
                 intensity = numpy.array(im).astype(numpy.float32)*0.0078431372549019607-1.0 # much faster to avoid division 2/255
             else:
                 intensity = numpy.array(im)
-
         if pixFormat==GL.GL_RGB and wasLum and dataType==GL.GL_FLOAT: #grating stim on good machine
             #keep as float32 -1:1
             if sys.platform!='darwin' and stim.win.glVendor.startswith('nvidia'):
@@ -729,16 +732,17 @@ class TextureMixin(object):
             if wasImage:
                 intensity = intensity/127.5-1.0
             #scale by rgb
-            data = numpy.ones((intensity.shape[0],intensity.shape[1],3),numpy.float32)#initialise data array as a float
+            data = numpy.ones((intensity.shape[0],intensity.shape[1],4),numpy.float32)#initialise data array as a float
             data[:,:,0] = intensity*rgb[0]  + stim.rgbPedestal[0]#R
             data[:,:,1] = intensity*rgb[1]  + stim.rgbPedestal[1]#G
             data[:,:,2] = intensity*rgb[2]  + stim.rgbPedestal[2]#B
+            data[:,:,:-1] = data[:,:,:-1]*stim.contrast
             #convert to ubyte
-            data = float_uint8(stim.contrast*data)
+            data = float_uint8(data)
         elif pixFormat==GL.GL_RGB and dataType==GL.GL_FLOAT: #probably a custom rgb array or rgb image
             internalFormat = GL.GL_RGB32F_ARB
             data = intensity
-        elif pixFormat==GL.GL_RGB:# not wasLum, not useShaders  - an RGB bitmap with no shader options
+        elif pixFormat==GL.GL_RGB:# not wasLum, not useShaders  - an RGB bitmap with no shader optionsintensity.min()
             internalFormat = GL.GL_RGB
             data = intensity #float_uint8(intensity)
         elif pixFormat==GL.GL_ALPHA:
@@ -748,10 +752,13 @@ class TextureMixin(object):
             else:
                 data = float_uint8(intensity)
         #check for RGBA textures
-        if len(intensity.shape)>2 and intensity.shape[2] == 4:
-            if pixFormat==GL.GL_RGB: pixFormat=GL.GL_RGBA
-            if internalFormat==GL.GL_RGB: internalFormat=GL.GL_RGBA
-            elif internalFormat==GL.GL_RGB32F_ARB: internalFormat=GL.GL_RGBA32F_ARB
+        if len(data.shape)>2 and data.shape[2] == 4:
+            if pixFormat==GL.GL_RGB:
+                pixFormat=GL.GL_RGBA
+            if internalFormat==GL.GL_RGB:
+                internalFormat=GL.GL_RGBA
+            elif internalFormat==GL.GL_RGB32F_ARB:
+                internalFormat=GL.GL_RGBA32F_ARB
         texture = data.ctypes#serialise
         #bind the texture in openGL
         GL.glEnable(GL.GL_TEXTURE_2D)
@@ -789,7 +796,7 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
 
     Methods defined here will override Minimal & Legacy, but best to avoid
     that for simplicity & clarity.
-    """
+        """
     def __init__(self, win, units=None, name='', autoLog=True):
         self.autoLog = False  # just to start off during init, set at end
         self.win = win
@@ -1025,10 +1032,9 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
         #format the input value as float vectors
         if type(val) in [tuple, list, numpy.ndarray]:
             val = val2array(val)
-
         # Handle operations
         setWithOperation(self, attrib, val, op)
-        logAttrib(self, log, attrib)
+        # logAttrib(self, log, attrib, val) #setWithOperation calls logAttrib
 
     def setUseShaders(self, value=True):
         """Usually you can use 'stim.attribute = value' syntax instead,
