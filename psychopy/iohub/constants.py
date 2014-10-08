@@ -133,7 +133,11 @@ try:
         
         DIGITAL_INPUT=101
         ANALOG_INPUT=102
-        
+        THRESHOLD = 103
+
+        SERIAL_INPUT = 105
+        SERIAL_BYTE_CHANGE = 106
+
         MULTI_CHANNEL_ANALOG_INPUT=122
     
         MESSAGE=151
@@ -149,7 +153,7 @@ try:
             KEYBOARD_RELEASE=23
 
             #: Constant for a Keyboard Char Event.
-            KEYBOARD_CHAR=24
+            #KEYBOARD_CHAR=24
         
             #: Constant for a Mouse Button Press Event.
             MOUSE_BUTTON_PRESS=32
@@ -215,9 +219,18 @@ try:
             #: Constant for MCU analog input Event.
             ANALOG_INPUT=102
 
+            #: Constant for MCU analog threshold state change Event.
+            THRESHOLD=103
+
             #: Constant for an Eight Channel Analog Input Sample Event.
             MULTI_CHANNEL_ANALOG_INPUT=122
         
+            #: Constant for a general purpose Serial Rx Event.
+            SERIAL_INPUT = 105
+
+            #: Constant for a serial event due to a rx stream byte value change.
+            SERIAL_BYTE_CHANGE = 106
+
             #: Constant for an Experiment Message Event.
             MESSAGE=151
 
@@ -276,15 +289,16 @@ try:
         OTHER = 1
         KEYBOARD = 20
         MOUSE = 30
-        TOUCH=40
+        TOUCH = 40
         EYETRACKER = 50
-        NETWORK=60
-        EVENTPUBLISHER=61
-        REMOTEEVENTSUBSCRIBER=62
+        NETWORK = 60
+        EVENTPUBLISHER = 61
+        REMOTEEVENTSUBSCRIBER = 62
         
-        XINPUT= 70
-        GAMEPAD=80
-        MCU=100
+        XINPUT = 70
+        GAMEPAD = 80
+        MCU = 100
+        SERIAL = 110
         ANALOGINPUT = 120
         EXPERIMENT = 150
         DISPLAY = 190
@@ -321,6 +335,9 @@ try:
 
             #: Constant for a MCU Device.
             MCU = 100
+
+            #: Constant for a General Purpose Serial Interface Device.
+            MCU = 110
 
             #: Constant for an AnalogInput Device.
             ANALOGINPUT = 120
@@ -517,7 +534,7 @@ try:
         class VirtualKeyCodes(Constants):
                 # Mainly from the pyHook lookup Table, some from Pyglet
                 VK_CANCEL  =  0x03
-                VK_BACK  =  0x08
+                VK_BACKSPACE  =  0x08
                 VK_TAB  =  0x09
                 VK_CLEAR  =  0x0C
                 VK_RETURN  =  0x0D
@@ -526,8 +543,9 @@ try:
                 VK_CONTROL  =  0x11
                 VK_MENU  =  0x12
                 VK_PAUSE  =  0x13
-                VK_CAPS_LOCK  =  0x14
+                VK_capslock  =  0x14
                 VK_CAPITAL  =  0x14
+                VK_CAPS_LOCK = 0x14
                 VK_HANGUL  =  0x15
                 VK_JUNJA  =  0x17
                 VK_FINAL  =  0x18
@@ -539,8 +557,8 @@ try:
                 VK_MODECHANGE  =  0x1F
             
                 VK_SPACE  =  0x20
-                VK_PAGE_UP  =  0x21
-                VK_PAGE_DOWN  =  0x22
+                VK_PAGEUP  =  0x21
+                VK_PAGEDOWN  =  0x22
                 VK_END  =  0x23
                 VK_HOME  =  0x24
                 VK_LEFT  =  0x25
@@ -555,9 +573,12 @@ try:
                 VK_DELETE  =  0x2E
                 VK_HELP  =  0x2F
             
-                VK_LEFT_CMD  =  0x5B
-                VK_RIGHT_CMD  =  0x5C
-                VK_APPS  =  0x5D
+                VK_LWIN = 0x5B
+                VK_RWIN = 0x5C
+                VK_APPS = 0x5D
+                VK_lcmd  =  0x5B
+                VK_rcmd  =  0x5C
+                VK_menu  =  0x5D
             
                 VK_NUMPAD0  =  0x60
                 VK_NUMPAD1  =  0x61
@@ -569,12 +590,12 @@ try:
                 VK_NUMPAD7  =  0x67
                 VK_NUMPAD8  =  0x68
                 VK_NUMPAD9  =  0x69
-                VK_MULTIPLY  =  0x6A
-                VK_ADD  =  0x6B
+                VK_NUMPADMULTIPLY  =  0x6A
+                VK_NUMPADADD  =  0x6B
                 VK_SEPARATOR  =  0x6C
-                VK_SUBTRACT  =  0x6D
-                VK_DECIMAL  =  0x6E
-                VK_DIVIDE  =  0x6F
+                VK_NUMPADSUBTRACT  =  0x6D
+                VK_NUMPADDECIMAL  =  0x6E
+                VK_NUMPADDIVIDE  =  0x6F
             
                 VK_F1  =  0x70
                 VK_F2  =  0x71
@@ -601,15 +622,24 @@ try:
                 VK_F23  =  0x86
                 VK_F24  =  0x87
             
-                VK_NUMLOCK  =  0x90
-                VK_SCROLL  =  0x91
-            
-                VK_LEFT_SHIFT  =  0xA0
-                VK_RIGHT_SHIFT  =  0xA1
-                VK_LEFT_CTRL  =  0xA2
-                VK_RIGHT_CTRL  =  0xA3
-                VK_LEFT_ALT  =  0xA4
-                VK_RIGHT_ALT  =  0xA5
+                VK_NUM_LOCK = 0x90
+                VK_SCROLL = 0x91
+                VK_LSHIFT = 0xA0
+                VK_RSHIFT = 0xA1
+                VK_LCONTROL = 0xA2
+                VK_RCONTROL = 0xA3
+                VK_LMENU = 0xA4
+                VK_RMENU = 0xA5
+
+                VK_numlock  =  0x90
+                VK_scrolllock  =  0x91
+                VK_lshift  =  0xA0
+                VK_rshift  =  0xA1
+                VK_lctrl  =  0xA2
+                VK_rctrl  =  0xA3
+                VK_lalt  =  0xA4
+                VK_ralt  =  0xA5
+
                 VK_BROWSER_BACK  =  0xA6
                 VK_BROWSER_FORWARD  =  0xA7
                 VK_BROWSER_REFRESH  =  0xA8
@@ -647,19 +677,14 @@ try:
                     return cls._names.get(id,None)
     
         VirtualKeyCodes.initialize()
-            
+
     elif sys.platform == 'linux2':
-        
         class VirtualKeyCodes(Constants):
-        
             @classmethod
             def getName(cls,id):
                 return cls._names.get(id,None)
-        
         VirtualKeyCodes.initialize()
 
-
-    
     elif sys.platform == 'darwin':
         class AnsiKeyCodes(Constants):
             ANSI_Equal    = 0x18 
@@ -916,8 +941,7 @@ try:
             KEY_RIGHT = 124 
             KEY_DOWN = 125 
             KEY_UP = 126 
-	
-	        
+
             @classmethod
             def getName(cls,id):
                 return cls._names.get(id,None)
@@ -926,26 +950,27 @@ try:
         VirtualKeyCodes._keys.remove(VirtualKeyCodes.getID('UNDEFINED'))
     
     class ModifierKeyCodes(Constants):
-        _mod_names=['CONTROL_LEFT','CONTROL_RIGHT','SHIFT_LEFT',
-                   'SHIFT_RIGHT','ALT_LEFT','ALT_RIGHT',
-                   'COMMAND_LEFT','COMMAND_RIGHT','CAPS_LOCK',
-                   'MOD_SHIFT','MOD_ALT','MOD_CTRL','MOD_CMD','NUMLOCK','MOD_FUNCTION','MOD_HELP']
-        CONTROL_LEFT = 1
-        CONTROL_RIGHT = 2
-        SHIFT_LEFT = 4
-        SHIFT_RIGHT = 8
-        ALT_LEFT = 16
-        ALT_RIGHT = 32
-        COMMAND_LEFT = 64
-        COMMAND_RIGHT = 128
-        CAPS_LOCK = 256
+        _mod_names=['lctrl','rctrl','lshift',
+                   'rshift','lalt','ralt',
+                   'lcmd','rcmd','capslock',
+                   'MOD_SHIFT','MOD_ALT','MOD_CTRL','MOD_CMD','numlock','function','modhelp','scrolllock']
+        lctrl = 1
+        rctrl = 2
+        lshift = 4
+        rshift = 8
+        lalt = 16
+        ralt = 32
+        lcmd = 64
+        rcmd = 128
+        capslock = 256
         MOD_SHIFT=512
         MOD_ALT=1024
         MOD_CTRL=2048
         MOD_CMD=4096
-        NUMLOCK=8192
-        MOD_FUNCTION=16384
-        MOD_HELP=32768            
+        numlock=8192
+        function=16384
+        modhelp=32768
+        scrolllock=modhelp*2
     ModifierKeyCodes.initialize()
     ModifierKeyCodes._keys.remove(ModifierKeyCodes.getID('UNDEFINED'))
     
@@ -968,26 +993,24 @@ try:
         @classmethod
         def getName(cls,id):
             return cls._names.get(id,None)
-    
+
+
+        @classmethod
+        def _getKeyName(cls,keyEvent):
+            vcode_name = KeyboardConstants._virtualKeyCodes.getName(keyEvent.KeyID)
+            if vcode_name:
+                if vcode_name.startswith('VK_NUMPAD'):
+                    return 'num_%s'%(vcode_name[9:].lower())
+                return vcode_name[3:].lower()
+            else:
+                phkey = keyEvent.Key.lower()
+                if phkey.startswith('numpad'):
+                    phkey = 'num_%s'%(phkey.Key[6:])
+                return phkey
+
         @classmethod
         def _getKeyNameAndModsForEvent(cls,keyEvent):
-    
-            mods= cls.getModifiersForEvent(keyEvent)
-    
-            vcode_name=KeyboardConstants._virtualKeyCodes.getName(keyEvent.KeyID)
-            if vcode_name:
-                return vcode_name[3:],mods
-    
-            if mods is None or ('CONTROL_LEFT' not in mods and 'CONTROL_RIGHT' not in mods):
-                ascii_name=KeyboardConstants._asciiKeyCodes.getName(keyEvent.Ascii)
-                if ascii_name:
-                    if ascii_name[-1] == '_': # it is a number between 0 and 9
-                        return ascii_name[1],mods
-                    return ascii_name,mods
-    
-            # TODO: When key mapper falls to this stage, clean up OEM_XXXX mappings that pyHook has.
-    
-            return keyEvent.GetKey().upper(),mods
+            return cls._getKeyName(keyEvent), cls.getModifiersForEvent(keyEvent)
     
     
         @classmethod
@@ -1038,15 +1061,15 @@ try:
         #
         ## Eye Type Constants
         #
-        LEFT_EYE=21
-        RIGHT_EYE=22
-        UNKNOWN_MONOCULAR=24
-        BINOCULAR=23
-        BINOCULAR_AVERAGED=25
-        BINOCULAR_CUSTOM=26
-        SIMULATED_MONOCULAR=27
-        SIMULATED_BINOCULAR=28
-        MONOCULAR=29
+        LEFT_EYE = 21
+        RIGHT_EYE = 22
+        SIMULATED_MONOCULAR = 23
+        MONOCULAR = 24
+
+        BINOCULAR = 26
+        BINOCULAR_AVERAGED = 27
+        BINOCULAR_CUSTOM = 28
+        SIMULATED_BINOCULAR = 29
         #
         ## Calibration / Validation Related Constants
         #
@@ -1362,8 +1385,10 @@ try:
         pass
             
 except:
-    from . import printExceptionDetailsToStdErr
-    printExceptionDetailsToStdErr()
+    import traceback
+    traceback.print_exc()
+    #from . import printExceptionDetailsToStdErr
+    #printExceptionDetailsToStdErr()
     
 #class SerialConstants(Constants):
 #    import serial

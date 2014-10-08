@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 
-'''Restrict a stimulus visibility area to a basic shape
-(circle, square, triangle)'''
+'''Restrict a stimulus visibility area to a basic shape or list of vertices'''
 
 # Part of the PsychoPy library
 # Copyright (C) 2014 Jonathan Peirce
@@ -16,24 +15,24 @@ pyglet.options['debug_gl'] = False
 GL = pyglet.gl
 
 import psychopy  # so we can get the __path__
-from psychopy import logging
+from psychopy import logging, core
 import psychopy.event
 
 # tools must only be imported *after* event or MovieStim breaks on win32
 # (JWP has no idea why!)
 from psychopy.tools.monitorunittools import cm2pix, deg2pix, convertToPix
-from psychopy.tools.attributetools import logAttrib
+from psychopy.tools.attributetools import attributeSetter, setAttribute
 from psychopy.visual.shape import ShapeStim
 from psychopy.visual.basevisual import MinimalStim, ContainerMixin
 
 import numpy
-from numpy import cos, sin, pi
+from numpy import cos, sin, radians
 
 from psychopy.constants import STARTED, STOPPED
 
 
 class Aperture(MinimalStim, ContainerMixin):
-    """Restrict a stimulus visibility area to a basic shape (circle, square, triangle)
+    """Restrict a stimulus visibility area to a basic shape or list of vertices.
 
     When enabled, any drawing commands will only operate on pixels within the
     Aperture. Once disabled, subsequent draw operations affect the whole screen
@@ -51,7 +50,7 @@ class Aperture(MinimalStim, ContainerMixin):
         2014, Jeremy Gray added .contains() option
     """
     def __init__(self, win, size=1, pos=(0,0), ori=0, nVert=120, shape='circle', units=None,
-            name='', autoLog=True):
+            name=None, autoLog=None):
         #what local vars are defined (these are the init params) for use by __repr__
         self._initParams = dir()
         self._initParams.remove('self')
@@ -60,10 +59,13 @@ class Aperture(MinimalStim, ContainerMixin):
         #set self params
         self.autoLog=False #set this False first and change after attribs are set
         self.win=win
-        self.size = size
-        self.pos = pos
-        self.name = name
-        self.ori = ori
+        if not win.allowStencil:
+            logging.error('Aperture has no effect in a window created without allowStencil=True')
+            core.quit()
+        self.__dict__['size'] = size
+        self.__dict__['pos'] = pos
+        self.__dict__['ori'] = ori
+        
         #unit conversions
         if units!=None and len(units):
             self.units = units
@@ -74,70 +76,110 @@ class Aperture(MinimalStim, ContainerMixin):
         if hasattr(shape, 'lower'):
             shape = shape.lower()
         if shape is None or shape == 'circle':
-            vertices = [(0.5*sin(theta*pi/180), 0.5*cos(theta*pi/180))
+            # NB: pentagon etc point upwards by setting x,y to be y,x (sin,cos):
+            vertices = [(0.5*sin(radians(theta)), 0.5*cos(radians(theta)))
                         for theta in numpy.linspace(0, 360, nVert, False)]
         elif shape == 'square':
-                vertices = [[0.5,-0.5],[-0.5,-0.5],[-0.5,0.5],[0.5,0.5]]
+            vertices = [[0.5,-0.5],[-0.5,-0.5],[-0.5,0.5],[0.5,0.5]]
         elif shape == 'triangle':
-                vertices = [[0.5,-0.5],[0,0.5],[-0.5,-0.5]]
+            vertices = [[0.5,-0.5],[0,0.5],[-0.5,-0.5]]
         elif type(shape) in [tuple, list, numpy.ndarray] and len(shape) > 2:
             vertices = shape
         else:
             logging.error("Unrecognized shape for aperture. Expected 'circle', 'square', 'triangle', vertices, or None; got %s" %(repr(shape)))
-
         self._shape = ShapeStim(win=self.win, vertices=vertices,
-                fillColor=1, lineColor=None,
-                interpolate=False, pos=pos, size=size,
-                autoLog=False)
+                                fillColor=1, lineColor=None,
+                                interpolate=False, pos=pos, size=size,
+                                autoLog=False)
+
         self.vertices = self._shape.vertices
         self._needVertexUpdate = True
-        self._reset()#implicitly runs an self.enable()
-        self.autoLog= autoLog
-        if autoLog:
+        self._needReset = True  # Default when setting attributes
+        self._reset()  #implicitly runs a self.enabled = True. Also sets self._needReset = True on every call
+        
+        # set autoLog now that params have been initialised
+        self.__dict__['autoLog'] = autoLog or autoLog is None and self.win.autoLog
+        if self.autoLog:
             logging.exp("Created %s = %s" %(self.name, str(self)))
     def _reset(self):
-        self.enable()
-        GL.glClearStencil(0)
-        GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
-
-        GL.glPushMatrix()
-        self.win.setScale('pix')
-
-        GL.glDisable(GL.GL_LIGHTING)
-        GL.glDisable(GL.GL_DEPTH_TEST)
-        GL.glDepthMask(GL.GL_FALSE)
-        GL.glStencilFunc(GL.GL_NEVER, 0, 0)
-        GL.glStencilOp(GL.GL_INCR, GL.GL_INCR, GL.GL_INCR)
-        self._shape.draw(keepMatrix=True) #draw without push/pop matrix
-        GL.glStencilFunc(GL.GL_EQUAL, 1, 1)
-        GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP)
-
-        GL.glPopMatrix()
-
-    def setSize(self, size, needReset=True, log=True):
-        """Set the size (diameter) of the Aperture
+        """Internal method to rebuild the shape - shouldn't be called by the user.
+        You have to explicitly turn resetting off by setting self._needReset = False"""
+        if not self._needReset:
+            self._needReset = True
+        else:
+            self.enabled = True  # attributeSetter, turns on.
+            GL.glClearStencil(0)
+            GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
+    
+            GL.glPushMatrix()
+            self.win.setScale('pix')
+    
+            GL.glDisable(GL.GL_LIGHTING)
+            GL.glDisable(GL.GL_DEPTH_TEST)
+            GL.glDepthMask(GL.GL_FALSE)
+            GL.glStencilFunc(GL.GL_NEVER, 0, 0)
+            GL.glStencilOp(GL.GL_INCR, GL.GL_INCR, GL.GL_INCR)
+            self._shape.draw(keepMatrix=True) #draw without push/pop matrix
+            GL.glStencilFunc(GL.GL_EQUAL, 1, 1)
+            GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP)
+    
+            GL.glPopMatrix()
+    
+    @attributeSetter
+    def size(self, size):
+        """Set the size (diameter) of the Aperture. 
+        
+        This essentially controls a :class:`.ShapeStim` so see documentation for ShapeStim.size.
+        
+        :ref:`Operations <attrib-operations>` supported here as well as ShapeStim.
+        
+        Use setSize() if you want to control 0logging and resetting."""
+        self.__dict__['size'] = size
+        self._shape.size = size  # a ShapeStim
+        self._reset()
+    def setSize(self, size, needReset=True, log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
         """
-        self.size = size
-        self._shape.size = size
-        if needReset:
-            self._reset()
-        logAttrib(self, log, 'size')
-    def setOri(self, ori, needReset=True, log=True):
-        """Set the orientation of the Aperture
+        self._needReset = needReset
+        setAttribute(self, 'size', size, log)
+    @attributeSetter
+    def ori(self, ori):
+        """Set the orientation of the Aperture.
+        
+        This essentially controls a :class:`.ShapeStim` so see documentation for ShapeStim.ori.
+        
+        :ref:`Operations <attrib-operations>` supported here as well as ShapeStim.
+        
+        Use setOri() if you want to control logging and resetting."""
+        self.__dict__['ori'] = ori
+        self._shape.ori = ori  # a ShapeStim
+        self._reset()
+    def setOri(self, ori, needReset=True, log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message.
         """
-        self.ori = ori
-        self._shape.ori = ori
-        if needReset:
-            self._reset()
-        logAttrib(self, log, 'ori')
-    def setPos(self, pos, needReset=True, log=True):
-        """Set the pos (centre) of the Aperture
+        self._needReset = needReset
+        setAttribute(self, 'ori', ori, log)
+    @attributeSetter
+    def pos(self, pos):
+        """Set the pos (centre) of the Aperture. :ref:`Operations <attrib-operations>` supported.
+                
+        This essentially controls a :class:`.ShapeStim` so see documentation for ShapeStim.pos.
+        
+        :ref:`Operations <attrib-operations>` supported here as well as ShapeStim.
+
+        Use setPos() if you want to control logging and resetting.
         """
-        self.pos = numpy.array(pos)
-        self._shape.pos = self.pos
-        if needReset:
-            self._reset()
-        logAttrib(self, log, 'pos')
+        self.__dict__['pos'] = numpy.array(pos)
+        self._shape.pos = self.pos  # a ShapeStim
+        self._reset()
+    def setPos(self, pos, needReset=True, log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
+        """
+        self._needReset = needReset
+        setAttribute(self, 'pos', pos, log)
     @property
     def posPix(self):
         """The position of the aperture in pixels
@@ -148,23 +190,28 @@ class Aperture(MinimalStim, ContainerMixin):
         """The size of the aperture in pixels
         """
         return self._shape.sizePix
-    def enable(self):
-        """Enable the aperture so that it is used in future drawing operations
+    @attributeSetter
+    def enabled(self, value):
+        """True / False. Enable or disable the aperture. 
+        Determines whether it is used in future drawing operations.
 
         NB. The Aperture is enabled by default, when created.
-
         """
-        if self._shape._needVertexUpdate:
-            self._shape._updateVertices()
-        GL.glEnable(GL.GL_STENCIL_TEST)
-        self.enabled=True#by default
-        self.status=STARTED
+        if value:
+            if self._shape._needVertexUpdate:
+                self._shape._updateVertices()
+            GL.glEnable(GL.GL_STENCIL_TEST)
+            self.status = STARTED
+        else:
+            GL.glDisable(GL.GL_STENCIL_TEST)
+            self.status = STOPPED
+        
+        self.__dict__['enabled'] = value
+    def enable(self):
+        """Use Aperture.enabled = True instead."""
+        self.enabled = True
     def disable(self):
-        """Disable the Aperture. Any subsequent drawing operations will not be
-        affected by the aperture until re-enabled.
-        """
-        GL.glDisable(GL.GL_STENCIL_TEST)
-        self.enabled=False
-        self.status=STOPPED
+        """Use Aperture.enabled = False instead."""
+        self.enabled = False
     def __del__(self):
-        self.disable()
+        self.enabled = False

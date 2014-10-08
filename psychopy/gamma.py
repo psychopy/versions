@@ -44,11 +44,13 @@ def setGammaRamp(pygletWindow, newRamp, nAttempts=3):
     On windows the first attempt to set the ramp doesn't always work. The parameter nAttemps
     allows the user to determine how many attempts should be made before failing
     """
+    if newRamp.shape[0]!=3 and newRamp.shape[1]==3:
+        newRamp= numpy.ascontiguousarray(newRamp.transpose())
     if sys.platform=='win32':
         newRamp= (255.0*newRamp).astype(numpy.uint16)
         newRamp.byteswap(True)#necessary, according to pyglet post from Martin Spacek
         for n in range(nAttempts):
-            success = windll.gdi32.SetDeviceGammaRamp(pygletWindow._dc, newRamp.ctypes)
+            success = windll.gdi32.SetDeviceGammaRamp(0xFFFFFFFF & pygletWindow._dc, newRamp.ctypes) # FB 504
             if success:
                 break
         assert success, 'SetDeviceGammaRamp failed'
@@ -74,7 +76,7 @@ def getGammaRamp(pygletWindow):
     """
     if sys.platform=='win32':
         origramps = numpy.empty((3, 256), dtype=numpy.uint16) # init R, G, and B ramps
-        success = windll.gdi32.GetDeviceGammaRamp(pygletWindow._dc, origramps.ctypes)
+        success = windll.gdi32.GetDeviceGammaRamp(0xFFFFFFFF & pygletWindow._dc, origramps.ctypes) # FB 504
         if not success:
             raise AssertionError, 'GetDeviceGammaRamp failed'
         origramps=origramps/65535.0#rescale to 0:1
@@ -128,7 +130,7 @@ def createLinearRamp(win, rampType=None):
         Known to be used by:
             OSX 10.6.0 with NVidia Geforce-9200M
     """
-    if rampType==None:
+    if rampType is None:
         #try to determine rampType from heuristics
         #get sys info
         driver = pyglet.gl.gl_info.get_renderer()

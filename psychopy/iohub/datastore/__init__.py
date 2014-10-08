@@ -38,29 +38,29 @@ cores in your machine or, when your machine has many of them (e.g. > 4),
 perhaps one less than this.  < S. Simpson Note: These are 'not' GIL bound
 threads and therefore actually improve performance > """
 
-DATA_FILE_TITLE="ioHub DataStore - Experiment Data File."
-FILE_VERSION = '0.7.0'
-SCHEMA_AUTHORS='Sol Simpson'
-SCHEMA_MODIFIED_DATE='May 6th, 2013'
+DATA_FILE_TITLE = "ioHub DataStore - Experiment Data File."
+FILE_VERSION = '0.8.0.2'
+SCHEMA_AUTHORS = 'Sol Simpson'
+SCHEMA_MODIFIED_DATE = 'May 4th, 2014'
 
         
 class ioHubpyTablesFile():
     
-    def __init__(self,fileName,folderPath,fmode='a',ioHubsettings=None):
-        self.fileName=fileName
-        self.folderPath=folderPath
-        self.filePath=os.path.join(folderPath,fileName)
+    def __init__(self, fileName, folderPath, fmode='a', ioHubsettings=None):
+        self.fileName = fileName
+        self.folderPath = folderPath
+        self.filePath = os.path.join(folderPath, fileName)
 
-        self.settings=ioHubsettings
+        self.settings = ioHubsettings
 
-        self.active_experiment_id=None
-        self.active_session_id=None
+        self.active_experiment_id = None
+        self.active_session_id = None
         
-        self.flushCounter=self.settings.get('flush_interval',32)
-        self._eventCounter=0
+        self.flushCounter = self.settings.get('flush_interval', 32)
+        self._eventCounter = 0
         
-        self.TABLES=dict()
-        self._eventGroupMappings=dict()
+        self.TABLES = dict()
+        self._eventGroupMappings = dict()
         self.emrtFile = openFile(self.filePath, mode = fmode)
                
         atexit.register(close_open_data_files, False)
@@ -99,12 +99,13 @@ class ioHubpyTablesFile():
         
         # create tables dict of hdf5 path mappings
 
+
         try:
             self.TABLES['KEYBOARD_KEY']=self.emrtFile.root.data_collection.events.keyboard.KeyboardKeyEvent
         except:
             # Just means the table for this event type has not been created as the event type is not being recorded
             pass
-        
+
         try:
             self.TABLES['KEYBOARD_CHAR']=self.emrtFile.root.data_collection.events.keyboard.KeyboardCharEvent
         except:
@@ -154,7 +155,25 @@ class ioHubpyTablesFile():
             pass
 
         try:
+            self.TABLES['THRESHOLD']=self.emrtFile.root.data_collection.events.mcu.ThresholdEvent
+        except:
+            # Just means the table for this event type has not been created as the event type is not being recorded
+            pass
+
+        try:
             self.TABLES['DIGITAL_INPUT']=self.emrtFile.root.data_collection.events.mcu.DigitalInputEvent
+        except:
+            # Just means the table for this event type has not been created as the event type is not being recorded
+            pass
+
+        try:
+            self.TABLES['SERIAL_INPUT'] = self.emrtFile.root.data_collection.events.serial.SerialInputEvent
+        except:
+            # Just means the table for this event type has not been created as the event type is not being recorded
+            pass
+
+        try:
+            self.TABLES['SERIAL_BYTE_CHANGE'] = self.emrtFile.root.data_collection.events.serial.SerialByteChangeEvent
         except:
             # Just means the table for this event type has not been created as the event type is not being recorded
             pass
@@ -241,6 +260,7 @@ class ioHubpyTablesFile():
         self.emrtFile.createGroup(self.emrtFile.root.data_collection.events, 'analog_input', title='AnalogInput Device Events.')
         self.emrtFile.createGroup(self.emrtFile.root.data_collection.events, 'eyetracker', title='EyeTracker Device Events.')
         self.emrtFile.createGroup(self.emrtFile.root.data_collection.events, 'mcu', title='MCU Device Events.')
+        self.emrtFile.createGroup(self.emrtFile.root.data_collection.events, 'serial', title='Serial Interface Events.')
         self.flush()
 
         self._buildEventGroupMappingDict()
@@ -254,7 +274,10 @@ class ioHubpyTablesFile():
         self._eventGroupMappings['GAMEPAD_STATE_CHANGE']=self.emrtFile.root.data_collection.events.gamepad
         self._eventGroupMappings['MULTI_CHANNEL_ANALOG_INPUT']=self.emrtFile.root.data_collection.events.analog_input
         self._eventGroupMappings['ANALOG_INPUT']=self.emrtFile.root.data_collection.events.mcu
+        self._eventGroupMappings['THRESHOLD']=self.emrtFile.root.data_collection.events.mcu
         self._eventGroupMappings['DIGITAL_INPUT']=self.emrtFile.root.data_collection.events.mcu
+        self._eventGroupMappings['SERIAL_INPUT']=self.emrtFile.root.data_collection.events.serial
+        self._eventGroupMappings['SERIAL_BYTE_CHANGE']=self.emrtFile.root.data_collection.events.serial
         self._eventGroupMappings['MESSAGE']=self.emrtFile.root.data_collection.events.experiment
         self._eventGroupMappings['LOG']=self.emrtFile.root.data_collection.events.experiment
         self._eventGroupMappings['MONOCULAR_EYE_SAMPLE']=self.emrtFile.root.data_collection.events.eyetracker
@@ -491,15 +514,19 @@ class ioHubpyTablesFile():
 
 def close_open_data_files(verbose):
     open_files = tables.file._open_files
-    are_open_files = len(open_files) > 0
-    if verbose and are_open_files:
-        print "Closing remaining open data files:"
-    for fileh in open_files.keys():
-        if verbose:
-            print "%s..." % (open_files[fileh].filename,)
-        open_files[fileh].close()
-        if verbose:
-            print "done"
+    clall = hasattr(open_files,'close_all')
+    if clall:
+        open_files.close_all()
+    else:
+        are_open_files = len(open_files) > 0
+        if verbose and are_open_files:
+            print2err("Closing remaining open data files:")
+        for fileh in open_files.keys():
+            if verbose:
+                print2err( "%s..." % (open_files[fileh].filename,))
+            open_files[fileh].close()
+            if verbose:
+                print2err("done")
 
 try:
     global registered_close_open_data_files

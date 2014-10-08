@@ -12,7 +12,7 @@ import sys, time, copy
 import psychopy.core
 from psychopy.tools.monitorunittools import cm2pix, deg2pix, pix2cm, pix2deg
 from psychopy import logging
-from psychopy.constants import *
+from psychopy.constants import NOT_STARTED
 import string, numpy
 
 #try to import pyglet & pygame and hope the user has at least one of them!
@@ -75,7 +75,7 @@ def _onPygletText(text, emulated=False):
     logging.data("%s: %s" % (keySource, text))
 
 def _onPygletKey(symbol, modifiers, emulated=False):
-    """handler for on_key_press pyglet events, or call directly to emulate a key press
+    """handler for on_key_press pyglet events; call directly to emulate a key press
 
     Appends a tuple with (keyname, timepressed) into the global _keyBuffer. The
     _keyBuffer can then be accessed as normal using event.getKeys(), .waitKeys(),
@@ -83,9 +83,9 @@ def _onPygletKey(symbol, modifiers, emulated=False):
 
     J Gray 2012: Emulated means add a key (symbol) to the buffer virtually.
     This is useful for fMRI_launchScan, and for unit testing (in testTheApp)
-    Logging distinguished EmulatedKey events from real Keypress events.
+    Logging distinguishes EmulatedKey events from real Keypress events.
     For emulation, the key added to the buffer is unicode(symbol), instead of
-    pyglet.window.key.symbol_string(symbol)
+    pyglet.window.key.symbol_string(symbol).
 
     S Mathot 2012: Implement fallback to _onPygletText
     """
@@ -223,7 +223,7 @@ def getKeys(keyList=None, timeStamped=False):
             keys = _keyBuffer
             #_keyBuffer = []  # DO /NOT/ CLEAR THE KEY BUFFER ENTIRELY
 
-    if keyList==None:
+    if keyList is None:
         _keyBuffer = [] #clear buffer entirely
         targets=keys  # equivalent behavior to getKeys()
     else:
@@ -243,10 +243,16 @@ def getKeys(keyList=None, timeStamped=False):
         keyNames = [k[0] for k in targets]
         return keyNames
     elif hasattr(timeStamped, 'getLastResetTime'):
-        relTuple = [(k[0],k[1]-timeStamped.getLastResetTime()) for k in targets]
+        #keys were originally time-stamped with core.monotonicClock._lastResetTime
+        #we need to shift that by the difference between it and our custom clock
+        timeBaseDiff = timeStamped.getLastResetTime() - psychopy.core.monotonicClock.getLastResetTime()
+        relTuple = [(k[0],k[1]-timeBaseDiff) for k in targets]
         return relTuple
     elif timeStamped==True:
         return targets
+    elif isinstance(timeStamped, (float, int, long)):
+        relTuple = [(k[0], k[1]-timeStamped) for k in targets]
+        return relTuple
 
 def waitKeys(maxWait=float('inf'), keyList=None, timeStamped=False):
     """
@@ -268,7 +274,7 @@ def waitKeys(maxWait=float('inf'), keyList=None, timeStamped=False):
 
     # Check for keypresses until maxWait is exceeded
     timer = psychopy.core.Clock()
-    while key == None and timer.getTime() < maxWait:
+    while key is None and timer.getTime() < maxWait:
         # Pump events on pyglet windows if they exist
         if havePyglet:
             wins = pyglet.window.get_platform().get_default_display().get_windows()
@@ -277,8 +283,6 @@ def waitKeys(maxWait=float('inf'), keyList=None, timeStamped=False):
         # Get keypresses and return if anything is pressed
         keys = getKeys(keyList=keyList, timeStamped=timeStamped)
         if len(keys):
-            if timeStamped != False: logging.data("Key pressed: %s" % keys[0][0])
-            else: logging.data("Key pressed: %s" % keys[0])
             return keys
 
     # If maxWait is exceeded (exits while-loop), return None

@@ -21,11 +21,10 @@ from psychopy import logging
 
 # tools must only be imported *after* event or MovieStim breaks on win32
 # (JWP has no idea why!)
-from psychopy.tools.attributetools import setWithOperation, logAttrib
+from psychopy.tools.attributetools import attributeSetter, setAttribute
 from psychopy.tools.arraytools import val2array
 from psychopy.tools.monitorunittools import cm2pix, deg2pix
-from psychopy.visual.basevisual import BaseVisualStim
-from psychopy.visual.basevisual import ColorMixin, ContainerMixin
+from psychopy.visual.basevisual import BaseVisualStim, ColorMixin, ContainerMixin
 
 import numpy
 from numpy import pi
@@ -73,41 +72,13 @@ class DotStim(BaseVisualStim, ColorMixin, ContainerMixin):
                  element=None,
                  signalDots='same',
                  noiseDots='direction',
-                 name='', autoLog=True):
+                 name=None,
+                 autoLog=None):
         """
         :Parameters:
 
-            nDots : int
-                number of dots to be generated
-            fieldPos : (x,y) or [x,y]
-                specifying the location of the centre of the stimulus.
             fieldSize : (x,y) or [x,y] or single value (applied to both dimensions)
                 Sizes can be negative and can extend beyond the window.
-            fieldShape : *'sqr'* or 'circle'
-                Defines the envelope used to present the dots
-            dotSize
-                specified in pixels (overridden if `element` is specified)
-            dotLife : int
-                Number of frames each dot lives for (default=3, -1=infinite)
-            dir : float (degrees)
-                direction of the coherent dots
-            speed : float
-                speed of the dots (in *units*/frame)
-            signalDots : 'same' or *'different'*
-                If 'same' then the signal and noise dots are constant. If different
-                then the choice of which is signal and which is noise gets
-                randomised on each frame. This corresponds to Scase et al's (1996) categories of RDK.
-            noiseDots : *'direction'*, 'position' or 'walk'
-                Determines the behaviour of the noise dots, taken directly from
-                Scase et al's (1996) categories. For 'position', noise dots take a
-                random position every frame. For 'direction' noise dots follow a
-                random, but constant direction. For 'walk' noise dots vary their
-                direction every frame, but keep a constant speed.
-
-            element : *None* or a visual stimulus object
-                This can be any object that has a ``.draw()`` method and a
-                ``.setPos([x,y])`` method (e.g. a GratingStim, TextStim...)!!
-                See `ElementArrayStim` for a faster implementation of this idea.
             """
         #what local vars are defined (these are the init params) for use by __repr__
         self._initParams = __builtins__['dir']()
@@ -118,19 +89,19 @@ class DotStim(BaseVisualStim, ColorMixin, ContainerMixin):
         self.nDots = nDots
         #pos and size are ambiguous for dots so DotStim explicitly has
         #fieldPos = pos, fieldSize=size and then dotSize as additional param
-        self.fieldPos = self.pos = val2array(fieldPos, False, False)
+        self.fieldPos = fieldPos  # using the attributeSetter
+        self.pos = self.fieldPos
         self.fieldSize = self.size = val2array(fieldSize, False)
         if type(dotSize) in [tuple,list]:
             self.dotSize = numpy.array(dotSize)
         else:
             self.dotSize=dotSize
         self.fieldShape = fieldShape
-        self.dir = dir
+        self.__dict__['dir'] = dir
         self.speed = speed
         self.element = element
         self.dotLife = dotLife
         self.signalDots = signalDots
-        self.noiseDots = noiseDots
         self.opacity = float(opacity)
         self.contrast = float(contrast)
 
@@ -138,107 +109,171 @@ class DotStim(BaseVisualStim, ColorMixin, ContainerMixin):
         self.colorSpace=colorSpace
         if rgb!=None:
             logging.warning("Use of rgb arguments to stimuli are deprecated. Please use color and colorSpace args instead")
-            self.setColor(rgb, colorSpace='rgb')
+            self.setColor(rgb, colorSpace='rgb', log=False)
         else:
-            self.setColor(color)
+            self.setColor(color, log=False)
 
         self.depth=depth
 
         #initialise the dots themselves - give them all random dir and then
         #fix the first n in the array to have the direction specified
 
-        self.coherence=round(coherence*self.nDots)/self.nDots#store actual coherence
+        self.coherence = coherence  # using the attributeSetter
+        self.noiseDots = noiseDots
 
         self. _verticesBase = self._dotsXY = self._newDotsXY(self.nDots) #initialise a random array of X,Y
         self._dotsSpeed = numpy.ones(self.nDots, 'f')*self.speed#all dots have the same speed
         self._dotsLife = abs(dotLife)*numpy.random.rand(self.nDots)#abs() means we can ignore the -1 case (no life)
-        #determine which dots are signal
-        self._signalDots = numpy.zeros(self.nDots, dtype=bool)
-        self._signalDots[0:int(self.coherence*self.nDots)]=True
         #numpy.random.shuffle(self._signalDots)#not really necessary
         #set directions (only used when self.noiseDots='direction')
         self._dotsDir = numpy.random.rand(self.nDots)*2*pi
         self._dotsDir[self._signalDots] = self.dir*pi/180
 
         self._update_dotsXY()
-        self.autoLog= autoLog
-        if autoLog:
+
+        # set autoLog now that params have been initialised
+        self.__dict__['autoLog'] = autoLog or autoLog is None and self.win.autoLog
+        if self.autoLog:
             logging.exp("Created %s = %s" %(self.name, str(self)))
 
-    def _set(self, attrib, val, op='', log=True):
-        """Use this to set attributes of your stimulus after initialising it.
-
-        :Parameters:
-
-        attrib : a string naming any of the attributes of the stimulus (set during init)
-        val : the value to be used in the operation on the attrib
-        op : a string representing the operation to be performed (optional) most maths operators apply ('+','-','*'...)
-
-        examples::
-
-            myStim.set('rgb',0) #will simply set all guns to zero (black)
-            myStim.set('rgb',0.5,'+') #will increment all 3 guns by 0.5
-            myStim.set('rgb',(1.0,0.5,0.5),'*') # will keep the red gun the same and halve the others
-
-        """
-        #format the input value as float vectors
-        if type(val) in [tuple,list]:
-            val=numpy.array(val,float)
-
-        #change the attribute as requested
-        setWithOperation(self, attrib, val, op)
-
-        #update the actual coherence for the requested coherence and nDots
-        if attrib in ['nDots','coherence']:
-            self.coherence=round(self.coherence*self.nDots)/self.nDots
-
-        logAttrib(self, log, attrib)
-
-    def set(self, attrib, val, op='', log=True):
-        """DotStim.set() is obsolete and may not be supported in future
+    def set(self, attrib, val, op='', log=None):
+        """DEPRECATED: DotStim.set() is obsolete and may not be supported in future
         versions of PsychoPy. Use the specific method for each parameter instead
-        (e.g. setFieldPos(), setCoherence()...)
-        """
+        (e.g. setFieldPos(), setCoherence()...)"""
         self._set(attrib, val, op, log=log)
-    def setPos(self, newPos=None, operation='', units=None, log=True):
+
+    @attributeSetter
+    def fieldShape(self, fieldShape):
+        """*'sqr'* or 'circle'. Defines the envelope used to present the dots.
+        If changed while drawing, dots outside new envelope will be respawned.
+        """
+        self.__dict__['fieldShape'] = fieldShape
+
+    @attributeSetter
+    def dotSize(self, dotSize):
+        """Float specified in pixels (overridden if `element` is specified).
+        :ref:`operations <attrib-operations>` are supported."""
+        self.__dict__['dotSize'] = dotSize
+
+    @attributeSetter
+    def dotLife(self, dotLife):
+        """Int. Number of frames each dot lives for (-1=infinite).
+        Dot lives are initiated randomly from a uniform distribution from 0 to dotLife.
+        If changed while drawing, the lives of all dots will be randomly initiated again.
+
+        :ref:`operations <attrib-operations>` are supported."""
+        self.__dict__['dotLife'] = dotLife
+        self._dotsLife = abs(self.dotLife) * numpy.random.rand(self.nDots)
+
+    @attributeSetter
+    def signalDots(self, signalDots):
+        """str - 'same' or *'different'*
+        If 'same' then the signal and noise dots are constant. If different
+        then the choice of which is signal and which is noise gets
+        randomised on each frame. This corresponds to Scase et al's (1996) categories of RDK.
+        """
+        self.__dict__['signalDots'] = signalDots
+
+    @attributeSetter
+    def noiseDots(self, noiseDots):
+        """Str. *'direction'*, 'position' or 'walk'
+        Determines the behaviour of the noise dots, taken directly from
+        Scase et al's (1996) categories. For 'position', noise dots take a
+        random position every frame. For 'direction' noise dots follow a
+        random, but constant direction. For 'walk' noise dots vary their
+        direction every frame, but keep a constant speed.
+        """
+        self.__dict__['noiseDots'] = noiseDots
+        self.coherence = self.coherence  # update using attributeSetter
+
+    @attributeSetter
+    def element(self, element):
+        """*None* or a visual stimulus object
+        This can be any object that has a ``.draw()`` method and a
+        ``.setPos([x,y])`` method (e.g. a GratingStim, TextStim...)!!
+        DotStim assumes that the element uses pixels as units.
+        ``None`` defaults to dots.
+
+        See `ElementArrayStim` for a faster implementation of this idea.
+        """
+        self.__dict__['element'] = element
+
+    @attributeSetter
+    def fieldPos(self, pos):
+        """Specifying the location of the centre of the stimulus using a :ref:`x,y-pair <attrib-xy>`.
+        See e.g. :class:`.ShapeStim` for more documentation/examples on how to set position.
+
+        :ref:`operations <attrib-operations>` are supported.
+        """
+        # Isn't there a way to use BaseVisualStim.pos.__doc__ as docstring here?
+        self.pos = pos  # using BaseVisualStim. we'll store this as both
+        self.__dict__['fieldPos'] = self.pos
+    def setFieldPos(self, val, op='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
+        """
+        setAttribute(self, 'fieldPos', val, log, op)  # calls attributeSetter
+    def setPos(self, newPos=None, operation='', units=None, log=None):
         """Obsolete - users should use setFieldPos instead of setPos
         """
         logging.error("User called DotStim.setPos(pos). Use DotStim.SetFieldPos(pos) instead.")
-    def setFieldPos(self,val, op='', log=True):
-        self._set('fieldPos', val, op, log=log)
-        self.pos = self.fieldPos #we'll store this as both
-    def setFieldCoherence(self,val, op='', log=True):
-        """Change the coherence (%) of the DotStim. This will be rounded according
+
+    @attributeSetter
+    def coherence(self, coherence):
+        """Scalar between 0 and 1. Change the coherence (%) of the DotStim. This will be rounded according
         to the number of dots in the stimulus.
+
+        :ref:`operations <attrib-operations>` are supported.
         """
-        self._set('coherence', val, op, log=log)
-        self.coherence=round(self.coherence*self.nDots)/self.nDots#store actual coherence rounded by nDots
+        if not 0 <= coherence <= 1:
+            raise(ValueError('DotStim.coherence must be between 0 and 1'))
+        self.__dict__['coherence'] = round(coherence * self.nDots) / self.nDots
         self._signalDots = numpy.zeros(self.nDots, dtype=bool)
-        self._signalDots[0:int(self.coherence*self.nDots)]=True
+        self._signalDots[0:int(self.coherence * self.nDots)] = True
         #for 'direction' method we need to update the direction of the number
         #of signal dots immediately, but for other methods it will be done during updateXY
-        if self.noiseDots in ['direction','position']:
-            self._dotsDir=numpy.random.rand(self.nDots)*2*pi
-            self._dotsDir[self._signalDots]=self.dir*pi/180
-    def setDir(self,val, op='', log=True):
-        """Change the direction of the signal dots (units in degrees)
+        if self.noiseDots in ['direction', 'position']:
+            self._dotsDir = numpy.random.rand(self.nDots) * 2 * pi
+            self._dotsDir[self._signalDots] = self.dir * pi / 180
+    def setFieldCoherence(self, val, op='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
         """
-        #check which dots are signal
-        signalDots = self._dotsDir==(self.dir*pi/180)
-        self._set('dir', val, op, log=log)
+        setAttribute(self, 'coherence', val, log, op)  # calls attributeSetter
+
+    @attributeSetter
+    def dir(self, dir):
+        """float (degrees). direction of the coherent dots. :ref:`operations <attrib-operations>` are supported.
+        """
+        signalDots = self._dotsDir == (self.dir * pi / 180)  #check which dots are signal before setting new dir
+        self.__dict__['dir'] = dir
+
         #dots currently moving in the signal direction also need to update their direction
-        self._dotsDir[signalDots] = self.dir*pi/180
-    def setSpeed(self,val, op='', log=True):
-        """Change the speed of the dots (in stimulus `units` per second)
+        self._dotsDir[signalDots] = self.dir * pi / 180
+    def setDir(self, val, op='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
         """
-        self._set('speed', val, op, log=log)
+        setAttribute(self, 'dir', val, log, op)
+
+    @attributeSetter
+    def speed(self, speed):
+        """float. speed of the dots (in *units*/frame). :ref:`operations <attrib-operations>` are supported.
+        """
+        self.__dict__['speed'] = speed
+    def setSpeed(self,val, op='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
+        """
+        setAttribute(self, 'speed', val, log, op)
     def draw(self, win=None):
         """Draw the stimulus in its relevant window. You must call
         this method after every MyWin.flip() if you want the
         stimulus to appear on that frame and then update the screen
         again.
         """
-        if win==None: win=self.win
+        if win is None:
+            win=self.win
         self._selectWindow(win)
 
         self._update_dotsXY()
@@ -246,7 +281,7 @@ class DotStim(BaseVisualStim, ColorMixin, ContainerMixin):
         GL.glPushMatrix()#push before drawing, pop after
 
         #draw the dots
-        if self.element==None:
+        if self.element is None:
             win.setScale('pix')
             GL.glPointSize(self.dotSize)
 
@@ -287,9 +322,9 @@ class DotStim(BaseVisualStim, ColorMixin, ContainerMixin):
                 new=numpy.random.uniform(-1, 1, [nDots*2,2])#fetch twice as many as needed
                 inCircle= (numpy.hypot(new[:,0],new[:,1])<1)
                 if sum(inCircle)>=nDots:
-                    return new[inCircle,:][:nDots,:]*self.fieldSize/2.0
+                    return new[inCircle,:][:nDots,:]*0.5
         else:
-            return numpy.random.uniform(-self.fieldSize/2.0, self.fieldSize/2.0, [nDots,2])
+            return numpy.random.uniform(-0.5, 0.5, [nDots,2])
 
     def _update_dotsXY(self):
         """
@@ -337,12 +372,12 @@ class DotStim(BaseVisualStim, ColorMixin, ContainerMixin):
 
         #handle boundaries of the field
         if self.fieldShape in  [None, 'square', 'sqr']:
-            dead = dead+(numpy.abs(self._verticesBase[:,0])>(self.fieldSize[0]/2.0))+(numpy.abs
+            dead = dead+(numpy.abs(self._verticesBase[:,0])>0.5)+(numpy.abs
                                                                                   (self
-                                                                                   ._verticesBase[:,1])>(self.fieldSize[1]/2.0))
+                                                                                   ._verticesBase[:,1])>0.5)
         elif self.fieldShape == 'circle':
             #transform to a normalised circle (radius = 1 all around) then to polar coords to check
-            normXY = self._verticesBase/(self.fieldSize/2.0)#the normalised XY position (where radius should be <1)
+            normXY = self._verticesBase/0.5#the normalised XY position (where radius should be <1)
             dead = dead + (numpy.hypot(normXY[:,0],normXY[:,1])>1) #add out-of-bounds to those that need replacing
 
         #update any dead dots

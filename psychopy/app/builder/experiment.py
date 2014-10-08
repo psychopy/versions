@@ -3,12 +3,11 @@
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import StringIO, sys, codecs
-from components import *#getComponents('') and getAllComponents([])
+from components import getInitVals, getComponents, getAllComponents
 import psychopy
 from psychopy import data, __version__, logging
-from psychopy.constants import *
+from psychopy.constants import FOREVER
 from lxml import etree
-import numpy, numpy.random # want to query their name-spaces
 import re, os
 import locale
 
@@ -21,6 +20,20 @@ _nonalphanumeric_re = re.compile(r'\W') # will match all bad var name chars
 _numpyImports = ['sin', 'cos', 'tan', 'log', 'log10', 'pi', 'average', 'sqrt', 'std',
                   'deg2rad', 'rad2deg', 'linspace', 'asarray']
 _numpyRandomImports = ['random', 'randint', 'normal', 'shuffle']
+
+# used for separation of internal vs display values:
+_localized = {
+    # strings for random, sequential, fullRandom loops:
+        'Name': _translate('Name'), 'nReps': _translate('nReps'), 'conditions': _translate('Conditions'),
+        'endPoints': _translate('endPoints'), 'Selected rows': _translate('Selected rows'),
+        'loopType': _translate('loopType'), 'random seed': _translate('random seed'), 'Is trials': _translate('Is trials'),
+    # strings for staircases
+        'min value': _translate('min value'), 'N reversals': _translate('N reversals'), 'start value': _translate('start value'),
+        'N up': _translate('N up'), 'max value': _translate('max value'), 'N down': _translate('N down'),
+        'step type': _translate('step type'), 'step sizes': _translate('step sizes'),
+    # strings for interleaved Staircases
+        'stairType': _translate('stairType'), 'switchMethod': _translate('switchMethod')
+    }
 
 """
 Exception thrown by a component when it is unable to generate its code.
@@ -72,7 +85,7 @@ class IndentingBuffer(StringIO.StringIO):
         else:
             self.indentLevel=newLevel
 
-class Experiment:
+class Experiment(object):
     """
     An experiment contains a single Flow and at least one
     Routine. The Flow controls how Routines are organised
@@ -83,7 +96,7 @@ class Experiment:
         self.flow = Flow(exp=self)#every exp has exactly one flow
         self.routines={}
         #get prefs (from app if poss or from cfg files)
-        if prefs==None:
+        if prefs is None:
             prefs = psychopy.prefs
         #deepCopy doesn't like the full prefs object to be stored, so store each subset
         self.prefsAppDataCfg=prefs.appDataCfg
@@ -123,7 +136,7 @@ class Experiment:
         Can take a Routine object directly or will create
         an empty one if none is given.
         """
-        if routine==None:
+        if routine is None:
             self.routines[routineName]=Routine(routineName, exp=self)#create a deafult routine with this name
         else:
             self.routines[routineName]=routine
@@ -147,19 +160,19 @@ class Experiment:
                     'If you publish work using this script please cite the relevant PsychoPy publications\n' +
                     '  Peirce, JW (2007) PsychoPy - Psychophysics software in Python. Journal of Neuroscience Methods, 162(1-2), 8-13.\n' +
                     '  Peirce, JW (2009) Generating stimuli for neuroscience using PsychoPy. Frontiers in Neuroinformatics, 2:10. doi: 10.3389/neuro.11.010.2008\n"""\n')
-        script.write(
-                    "\nfrom __future__ import division  # so that 1/3=0.333 instead of 1/3=0\n" +
-                    "from psychopy import %s\n" % ', '.join(self.psychopyLibs) +
+        script.write("\nfrom __future__ import division  # so that 1/3=0.333 instead of 1/3=0\n")
+        # This functionality is not ready to be exposed to end-users in a script
+        #if self.prefsApp['locale']:
+        #    # if locale is set explicitly as a pref, add it to the script:
+        #    localeValue = '.'.join(locale.getlocale())
+        #    script.write("from psychopy import localization\n" +
+        #             "localization.init(%s)\n\n" % repr(localeValue))
+        script.write("from psychopy import %s\n" % ', '.join(self.psychopyLibs) +
                     "from psychopy.constants import *  # things like STARTED, FINISHED\n" +
                     "import numpy as np  # whole numpy lib is available, prepend 'np.'\n" +
                     "from numpy import %s\n" % ', '.join(_numpyImports) +
                     "from numpy.random import %s\n" % ', '.join(_numpyRandomImports) +
                     "import os  # handy system and path functions\n")
-        if self.prefsApp['locale']:
-            # if locale is set explicitly as a pref, add it to the script:
-            localeValue = '.'.join(locale.getlocale())
-            script.write("import locale\n" +
-                     "locale.setlocale(locale.LC_ALL, '%s')\n" % localeValue)
         script.write("\n")
         self.settings.writeStartCode(script) #present info dlg, make logfile
         self.flow.writeStartCode(script) #writes any components with a writeStartCode()
@@ -288,7 +301,7 @@ class Experiment:
         elif name == 'Saved data folder':
             #deprecated in 1.80 for more complete data filename control
             params[name] = Param(paramNode.get('val'), valType='code', allowedTypes=[],
-                hint="Name of the folder in which to save data and log files (blank defaults to the builder pref)",
+                hint=_translate("Name of the folder in which to save data and log files (blank defaults to the builder pref)"),
                 categ='Data')
         elif 'val' in paramNode.keys():
             if paramNode.get('val')=='window units':#changed this value in 1.70.00
@@ -310,7 +323,22 @@ class Experiment:
                 # lowAnchorText highAnchorText will trigger obsolete error when run the script
                 params[name].val = v
             else:
-                params[name].val = paramNode.get('val')
+                if name in params:
+                    params[name].val = paramNode.get('val')
+                else:
+                    #we found an unknown parameter (probably from the future)
+                    params[name] = Param(paramNode.get('val'),
+                                    valType=paramNode.get('val'), allowedTypes=[],
+                                    hint=_translate("This parameter is not known by this version of PsychoPy. It might be worth upgrading"))
+                    params[name].allowedTypes = paramNode.get('allowedTypes')
+                    if params[name].allowedTypes is None:
+                        params[name].allowedTypes = []
+                    params[name].readOnly=True
+                    logging.warn(_translate("Parameter %r is not known to this version of "
+                        "PsychoPy but has come from your experiment file (saved by "
+                        "a future version of PsychoPy?). This experiment may not "
+                        "run correctly in the current version." %name))
+                    logging.flush()
         #get the value type and update rate
         if 'valType' in paramNode.keys():
             params[name].valType = paramNode.get('valType')
@@ -321,6 +349,8 @@ class Experiment:
                 params[name].valType='str'# these components were changed in v1.60.01
             elif name in ['allowedKeys'] and paramNode.get('valType')=='str':
                 params[name].valType='code'# these components were changed in v1.70.00
+            elif name == 'Selected rows': #changed in 1.81.00 from 'code' to 'str' to allow string or variable
+                params[name].valType = 'str'
             #conversions based on valType
             if params[name].valType=='bool': exec("params[name].val=%s" %params[name].val)
         if 'updates' in paramNode.keys():
@@ -331,9 +361,6 @@ class Experiment:
         #open the file using a parser that ignores prettyprint blank text
         parser = etree.XMLParser(remove_blank_text=True)
         f=open(filename)
-        folder = os.path.split(filename)[0]
-        if folder: #might be ''
-            os.chdir(folder)
         self._doc=etree.XML(f.read(),parser)
         f.close()
         root=self._doc#.getroot()
@@ -355,6 +382,7 @@ class Experiment:
         self.routines={}
         self.namespace = NameSpace(self) # start fresh
         modified_names = []
+        duplicate_names = []
 
         #fetch exp settings
         settingsNode=root.find('Settings')
@@ -375,11 +403,18 @@ class Experiment:
             #self._getXMLparam(params=routine.params, paramNode=routineNode)
             self.routines[routineNode.get('name')]=routine
             for componentNode in routineNode:
+                allCompons = getAllComponents(self.prefsBuilder['componentsFolders'])
                 componentType=componentNode.tag
-                #create an actual component of that type
-                component=getAllComponents(self.prefsBuilder['componentsFolders'])[componentType](\
-                    name=componentNode.get('name'),
-                    parentName=routineNode.get('name'), exp=self)
+                if componentType in allCompons:
+                    #create an actual component of that type
+                    component=getAllComponents(self.prefsBuilder['componentsFolders'])[componentType](\
+                        name=componentNode.get('name'),
+                        parentName=routineNode.get('name'), exp=self)
+                else:
+                    from components._base import UnknownComponent
+                    component = UnknownComponent(
+                        name=componentNode.get('name'),
+                        parentName=routineNode.get('name'), exp=self)
                 # check for components that were absent in older versions of the builder and change the default behavior
                 # (currently only the new behavior of choices for RatingScale, HS, November 2012)
                 # HS's modification superceded Jan 2014, removing several RatingScale options
@@ -439,10 +474,10 @@ class Experiment:
                     conditionsFile = None
                 if conditionsFile:
                     try:
-                        _, fieldNames = data.importConditions(conditionsFile, returnFieldNames=True)
+                        trialList, fieldNames = data.importConditions(conditionsFile, returnFieldNames=True)
                         for fname in fieldNames:
                             if fname != self.namespace.makeValid(fname):
-                                logging.warning('loadFromXML namespace conflict: "%s" in file %s' % (fname, conditionsFile))
+                                duplicate_names.append(fname)
                             else:
                                 self.namespace.add(fname)
                     except:
@@ -454,7 +489,9 @@ class Experiment:
                 self.flow.append(self.routines[elementNode.get('name')])
 
         if modified_names:
-            logging.warning('duplicate variable name(s) changed in loadFromXML: %s\n' % ' '.join(modified_names))
+            logging.warning('duplicate variable name(s) changed in loadFromXML: %s\n' % ', '.join(list(set(modified_names))))
+        if duplicate_names:
+            logging.warning('duplicate variable names: %s' % ', '.join(list(set(duplicate_names))))
 
     def setExpName(self, name):
         self.settings.params['expName'].val=name
@@ -546,12 +583,18 @@ class Param:
         self.allowedVals=allowedVals
         self.staticUpdater = None
         self.categ = categ
+        self.readOnly = False
     def __str__(self):
         if self.valType == 'num':
             try:
                 return str(float(self.val))#will work if it can be represented as a float
             except:#might be an array
                 return "asarray(%s)" %(self.val)
+        elif self.valType == 'int':
+            try:
+                return "%i" % self.val  # int and float -> str(int)
+            except TypeError:
+                return unicode(self.val)  # try array of float instead?
         elif self.valType == 'str':
             # at least 1 non-escaped '$' anywhere --> code wanted; only '\' will escape
             # return str if code wanted
@@ -577,12 +620,13 @@ class Param:
         else:
             raise TypeError, "Can't represent a Param of type %s" %self.valType
 
-class TrialHandler:
+class TrialHandler(object):
     """A looping experimental control object
             (e.g. generating a psychopy TrialHandler or StairHandler).
             """
     def __init__(self, exp, name, loopType='random', nReps=5,
-        conditions=[], conditionsFile='',endPoints=[0,1],randomSeed=''):
+        conditions=[], conditionsFile='',endPoints=[0,1],randomSeed='', selectedRows='',
+        isTrials = True):
         """
         @param name: name of the loop e.g. trials
         @type name: string
@@ -600,23 +644,27 @@ class TrialHandler:
         self.order=['name']#make name come first (others don't matter)
         self.params={}
         self.params['name']=Param(name, valType='code', updates=None, allowedUpdates=None,
-            hint="Name of this loop")
+            label=_localized['Name'], hint=_translate("Name of this loop"))
         self.params['nReps']=Param(nReps, valType='code', updates=None, allowedUpdates=None,
-            hint="Number of repeats (for each condition)")
+            label=_localized['nReps'], hint=_translate("Number of repeats (for each condition)"))
         self.params['conditions']=Param(conditions, valType='str', updates=None, allowedUpdates=None,
-            hint="A list of dictionaries describing the parameters in each condition")
-        self.params['conditionsFile']=Param(conditionsFile, valType='str', updates=None, allowedUpdates=None,
-            hint="Name of a file specifying the parameters for each condition (.csv, .xlsx, or .pkl). Browse to select a file. Right-click to preview file contents, or create a new file.")
+            label=_localized['conditions'], hint=_translate("A list of dictionaries describing the parameters in each condition"))
+        self.params['conditionsFile']=Param(conditionsFile, valType='str', updates=None, allowedUpdates=None, label=_localized['conditions'],
+            hint=_translate("Name of a file specifying the parameters for each condition (.csv, .xlsx, or .pkl). Browse to select a file. Right-click to preview file contents, or create a new file."))
         self.params['endPoints']=Param(endPoints, valType='num', updates=None, allowedUpdates=None,
-            hint="The start and end of the loop (see flow timeline)")
+            label=_localized['endPoints'], hint=_translate("The start and end of the loop (see flow timeline)"))
+        self.params['Selected rows']=Param(selectedRows, valType='code', updates=None, allowedUpdates=None,
+            label=_localized['Selected rows'], hint=_translate("Select just a subset of rows from your condition file (the first is 0 not 1!). Examples: 0, 0:5, 5:-1"))
         self.params['loopType']=Param(loopType, valType='str',
             allowedVals=['random','sequential','fullRandom','staircase','interleaved staircases'],
-            hint="How should the next condition value(s) be chosen?")#NB staircase is added for the sake of the loop properties dialog
-        #these two are really just for making the dialog easier (they won't be used to generate code)
-        self.params['endPoints']=Param(endPoints,valType='num',
-            hint='Where to loop from and to (see values currently shown in the flow view)')
+            label=_localized['loopType'],
+            hint=_translate("How should the next condition value(s) be chosen?"))#NB staircase is added for the sake of the loop properties dialog
         self.params['random seed']=Param(randomSeed, valType='code', updates=None, allowedUpdates=None,
-            hint="To have a fixed random sequence provide an integer of your choosing here. Leave blank to have a new random sequence on each run of the experiment.")
+            label=_localized['random seed'],
+            hint=_translate("To have a fixed random sequence provide an integer of your choosing here. Leave blank to have a new random sequence on each run of the experiment."))
+        self.params['isTrials']=Param(isTrials, valType='bool', updates=None, allowedUpdates=None,
+            hint=_translate("Indicates that this loop generates TRIALS, rather than BLOCKS of trials or stimuli within a trial. It alters how data files are output"),
+            label=_localized["Is trials"])
     def writeInitCode(self,buff):
         #no longer needed - initialise the trial handler just before it runs
         pass
@@ -629,7 +677,12 @@ class TrialHandler:
         #import conditions from file
         if self.params['conditionsFile'].val in ['None',None,'none','']:
             condsStr="[None]"
-        else: condsStr="data.importConditions(%s)" %self.params['conditionsFile']
+        elif self.params['Selected rows'].val in ['None',None,'none','']:
+            # just a conditions file with no sub-selection
+            condsStr="data.importConditions(%s)" %self.params['conditionsFile']
+        else:
+            # a subset of a conditions file
+            condsStr="data.importConditions(%(conditionsFile)s, selection=%(Selected rows)s)" %(self.params)
         #also a 'thisName' for use in "for thisTrial in trials:"
         self.thisName = self.exp.namespace.makeLoopIndex(self.params['name'].val)
         #write the code
@@ -661,41 +714,45 @@ class TrialHandler:
             buff.writeIndented(buff.oneIndent+"for paramName in %s.keys():\n" %self.thisName)
             buff.writeIndented(buff.oneIndent*2+"exec(paramName + '= %s.' + paramName)\n" %self.thisName)
     def writeLoopEndCode(self,buff):
-        buff.writeIndentedLines("thisExp.nextEntry()\n\n")
+        #Just within the loop advance data line if loop is whole trials
+        if self.params['isTrials'].val == True:
+            buff.writeIndentedLines("thisExp.nextEntry()\n\n")
+        #end of the loop. dedent
         buff.setIndentLevel(-1, relative=True)
         buff.writeIndented("# completed %s repeats of '%s'\n" \
             %(self.params['nReps'], self.params['name']))
         buff.writeIndented("\n")
-
         #save data
-        ##a string to show all the available variables (if the conditions isn't just None or [None])
-        saveExcel=self.exp.settings.params['Save excel file'].val
-        saveCSV = self.exp.settings.params['Save csv file'].val
-        #get parameter names
-        if saveExcel or saveCSV:
-            buff.writeIndented("# get names of stimulus parameters\n" %self.params)
-            buff.writeIndented("if %(name)s.trialList in ([], [None], None):  params = []\n" %self.params)
-            buff.writeIndented("else:  params = %(name)s.trialList[0].keys()\n" %self.params)
-        #write out each type of file
-        if saveExcel or saveCSV:
-            buff.writeIndented("# save data for this loop\n")
-        if saveExcel:
-            buff.writeIndented("%(name)s.saveAsExcel(filename + '.xlsx', sheetName='%(name)s',\n" %self.params)
-            buff.writeIndented("    stimOut=params,\n")
-            buff.writeIndented("    dataOut=['n','all_mean','all_std', 'all_raw'])\n")
-        if saveCSV:
-            buff.writeIndented("%(name)s.saveAsText(filename + '%(name)s.csv', delim=',',\n" %self.params)
-            buff.writeIndented("    stimOut=params,\n")
-            buff.writeIndented("    dataOut=['n','all_mean','all_std', 'all_raw'])\n")
+        if self.params['isTrials'].val == True:
+            ##a string to show all the available variables (if the conditions isn't just None or [None])
+            saveExcel=self.exp.settings.params['Save excel file'].val
+            saveCSV = self.exp.settings.params['Save csv file'].val
+            #get parameter names
+            if saveExcel or saveCSV:
+                buff.writeIndented("# get names of stimulus parameters\n" %self.params)
+                buff.writeIndented("if %(name)s.trialList in ([], [None], None):  params = []\n" %self.params)
+                buff.writeIndented("else:  params = %(name)s.trialList[0].keys()\n" %self.params)
+            #write out each type of file
+            if saveExcel or saveCSV:
+                buff.writeIndented("# save data for this loop\n")
+            if saveExcel:
+                buff.writeIndented("%(name)s.saveAsExcel(filename + '.xlsx', sheetName='%(name)s',\n" %self.params)
+                buff.writeIndented("    stimOut=params,\n")
+                buff.writeIndented("    dataOut=['n','all_mean','all_std', 'all_raw'])\n")
+            if saveCSV:
+                buff.writeIndented("%(name)s.saveAsText(filename + '%(name)s.csv', delim=',',\n" %self.params)
+                buff.writeIndented("    stimOut=params,\n")
+                buff.writeIndented("    dataOut=['n','all_mean','all_std', 'all_raw'])\n")
     def getType(self):
         return 'TrialHandler'
 
-class StairHandler:
+class StairHandler(object):
     """A staircase experimental control object.
     """
     def __init__(self, exp, name, nReps='50', startVal='', nReversals='',
             nUp=1, nDown=3, minVal=0,maxVal=1,
-            stepSizes='[4,4,2,2,1]', stepType='db', endPoints=[0,1]):
+            stepSizes='[4,4,2,2,1]', stepType='db', endPoints=[0,1],
+            isTrials = True):
         """
         @param name: name of the loop e.g. trials
         @type name: string
@@ -706,31 +763,35 @@ class StairHandler:
         self.exp=exp
         self.order=['name']#make name come first (others don't matter)
         self.params={}
-        self.params['name']=Param(name, valType='code', hint="Name of this loop")
+        self.params['name']=Param(name, valType='code', hint=_translate("Name of this loop"), label=_localized['Name'] )
         self.params['nReps']=Param(nReps, valType='code',
-            hint="(Minimum) number of trials in the staircase")
+            label=_localized['nReps'], hint=_translate("(Minimum) number of trials in the staircase"))
         self.params['start value']=Param(startVal, valType='code',
-            hint="The initial value of the parameter")
+            label=_localized['start value'], hint=_translate("The initial value of the parameter"))
         self.params['max value']=Param(maxVal, valType='code',
-            hint="The maximum value the parameter can take")
+            label=_localized['max value'], hint=_translate("The maximum value the parameter can take"))
         self.params['min value']=Param(minVal, valType='code',
-            hint="The minimum value the parameter can take")
+            label=_localized['min value'], hint=_translate("The minimum value the parameter can take"))
         self.params['step sizes']=Param(stepSizes, valType='code',
-            hint="The size of the jump at each step (can change on each 'reversal')")
+            label=_localized['step sizes'], hint=_translate("The size of the jump at each step (can change on each 'reversal')"))
         self.params['step type']=Param(stepType, valType='str', allowedVals=['lin','log','db'],
-            hint="The units of the step size (e.g. 'linear' will add/subtract that value each step, whereas 'log' will ad that many log units)")
+            label=_localized['step type'], hint=_translate("The units of the step size (e.g. 'linear' will add/subtract that value each step, whereas 'log' will ad that many log units)"))
         self.params['N up']=Param(nUp, valType='code',
-            hint="The number of 'incorrect' answers before the value goes up")
+            label=_localized['N up'], hint=_translate("The number of 'incorrect' answers before the value goes up"))
         self.params['N down']=Param(nDown, valType='code',
-            hint="The number of 'correct' answers before the value goes down")
+            label=_localized['N down'], hint=_translate("The number of 'correct' answers before the value goes down"))
         self.params['N reversals']=Param(nReversals, valType='code',
-            hint="Minimum number of times the staircase must change direction before ending")
+            label=_localized['N reversals'], hint=_translate("Minimum number of times the staircase must change direction before ending"))
         #these two are really just for making the dialog easier (they won't be used to generate code)
         self.params['loopType']=Param('staircase', valType='str',
             allowedVals=['random','sequential','fullRandom','staircase','interleaved staircases'],
-            hint="How should the next trial value(s) be chosen?")#NB this is added for the sake of the loop properties dialog
+            label=_localized['loopType'],
+            hint=_translate("How should the next trial value(s) be chosen?"))#NB this is added for the sake of the loop properties dialog
         self.params['endPoints']=Param(endPoints,valType='num',
-            hint='Where to loop from and to (see values currently shown in the flow view)')
+            label=_localized['endPoints'], hint=_translate('Where to loop from and to (see values currently shown in the flow view)'))
+        self.params['isTrials']=Param(isTrials, valType='bool', updates=None, allowedUpdates=None,
+            hint=_translate("Indicates that this loop generates TRIALS, rather than BLOCKS of trials or stimuli within a trial. It alters how data files are output"),
+            label=_localized["Is trials"])
     def writeInitCode(self,buff):
         #not needed - initialise the staircase only when needed
         pass
@@ -760,24 +821,29 @@ class StairHandler:
         buff.writeIndented("currentLoop = %s\n" %(self.params['name']))
         buff.writeIndented("level = %s\n" %(self.thisName))
     def writeLoopEndCode(self,buff):
-        buff.writeIndentedLines("thisExp.nextEntry()\n\n")
+        #Just within the loop advance data line if loop is whole trials
+        if self.params['isTrials'].val == True:
+            buff.writeIndentedLines("thisExp.nextEntry()\n\n")
+        #end of the loop. dedent
         buff.setIndentLevel(-1, relative=True)
         buff.writeIndented("# staircase completed\n")
         buff.writeIndented("\n")
         #save data
-        if self.exp.settings.params['Save excel file'].val:
-            buff.writeIndented("%(name)s.saveAsExcel(filename + '.xlsx', sheetName='%(name)s')\n" %self.params)
-        if self.exp.settings.params['Save csv file'].val:
-            buff.writeIndented("%(name)s.saveAsText(filename + '%(name)s.csv', delim=',')\n" %self.params)
+        if self.params['isTrials'].val == True:
+            if self.exp.settings.params['Save excel file'].val:
+                buff.writeIndented("%(name)s.saveAsExcel(filename + '.xlsx', sheetName='%(name)s')\n" %self.params)
+            if self.exp.settings.params['Save csv file'].val:
+                buff.writeIndented("%(name)s.saveAsText(filename + '%(name)s.csv', delim=',')\n" %self.params)
     def getType(self):
         return 'StairHandler'
 
-class MultiStairHandler:
+class MultiStairHandler(object):
     """To handle multiple interleaved staircases
     """
     def __init__(self, exp, name, nReps='50', stairType='simple',
         switchStairs='random',
-        conditions=[], conditionsFile='', endPoints=[0,1]):
+        conditions=[], conditionsFile='', endPoints=[0,1],
+        isTrials=True):
         """
         @param name: name of the loop e.g. trials
         @type name: string
@@ -788,24 +854,26 @@ class MultiStairHandler:
         self.exp=exp
         self.order=['name']#make name come first
         self.params={}
-        self.params['name']=Param(name, valType='code', hint="Name of this loop")
+        self.params['name']=Param(name, valType='code', label=_localized['Name'], hint=_translate("Name of this loop"))
         self.params['nReps']=Param(nReps, valType='code',
-            hint="(Minimum) number of trials in *each* staircase")
-        self.params['stairType']=Param(nReps, valType='str', allowedVals=['simple','QUEST'],
-            hint="How to select the next staircase to run")
-        self.params['switchMethod']=Param(nReps, valType='str', allowedVals=['random','sequential','fullRandom'],
-            hint="How to select the next staircase to run")
+            label=_localized['nReps'], hint=_translate("(Minimum) number of trials in *each* staircase"))
+        self.params['stairType']=Param(stairType, valType='str', allowedVals=['simple','QUEST','quest'],
+            label=_localized['stairType'], hint=_translate("How to select the next staircase to run"))
+        self.params['switchMethod']=Param(switchStairs, valType='str', allowedVals=['random','sequential','fullRandom'],
+            label=_localized['switchMethod'], hint=_translate("How to select the next staircase to run"))
         #these two are really just for making the dialog easier (they won't be used to generate code)
         self.params['loopType']=Param('staircase', valType='str',
-        allowedVals=['random','sequential','fullRandom','staircase','interleaved staircases'],
-            hint="How should the next trial value(s) be chosen?")#NB this is added for the sake of the loop properties dialog
+            allowedVals=['random','sequential','fullRandom','staircase','interleaved staircases'],
+            label=_localized['loopType'], hint=_translate("How should the next trial value(s) be chosen?"))#NB this is added for the sake of the loop properties dialog
         self.params['endPoints']=Param(endPoints,valType='num',
-            hint='Where to loop from and to (see values currently shown in the flow view)')
+            label=_localized['endPoints'], hint=_translate('Where to loop from and to (see values currently shown in the flow view)'))
         self.params['conditions']=Param(conditions, valType='str', updates=None, allowedUpdates=None,
-            hint="A list of dictionaries describing the differences between each staircase")
+            label=_localized['conditions'], hint=_translate("A list of dictionaries describing the differences between each staircase"))
         self.params['conditionsFile']=Param(conditionsFile, valType='str', updates=None, allowedUpdates=None,
-            hint="An xlsx or csv file specifying the parameters for each condition")
-    def writeInitCode(self,buff):
+            label=_localized['conditions'], hint=_translate("An xlsx or csv file specifying the parameters for each condition"))
+        self.params['isTrials']=Param(isTrials, valType='bool', updates=None, allowedUpdates=None,
+            hint=_translate("Indicates that this loop generates TRIALS, rather than BLOCKS of trials or stimuli within a trial. It alters how data files are output"),
+            label=_localized["Is trials"])
         pass #don't initialise at start of exp, create when needed
     def writeLoopStartCode(self,buff):
         #create a 'thisName' for use in "for thisTrial in trials:"
@@ -833,19 +901,26 @@ class MultiStairHandler:
             buff.writeIndented("for paramName in condition.keys():\n")
             buff.writeIndented(buff.oneIndent+"exec(paramName + '= condition[paramName]')\n")
     def writeLoopEndCode(self,buff):
-        buff.writeIndentedLines("thisExp.nextEntry()\n\n")
+        #Just within the loop advance data line if loop is whole trials
+        if self.params['isTrials'].val == True:
+            buff.writeIndentedLines("thisExp.nextEntry()\n\n")
+        #end of the loop. dedent
         buff.setIndentLevel(-1, relative=True)
         buff.writeIndented("# all staircases completed\n")
         buff.writeIndented("\n")
         #save data
-        if self.exp.settings.params['Save excel file'].val:
-            buff.writeIndented("%(name)s.saveAsExcel(filename + '.xlsx')\n" %self.params)
-        if self.exp.settings.params['Save csv file'].val:
-            buff.writeIndented("%(name)s.saveAsText(filename + '%(name)s.csv', delim=',')\n" %self.params)
+        if self.params['isTrials'].val == True:
+            if self.exp.settings.params['Save excel file'].val:
+                buff.writeIndented("%(name)s.saveAsExcel(filename + '.xlsx')\n" %self.params)
+            if self.exp.settings.params['Save csv file'].val:
+                buff.writeIndented("%(name)s.saveAsText(filename + '%(name)s.csv', delim=',')\n" %self.params)
     def getType(self):
         return 'MultiStairHandler'
+    def writeInitCode(self,buff):
+        #not needed - initialise the staircase only when needed
+        pass
 
-class LoopInitiator:
+class LoopInitiator(object):
     """A simple class for inserting into the flow.
     This is created automatically when the loop is created"""
     def __init__(self, loop):
@@ -861,7 +936,7 @@ class LoopInitiator:
         return 'LoopInitiator'
     def writeExperimentEndCode(self,buff):#not needed
         pass
-class LoopTerminator:
+class LoopTerminator(object):
     """A simple class for inserting into the flow.
     This is created automatically when the loop is created"""
     def __init__(self, loop):
@@ -918,7 +993,7 @@ class Flow(list):
             for comp in toBeRemoved:
                 self.remove(comp)
         elif component.getType()=='Routine':
-            if id==None:
+            if id is None:
                 #a Routine may come up multiple times - remove them all
                 #self.remove(component)#cant do this - two empty routines (with diff names) look the same to list comparison
                 toBeRemoved = []
@@ -1343,6 +1418,19 @@ class NameSpace():
         self.user = []
         self.nonUserBuilder = self.numpy + self.keywords + self.psychopy
 
+        # strings used as codes, separate function from display value:
+        self._localized = {
+            "one of your Components, Routines, or condition parameters":
+                _translate("one of your Components, Routines, or condition parameters"),
+            "Builder variable": _translate("Builder variable"),
+            "Psychopy module": _translate("Psychopy module"),
+            "numpy function": _translate("numpy function"),
+            "python keyword": _translate("python keyword"),
+            " Avoid `this`, `these`, `continue`, `Clock`, or `component` in name":
+                _translate(" Avoid `this`, `these`, `continue`, `Clock`, or `component` in name"),
+            None: ''  # not needed but possible output from isPossiblyDerivable()
+            }
+
     def __str__(self, numpy_count_only=True):
         vars = self.user + self.builder + self.psychopy
         if numpy_count_only:
@@ -1389,7 +1477,7 @@ class NameSpace():
                      name.endswith('Clock') or
                      name.lower().find('component') > -1)
         if derivable:
-            return " safer to avoid this, these, continue, Clock, or component in name"
+            return " Avoid `this`, `these`, `continue`, `Clock`, or `component` in name"
         return None
     def exists(self, name):
         """returns None, or a message indicating where the name is in use.
@@ -1404,7 +1492,7 @@ class NameSpace():
 
         # check getDerived:
 
-        # check in this order:
+        # check in this order: return a key from NameSpace._localized.keys(), not a localized value
         if name in self.user: return "one of your Components, Routines, or condition parameters"
         if name in self.builder: return "Builder variable"
         if name in self.psychopy: return "Psychopy module"

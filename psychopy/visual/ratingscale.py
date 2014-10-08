@@ -17,7 +17,7 @@ from psychopy.visual.shape import ShapeStim
 from psychopy.visual.text import TextStim
 from psychopy.visual.basevisual import MinimalStim
 from psychopy.visual.helpers import pointInPolygon, groupFlipVert
-from psychopy.tools.attributetools import attributeSetter, setWithOperation, logAttrib
+from psychopy.tools.attributetools import logAttrib
 from psychopy.constants import FINISHED, STARTED, NOT_STARTED
 
 
@@ -116,6 +116,7 @@ class RatingScale(MinimalStim):
                 lineColor='White',
                 skipKeys='tab',
                 mouseOnly=False,
+                noMouse=False,
                 size=1.0,
                 stretch=1.0,
                 pos=None,
@@ -123,7 +124,7 @@ class RatingScale(MinimalStim):
                 maxTime=0.0,
                 flipVert=False,
                 depth=0,
-                name='',
+                name=None,
                 autoLog=True,
                 **kwargs  # catch obsolete args
                 ):
@@ -222,6 +223,9 @@ class RatingScale(MinimalStim):
         mouseOnly :
             Require the subject to use the mouse (any keyboard input is ignored), default = ``False``.
             Can be used to avoid competing with other objects for keyboard input.
+        noMouse:
+            Require the subject to use keys to respond; disable and hide the mouse.
+            `markerStart` will default to the left end.
         minTime :
             Seconds that must elapse before a reponse can be accepted,
             default = `0.4`.
@@ -234,11 +238,6 @@ class RatingScale(MinimalStim):
             Can be useful when showing multiple scales.
         flipVert :
             Whether to mirror-reverse the rating scale in the vertical direction.
-        name : string
-            The name of the object to be using during logged messages about
-            this stim.
-        autolog :
-            Whether logging should be done automatically.
     """
         # what local vars are defined (these are the init params) for use by __repr__
         self._initParams = dir()
@@ -260,7 +259,6 @@ class RatingScale(MinimalStim):
 
         self.autoLog = False # needs to start off False
         self.win = win
-        self.name = name
         self.disappear = disappear
 
         # internally work in norm units, restore to orig units at the end of __init__:
@@ -274,9 +272,10 @@ class RatingScale(MinimalStim):
             singleClick = True
             textSize *= 1.5
             mouseOnly = True
+            noMouse = False
 
         # make things well-behaved if the requested value(s) would be trouble:
-        self._initFirst(showAccept, mouseOnly, singleClick, acceptKeys,
+        self._initFirst(showAccept, mouseOnly, noMouse, singleClick, acceptKeys,
                         marker, markerStart, low, high, precision, choices,
                         scale, tickMarks, labels, tickHeight)
         self._initMisc(minTime, maxTime)
@@ -323,7 +322,7 @@ class RatingScale(MinimalStim):
     def __repr__(self, complete=False):
         return self.__str__(complete=complete)  # from MinimalStim
 
-    def _initFirst(self, showAccept, mouseOnly, singleClick, acceptKeys,
+    def _initFirst(self, showAccept, mouseOnly, noMouse, singleClick, acceptKeys,
                    marker, markerStart, low, high, precision, choices,
                    scale, tickMarks, labels, tickHeight):
         """some sanity checking; various things are set, especially those that are
@@ -331,6 +330,7 @@ class RatingScale(MinimalStim):
         """
         self.showAccept = bool(showAccept)
         self.mouseOnly = bool(mouseOnly)
+        self.noMouse = bool(noMouse) and not self.mouseOnly  # mouseOnly wins
         self.singleClick = bool(singleClick)
         self.acceptKeys = acceptKeys
         self.precision = precision
@@ -386,6 +386,8 @@ class RatingScale(MinimalStim):
                 # label endpoints and middle tick
                 placeHolder = [''] * ((self.high-self.low-2)//2)
                 self.labelTexts = [labels[0]] + placeHolder + [labels[1]] + placeHolder + [labels[2]]
+            elif labels in [None, False]:
+                self.labelTexts = []
             else:
                 self.labelTexts = [unicode(self.low)] + [''] * (self.high-self.low - 1) + [unicode(self.high)]
 
@@ -414,6 +416,10 @@ class RatingScale(MinimalStim):
         else:  # float(markerStart) suceeded
             self.markerPlacedAt = self.markerStart
             self.markerPlaced = True
+        # default markerStart = 0 if needed but otherwise unspecified:
+        if self.noMouse and self.markerStart is None:
+            self.markerPlacedAt = self.markerStart = 0
+            self.markerPlaced = True
 
     def _initMisc(self, minTime, maxTime):
         # precision is the fractional parts of a tick mark to be sensitive to, in [1,10,100]:
@@ -439,7 +445,7 @@ class RatingScale(MinimalStim):
             self.maxTime = 0.0
         self.allowTimeOut = bool(self.minTime < self.maxTime)
 
-        self.myMouse = event.Mouse(win=self.win, visible=True)
+        self.myMouse = event.Mouse(win=self.win, visible=bool(not self.noMouse))
         # Mouse-click-able 'accept' button pulsates (cycles its brightness over frames):
         frames_per_cycle = 100
         self.pulseColor = [0.6 + 0.22 * float(numpy.cos(i/15.65)) for i in range(frames_per_cycle)]
@@ -527,6 +533,8 @@ class RatingScale(MinimalStim):
             for i, key in enumerate(self.respKeys):
                 self.tickFromKeyPress[key] = i + self.low
 
+        # if self.noMouse: could check that there are appropriate response keys
+
         self.allKeys = (self.rightKeys + self.leftKeys + self.acceptKeys +
                         self.skipKeys + self.respKeys)
 
@@ -600,6 +608,7 @@ class RatingScale(MinimalStim):
         self.lineRightEnd = self.offsetHoriz + 0.5 * self.hStretchTotal
 
         # space around the line within which to accept mouse input:
+        # not needed if self.noMouse, but not a problem either
         pad = 0.06 * self.size
         if marker == 'hover':
             padText = (1./(3*(self.high-self.low))) * (self.lineRightEnd - self.lineLeftEnd)
@@ -669,7 +678,7 @@ class RatingScale(MinimalStim):
             scaledTickSize = self.baseSize * self.size
             vert = [[-1 * scaledTickSize * 1.8, scaledTickSize * 3],
                     [ scaledTickSize * 1.8, scaledTickSize * 3], [0, -0.005]]
-            if markerColor == None or not isValidColor(markerColor):
+            if markerColor is None or not isValidColor(markerColor):
                 markerColor = 'DarkBlue'
             self.marker = ShapeStim(win=self.win, units='norm', vertices=vert,
                 lineWidth=0.1, lineColor=markerColor, fillColor=markerColor,
@@ -680,13 +689,13 @@ class RatingScale(MinimalStim):
                     [ scaledTickSize * 1.8, scaledTickSize],
                     [ scaledTickSize * 1.8, -1 * scaledTickSize],
                     [-1 * scaledTickSize * 1.8, -1 * scaledTickSize]]
-            if markerColor == None or not isValidColor(markerColor):
+            if markerColor is None or not isValidColor(markerColor):
                 markerColor = 'black'
             self.marker = ShapeStim(win=self.win, units='norm', vertices=vert,
                 lineWidth=0.1, lineColor=markerColor, fillColor=markerColor,
                 name=self.name+'.markerSlider', opacity=0.7, autoLog=False)
         elif self.markerStyle == 'glow':
-            if markerColor == None or not isValidColor(markerColor):
+            if markerColor is None or not isValidColor(markerColor):
                 markerColor = 'White'
             self.marker = PatchStim(win=self.win, units='norm',
                 tex='sin', mask='gauss', color=markerColor, opacity = 0.85,
@@ -700,7 +709,7 @@ class RatingScale(MinimalStim):
                     self.markerBaseSize *= .7
                 self.marker.setSize(self.markerBaseSize/2., log=False)
         elif self.markerStyle == 'custom':
-            if markerColor == None:
+            if markerColor is None:
                 if hasattr(marker, 'color'):
                     try:
                         if not marker.color: # 0 causes other problems, so ignore it here
@@ -716,7 +725,7 @@ class RatingScale(MinimalStim):
                 marker.name = 'customMarker'
             self.marker = marker
         else:  # 'circle':
-            if markerColor == None or not isValidColor(markerColor):
+            if markerColor is None or not isValidColor(markerColor):
                 markerColor = 'DarkRed'
             x,y = self.win.size
             windowRatio = float(y)/x
@@ -751,7 +760,7 @@ class RatingScale(MinimalStim):
             pos=[self.offsetHoriz, 0.22 * self.size + self.offsetVert],
             color=self.textColor, wrapWidth=2 * self.hStretchTotal,
             font=textFont, autoLog=False)
-        self.scaleDescription.setFont(textFont)
+        self.scaleDescription.font = textFont
         self.labels = []
         if self.labelTexts:
             if self.markerStyle == 'hover':
@@ -834,7 +843,7 @@ class RatingScale(MinimalStim):
         self.accept = TextStim(win=self.win, text=self.keyClick, font=self.textFont,
             pos=[self.offsetHoriz, (acceptBoxtop + acceptBoxbot) / 2.],
             italic=True, height=textSizeSmall, color=self.textColor, autoLog=False)
-        self.accept.setFont(textFont)
+        self.accept.font = textFont
 
         self.acceptTextColor = markerColor
         if markerColor in ['White']:
@@ -898,7 +907,7 @@ class RatingScale(MinimalStim):
         Sets response flags: `self.noResponse`, `self.timedOut`.
         `draw()` only draws the rating scale, not the item to be rated.
         """
-        self.win.units = 'norm'  # original units do get restored
+        self.win.setUnits(u'norm', log=False)  # get restored; no logging
         if self.firstDraw:
             self.firstDraw = False
             self.clock.reset()
@@ -957,8 +966,11 @@ class RatingScale(MinimalStim):
             self.win.units = self.savedWinUnits
             return  # makes the marker unresponsive
 
-        mouseX, mouseY = self.myMouse.getPos() # norm units
-        mouseNearLine = pointInPolygon(mouseX, mouseY, self.nearLine)
+        if self.noMouse:
+            mouseNearLine = False
+        else:
+            mouseX, mouseY = self.myMouse.getPos() # norm units
+            mouseNearLine = pointInPolygon(mouseX, mouseY, self.nearLine)
 
         # draw a dynamic marker:
         if self.markerPlaced or self.singleClick:
@@ -1047,7 +1059,7 @@ class RatingScale(MinimalStim):
                                  (self.name, unicode(self.getRating())) )
 
         # handle mouse left-click:
-        if self.myMouse.getPressed()[0]:
+        if not self.noMouse and self.myMouse.getPressed()[0]:
             #mouseX, mouseY = self.myMouse.getPos() # done above
             # if click near the line, place the marker there:
             if mouseNearLine:
@@ -1069,6 +1081,7 @@ class RatingScale(MinimalStim):
                             (self.name, unicode(self.getRating())) )
 
         if self.markerStyle == 'hover' and self.markerPlaced:
+            # 'hover' --> noMouse = False during init
             if mouseNearLine or self.markerPlacedAt != self.markerPlacedAtLast:
                 if hasattr(self, 'targetWord'):
                     self.targetWord.setColor(self.textColor, log=False)
@@ -1093,14 +1106,14 @@ class RatingScale(MinimalStim):
             if self.showAccept:
                 self.acceptBox.setFillColor(self.acceptFillColor, log=False)
                 self.acceptBox.setLineColor(self.acceptLineColor, log=False)
-
-        # build up response history:
-        tmpRating = self.getRating()
-        if self.history[-1][0] != tmpRating and self.markerPlacedBySubject:
-            self.history.append((tmpRating, self.getRT()))  # tuple
+        else:
+            # build up response history if no decision or skip yet:
+            tmpRating = self.getRating()
+            if self.history[-1][0] != tmpRating and self.markerPlacedBySubject:
+                self.history.append((tmpRating, self.getRT()))  # tuple
 
         # restore user's units:
-        self.win.units = self.savedWinUnits
+        self.win.setUnits(self.savedWinUnits, log=False)
 
     def reset(self, log=True):
         """Restores the rating-scale to its post-creation state.

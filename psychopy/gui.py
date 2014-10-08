@@ -3,13 +3,26 @@
 # Part of the PsychoPy library
 # Copyright (C) 2014 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
+
 from psychopy import logging
-#from wxPython import wx
 import wx
 import numpy
 import string, os
+from psychopy.app import localization
 
 OK = wx.ID_OK
+
+def ensureWxApp():
+    # make sure there's a wxApp prior to showing a gui, e.g., for expInfo dialog
+    try:
+        wx.Dialog(None, -1)  # not shown; FileDialog gives same exception
+        return True
+    except wx._core.PyNoAppError:
+        if wx.version() < '2.9':
+            return wx.PySimpleApp()
+        else:
+            return wx.App(False)
+
 
 class Dlg(wx.Dialog):
     """A simple dialogue box. You can add text or input boxes
@@ -35,18 +48,15 @@ class Dlg(wx.Dialog):
         else:
             print 'user cancelled'
     """
-    def __init__(self,title='PsychoPy dialogue',
+    def __init__(self,title=_translate('PsychoPy dialogue'),
             pos=None, size=wx.DefaultSize,
             style=wx.DEFAULT_DIALOG_STYLE|wx.DIALOG_NO_PARENT,
-            labelButtonOK = " OK ",
-            labelButtonCancel = " Cancel "):
+            labelButtonOK = _translate(" OK "),
+            labelButtonCancel = _translate(" Cancel ")):
         style=style|wx.RESIZE_BORDER
-        try:
-            wx.Dialog.__init__(self, None,-1,title,pos,size,style)
-        except:
-            global app
-            app = wx.PySimpleApp()
-            wx.Dialog.__init__(self, None,-1,title,pos,size,style)
+        global app  # avoid recreating for every gui
+        app = ensureWxApp()
+        wx.Dialog.__init__(self, None,-1,title,pos,size,style)
         self.inputFields = []
         self.inputFieldTypes= []
         self.inputFieldNames= []
@@ -58,7 +68,13 @@ class Dlg(wx.Dialog):
         self.labelButtonOK = labelButtonOK
         self.labelButtonCancel = labelButtonCancel
     def addText(self, text, color=''):
-        textLength = wx.Size(8*len(text)+16, 25)
+        # the horizontal extent can depend on the locale and font in use:
+        font = self.GetFont()
+        dc = wx.WindowDC(self)
+        dc.SetFont(font)
+        textWidth, textHeight = dc.GetTextExtent(text)
+        textLength = wx.Size(textWidth + 50, textHeight)
+
         myTxt = wx.StaticText(self,-1,
                                 label=text,
                                 style=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL,
@@ -84,7 +100,7 @@ class Dlg(wx.Dialog):
         labelLength = wx.Size(9*len(label)+16,25)#was 8*until v0.91.4
         inputLabel = wx.StaticText(self,-1,label,
                                         size=labelLength,
-                                        style=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT)
+                                        style=wx.ALIGN_RIGHT)
         if len(color): inputLabel.SetForegroundColour(color)
         container.Add(inputLabel, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT)
         #create input control
@@ -138,7 +154,7 @@ class Dlg(wx.Dialog):
         self.sizer.Add(buttons,1,flag=wx.ALIGN_RIGHT|wx.ALIGN_BOTTOM,border=5)
 
         self.SetSizerAndFit(self.sizer)
-        if self.pos == None:
+        if self.pos is None:
             self.Center()
         if self.ShowModal() == wx.ID_OK:
             self.data=[]
@@ -167,7 +183,6 @@ class Dlg(wx.Dialog):
         #self.myApp.Exit()
 
 
-
 class DlgFromDict(Dlg):
     """Creates a dialogue box that represents a dictionary of values.
     Any values changed by the user are change (in-place) by this
@@ -194,6 +209,7 @@ class DlgFromDict(Dlg):
     """
     def __init__(self, dictionary, title='',fixed=[], order=[], tip={}):
         Dlg.__init__(self, title)
+        #app = ensureWxApp() done by Dlg
         self.dictionary=dictionary
         keys = self.dictionary.keys()
         keys.sort()
@@ -212,23 +228,22 @@ class DlgFromDict(Dlg):
             else:
                 self.addField(field,self.dictionary[field], tip=tooltip)
         #show it and collect data
-        #tmp= wx.PySimpleApp()#this should have been done by Dlg ?
         self.show()
         if self.OK:
             for n,thisKey in enumerate(keys):
                 self.dictionary[thisKey]=self.data[n]
 
 def fileSaveDlg(initFilePath="", initFileName="",
-                prompt="Select file to save",
+                prompt=_translate("Select file to save"),
                 allowed=None):
-    """A simple dialogue allowing access to the file system.
+    """A simple dialogue allowing write access to the file system.
     (Useful in case you collect an hour of data and then try to
     save to a non-existent directory!!)
 
     :parameters:
         initFilePath: string
             default file path on which to open the dialog
-        initFilePath: string
+        initFileName: string
             default file name, as suggested file
         prompt: string (default "Select file to open")
             can be set to custom prompts
@@ -242,18 +257,14 @@ def fileSaveDlg(initFilePath="", initFileName="",
 
     If user cancels the None is returned.
     """
-    if allowed==None:
+    if allowed is None:
         allowed = "All files (*.*)|*.*"  #\
             #"txt (*.txt)|*.txt" \
             #"pickled files (*.pickle, *.pkl)|*.pickle" \
             #"shelved files (*.shelf)|*.shelf"
-    try:
-        dlg = wx.FileDialog(None,prompt,
-                          initFilePath, initFileName, allowed, wx.SAVE)
-    except:
-        tmpApp = wx.PySimpleApp()
-        dlg = wx.FileDialog(None,prompt,
-                          initFilePath, initFileName, allowed, wx.SAVE)
+    global app  # avoid recreating for every gui
+    app = ensureWxApp()
+    dlg = wx.FileDialog(None,prompt, initFilePath, initFileName, allowed, wx.SAVE)
     if dlg.ShowModal() == OK:
         #get names of images and their directory
         outName = dlg.GetFilename()
@@ -266,16 +277,14 @@ def fileSaveDlg(initFilePath="", initFileName="",
 
 def fileOpenDlg(tryFilePath="",
                 tryFileName="",
-                prompt="Select file to open",
+                prompt=_translate("Select file to open"),
                 allowed=None):
-    """A simple dialogue allowing access to the file system.
-    (Useful in case you collect an hour of data and then try to
-    save to a non-existent directory!!)
+    """A simple dialogue allowing read access to the file system.
 
     :parameters:
         tryFilePath: string
             default file path on which to open the dialog
-        tryFilePath: string
+        tryFileName: string
             default file name, as suggested file
         prompt: string (default "Select file to open")
             can be set to custom prompts
@@ -289,19 +298,16 @@ def fileOpenDlg(tryFilePath="",
 
     If user cancels, then None is returned.
     """
-    if allowed==None:
+    if allowed is None:
         allowed = "PsychoPy Data (*.psydat)|*.psydat|"\
             "txt (*.txt,*.dlm,*.csv)|*.txt;*.dlm;*.csv|" \
             "pickled files (*.pickle, *.pkl)|*.pickle|" \
             "shelved files (*.shelf)|*.shelf|" \
             "All files (*.*)|*.*"
-    try:
-        dlg = wx.FileDialog(None, prompt,
-                          tryFilePath, tryFileName, allowed, wx.OPEN|wx.FILE_MUST_EXIST|wx.MULTIPLE)
-    except:
-        tmpApp = wx.PySimpleApp()
-        dlg = wx.FileDialog(None, prompt,
-                          tryFilePath, tryFileName, allowed, wx.OPEN|wx.FILE_MUST_EXIST|wx.MULTIPLE)
+    global app  # avoid recreating for every gui
+    app = ensureWxApp()
+    dlg = wx.FileDialog(None, prompt, tryFilePath, tryFileName, allowed,
+                        wx.OPEN|wx.FILE_MUST_EXIST|wx.MULTIPLE)
     if dlg.ShowModal() == OK:
         #get names of images and their directory
         fullPaths = dlg.GetPaths()

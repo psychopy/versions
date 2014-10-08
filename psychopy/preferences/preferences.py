@@ -31,22 +31,8 @@ class Preferences:
 
         self.getPaths()
         self.loadAll()
-        # set locale using pref if present, default if not present ''
-        if str(self.app['locale']):
-            locPref = str(self.app['locale'])
-            try:
-                lc = locale.setlocale(locale.LC_ALL, locPref)
-                logging.info('locale set to preference: ' + lc)
-            except locale.Error, e:
-                logging.warning('locale pref: '+ str(e) + " '" +
-                                locPref + "'; using system default")
-                locale.setlocale(locale.LC_ALL, '')
-        else: # handles unset == ''  --> use system default explicitly
-            locale.setlocale(locale.LC_ALL, '')
-            if locale.getlocale()==(None,None):
-                logging.info('no locale set')
-            else:
-                logging.info('locale set to system default: ' + '.'.join(locale.getlocale()))
+        # setting locale is now handled in psychopy.localization.init
+        # as called upon import by the app
 
         if self.userPrefsCfg['app']['resetPrefs']:
             self.resetPrefs()
@@ -177,7 +163,7 @@ class Preferences:
         if resultOfValidate == True:
             return
         vtor = validate.Validator()
-        for (section_list, key, _) in configobj.flatten_errors(cfg, resultOfValidate):
+        for (section_list, key, _junk) in configobj.flatten_errors(cfg, resultOfValidate):
             if key is not None:
                 cfg[', '.join(section_list)][key] = vtor.get_default_value(cfg.configspec[', '.join(section_list)][key])
             else:

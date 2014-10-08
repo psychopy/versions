@@ -18,7 +18,8 @@ import sys,os,inspect
 import psychopy
 from collections import Iterable
 
-from exception_tools import ioHubConnectionException, ioHubServerError, printExceptionDetailsToStdErr, print2err, createErrorResult, ioHubError
+from exception_tools import ioHubError
+from exception_tools import printExceptionDetailsToStdErr, print2err
 from psychopy.clock import MonotonicClock, monotonicClock
 
 # Path Update / Location functions
@@ -149,7 +150,7 @@ rad    = scipy.deg2rad
 ###############################################################################
 #
 ## A RingBuffer ( circular buffer) implemented using a numpy array as the backend. You can use
-## the sumary stats methods etc. that are built into the numpty array class
+## the summary stats methods etc. that are built into the numpy array class
 ## with this class as well. i.e ::
 ##      a = NumPyRingBuffer(max_size=100)
 ##      for i in xrange(0,150):
@@ -393,3 +394,38 @@ try:
 except:
     # just use the version provided if verlib is not installed.
     validate_version=lambda version: version
+
+
+def to_numeric(lit):
+    'Return value of numeric literal string or ValueError exception'
+    # Handle '0'
+    if lit == '0': return 0
+    # Hex/Binary
+    litneg = lit[1:] if lit[0] == '-' else lit
+    if litneg[0] == '0':
+        if litneg[1] in 'xX':
+            return int(lit,16)
+        elif litneg[1] in 'bB':
+            return int(lit,2)
+        else:
+            try:
+                return int(lit,8)
+            except ValueError:
+                pass
+
+    # Int/Float/Complex
+    try:
+        return int(lit)
+    except ValueError:
+        pass
+    try:
+        return float(lit)
+    except ValueError:
+        pass
+    try:
+        return complex(lit)
+    except ValueError:
+        pass
+
+    # return original str
+    return lit

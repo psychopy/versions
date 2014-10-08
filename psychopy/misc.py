@@ -6,10 +6,13 @@
 
 '''Wrapper for all miscellaneous functions and classes from psychopy.tools'''
 
+# pylint: disable=W0611
+# W0611 = Unused import %s
+
 from psychopy.tools.arraytools import (createXYs, extendArr, makeRadialMatrix,
                                        ratioRange, shuffleArray, val2array)
 
-from psychopy.tools.attributetools import attributeSetter, setWithOperation
+from psychopy.tools.attributetools import attributeSetter, setAttribute, logAttrib
 
 from psychopy.tools.colorspacetools import (dkl2rgb, dklCart2rgb,
                                             hsv2rgb, lms2rgb,
@@ -31,4 +34,4 @@ from psychopy.tools.plottools import plotFrameIntervals
 
 from psychopy.tools.typetools import float_uint8, float_uint16, uint8_float
 
-from psychopy.tools.unittools import radians
+from numpy import radians, degrees

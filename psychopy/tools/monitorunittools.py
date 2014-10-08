@@ -48,6 +48,11 @@ def _height2pix(vertices, pos, win):
     return (pos+vertices) * win.size[1]
 _unit2PixMappings['height'] = _height2pix
 
+def posToPix(stim):
+    """Returns the stim's position in pixels, based on its pos, units, and win.
+    """
+    return convertToPix([0,0], stim.pos, stim.win.units, stim.win)
+
 def convertToPix(vertices, pos, units, win):
     """Takes vertices and position, combines and converts to pixels from any unit
 
@@ -55,7 +60,7 @@ def convertToPix(vertices, pos, units, win):
     the conversion from deg to apply flat-screen correction to each separately.
 
     The reason that these use function args rather than relying on self.pos
-    is that some stimuli (e.g. ElementArrayStim use other terms like fieldPos)
+    is that some stimuli use other terms (e.g. ElementArrayStim uses fieldPos).
     """
     unit2pix_func = _unit2PixMappings.get(units)
     if unit2pix_func:
@@ -95,7 +100,7 @@ def cm2deg(cm, monitor, correctFlat=False):
     #get monitor dimensions
     dist = monitor.getDistance()
     #check they all exist
-    if dist==None:
+    if dist is None:
         raise ValueError("Monitor %s has no known distance (SEE MONITOR CENTER)" %monitor.name)
     if correctFlat:
         return np.arctan(np.radians(cm/dist))
@@ -120,7 +125,7 @@ def deg2cm(degrees, monitor, correctFlat=False):
     #get monitor dimensions
     dist = monitor.getDistance()
     #check they all exist
-    if dist==None:
+    if dist is None:
         raise ValueError("Monitor %s has no known distance (SEE MONITOR CENTER)" %monitor.name)
     if correctFlat:
         rads = radians(degrees)
@@ -153,9 +158,9 @@ def cm2pix(cm, monitor):
     #get monitor params and raise error if necess
     scrWidthCm = monitor.getWidth()
     scrSizePix = monitor.getSizePix()
-    if scrSizePix==None:
+    if scrSizePix is None:
         raise ValueError("Monitor %s has no known size in pixels (SEE MONITOR CENTER)" %monitor.name)
-    if scrWidthCm==None:
+    if scrWidthCm is None:
         raise ValueError("Monitor %s has no known width in cm (SEE MONITOR CENTER)" %monitor.name)
 
     return cm*scrSizePix[0]/float(scrWidthCm)
@@ -168,9 +173,9 @@ def pix2cm(pixels, monitor):
     #get monitor params and raise error if necess
     scrWidthCm = monitor.getWidth()
     scrSizePix = monitor.getSizePix()
-    if scrSizePix==None:
+    if scrSizePix is None:
         raise ValueError("Monitor %s has no known size in pixels (SEE MONITOR CENTER)" %monitor.name)
-    if scrWidthCm==None:
+    if scrWidthCm is None:
         raise ValueError("Monitor %s has no known width in cm (SEE MONITOR CENTER)" %monitor.name)
     return pixels*float(scrWidthCm)/scrSizePix[0]
 
@@ -179,9 +184,9 @@ def deg2pix(degrees, monitor, correctFlat=False):
     #get monitor params and raise error if necess
     scrWidthCm = monitor.getWidth()
     scrSizePix = monitor.getSizePix()
-    if scrSizePix==None:
+    if scrSizePix is None:
         raise ValueError("Monitor %s has no known size in pixels (SEE MONITOR CENTER)" %monitor.name)
-    if scrWidthCm==None:
+    if scrWidthCm is None:
         raise ValueError("Monitor %s has no known width in cm (SEE MONITOR CENTER)" %monitor.name)
 
     cmSize = deg2cm(degrees, monitor, correctFlat)
@@ -192,9 +197,9 @@ def pix2deg(pixels, monitor, correctFlat=False):
     #get monitor params and raise error if necess
     scrWidthCm = monitor.getWidth()
     scrSizePix = monitor.getSizePix()
-    if scrSizePix==None:
+    if scrSizePix is None:
         raise ValueError("Monitor %s has no known size in pixels (SEE MONITOR CENTER)" %monitor.name)
-    if scrWidthCm==None:
+    if scrWidthCm is None:
         raise ValueError("Monitor %s has no known width in cm (SEE MONITOR CENTER)" %monitor.name)
     cmSize=pixels*float(scrWidthCm)/scrSizePix[0]
     return cm2deg(cmSize, monitor, correctFlat)

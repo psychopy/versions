@@ -47,18 +47,6 @@ if isinstance(monitorFolder, str):
 if not os.path.isdir(monitorFolder):
     os.makedirs(monitorFolder)
 
-    #try to import monitors from old location (PsychoPy <0.93 used site-packages/monitors instead)
-    #this only gets done if there was no existing .psychopy folder (and so no calib files)
-    import glob, shutil #these are just to copy old calib files across
-    try:
-        calibFiles = glob.glob('C:\Python24\Lib\site-packages\monitors\*.calib')
-        for thisFile in calibFiles:
-            thisPath, fileName = os.path.split(thisFile)
-            shutil.copyfile(thisFile, join(monitorFolder,fileName))
-    except:
-        pass #never mind - the user will have to do it!
-
-
 pr650code={'OK':'000\r\n',#this is returned after measure
     '18':'Light Low',#these is returned at beginning of data
     '10':'Light Low',
@@ -72,7 +60,7 @@ def findPR650(ports=None):
     logging.error("DEPRECATED (as of v.1.60.01). Use psychopy.hardware.findPhotometer() instead, which "\
     +"finds a wider range of devices")
 
-    if ports==None:
+    if ports is None:
         if sys.platform=='darwin':
             ports=[]
             #try some known entries in /dev/tty. used by keyspan
@@ -175,11 +163,11 @@ class Monitor:
         self._loadAll()
         if len(self.calibNames)>0:
             self.setCurrent(-1) #will fetch previous vals if monitor exists
+            if self.autoLog:
+                logging.info('Loaded monitor calibration from %s' %self.calibNames)
         else:
             self.newCalib()
-
-        if self.autoLog:
-            logging.info(self.calibNames)
+            logging.warning("Monitor specification not found. Creating a temporary one...")
 
         #overide current monitor settings with the vals given
         if width: self.setWidth(width)
@@ -193,7 +181,7 @@ class Monitor:
         """
         thisGamma = self.getGamma()
         #run the test just on this
-        if thisGamma == None \
+        if thisGamma is None \
             or numpy.alltrue(numpy.array(thisGamma)==numpy.array([1,1,1])):
             return True
         else:
@@ -211,7 +199,7 @@ class Monitor:
     def setCalibDate(self, date=None):
         """Sets the calibration to a given date/time or to the current
         date/time if none given. (Also returns the date as set)"""
-        if date==None:
+        if date is None:
             date=time.localtime()
         self.currentCalib['calibDate'] = date
         return date
@@ -229,7 +217,7 @@ class Monitor:
         0 uses y=a+(bx)^gamma
         1 uses y=(a+bx)^gamma
         2 uses linear interpolation over the curve"""
-        self.currentCalib['lineariseMethod']=method
+        self.currentCalib['linearizeMethod']=method
     def setMeanLum(self, meanLum):
         """Records the mean luminance (for reference only)"""
         self.currentCalib['meanLum']=meanLum
@@ -302,10 +290,10 @@ class Monitor:
             return grid
         else:
             return None
-    def getLineariseMethod(self):
+    def getLinearizeMethod(self):
         """Gets the min,max,gamma values for the each gun"""
-        if 'lineariseMethod' in self.currentCalib:
-            return self.currentCalib['lineariseMethod']
+        if 'linearizeMethod' in self.currentCalib:
+            return self.currentCalib['linearizeMethod']
         else:
             return None
     def getMeanLum(self):
@@ -354,7 +342,7 @@ class Monitor:
         if not 'dkl_rgb' in self.currentCalib: RECOMPUTE=True
         if RECOMPUTE:
             nm, power = self.getSpectra()
-            if nm==None:
+            if nm is None:
                 return None
             else:
                 return makeDKL2RGB(nm, power)
@@ -370,7 +358,7 @@ class Monitor:
         if not 'lms_rgb' in self.currentCalib: RECOMPUTE=True
         if RECOMPUTE:
             nm, power = self.getSpectra()
-            if nm==None:
+            if nm is None:
                 return None
             else:
                 return makeLMS2RGB(nm, power)
@@ -396,7 +384,6 @@ class Monitor:
             self.name+".calib")     #the name of the actual file
 
         if not os.path.exists(thisFileName):
-            logging.warning("Creating new monitor...")
             self.calibNames = []
         else:
             thisFile = open(thisFileName,'r')
@@ -414,7 +401,7 @@ class Monitor:
         verbose=True):
         """create a new (empty) calibration for this monitor and
         makes this the current calibration"""
-        if calibName==None:
+        if calibName is None:
             calibName= strFromDate(time.localtime())
         #add to the list of calibrations
         self.calibNames.append(calibName)
@@ -463,9 +450,6 @@ class Monitor:
             return False
 
         self.currentCalib = self.calibs[self.currentCalibName]      #do the import
-        if self.autoLog:
-            logging.info("Loaded calibration from:%s" %self.currentCalibName)
-
         return self.currentCalibName
 
     def delCalib(self,calibName):
@@ -489,7 +473,7 @@ class Monitor:
         """
         Stores the settings for the current calibration settings as new monitor.
         """
-        if calibName==None:
+        if calibName is None:
             calibName= strFromDate(time.localtime())
         #add to the list of calibrations
         self.calibNames.append(calibName)
@@ -499,7 +483,7 @@ class Monitor:
     def lineariseLums(self, desiredLums, newInterpolators=False, overrideGamma=None):
         """lums should be uncalibrated luminance values (e.g. a linear ramp)
         ranging 0:1"""
-        linMethod = self.getLineariseMethod()
+        linMethod = self.getLinearizeMethod()
         desiredLums = numpy.asarray(desiredLums)
         output = desiredLums*0.0 #needs same size as input
 
@@ -762,7 +746,7 @@ def getLumSeries(lumLevels=8,
     """
     import psychopy.event, psychopy.visual
     from psychopy import core
-    if photometer==None:
+    if photometer is None:
         havePhotom = False
     elif not hasattr(photometer, 'getLum'):
         logging.error("photometer argument to monitors.getLumSeries should be a type of photometer "+\
@@ -955,13 +939,11 @@ def DACrange(n):
 def getAllMonitors():
     """Find the names of all monitors for which calibration files exist
     """
-    currDir = os.getcwd()
-    os.chdir(monitorFolder)
-    monitorList=glob.glob('*.calib')
-    for monitorN,thisName in enumerate(monitorList):
-        monitorList[monitorN] = monitorList[monitorN][:-6]
-
-    os.chdir(currDir)
+    monitorList = glob.glob(os.path.join(monitorFolder, '*.calib'))
+    split = os.path.split
+    splitext = os.path.splitext
+    #skip the folder and the extension for each file
+    monitorList = [splitext(split(thisFile)[-1])[0] for thisFile in monitorList]
     return monitorList
 
 def gammaFun(xx, minLum, maxLum, gamma, eq=1, a=None, b=None, k=None):
@@ -1005,19 +987,19 @@ def gammaFun(xx, minLum, maxLum, gamma, eq=1, a=None, b=None, k=None):
     elif eq==3:#NB method 3 was an interpolation method that didn't work well
         pass
     elif eq==4:
-        nMissing = sum([a==None, b==None, k==None])
+        nMissing = sum([a is None, b is None, k is None])
         #check params
         if nMissing>1:
             raise AttributeError, "For eq=4, gammaFun needs 2 of a,b,k to be specified"
         elif nMissing==1:
-            if a==None:
+            if a is None:
                 a = minLum-b**(1.0/gamma)       #when y=min, x=0
-            elif b==None:
+            elif b is None:
                 if a>=minLum:
                     b=0.1**(1.0/gamma)#can't take inv power of -ve
                 else:
                     b = (minLum-a)**(1.0/gamma)     #when y=min, x=0
-            elif k==None:
+            elif k is None:
                 k = (maxLum - a)**(1.0/gamma) - b #when y=max, x=1
         #this is the same as Pelli and Zhang (but different inverse function)
         yy = a+(b+k*xx)**gamma #Pelli and Zhang (1991)

@@ -1,0 +1,59 @@
+# TODO GP3 Implementation
+# The current settings and params may make not sense for the GP3 implementation
+eyetracker.hw.gazepoint.gp3.EyeTracker:
+    # Indicates if the device should actually be loaded at experiment runtime.
+    enable: True
+
+    # The variable name of the device that will be used to access the ioHub Device class
+    # during experiment run-time, via the devices.[name] attribute of the ioHub
+    # connection or experiment runtime class.
+    name: tracker
+
+    # Should eye tracker events be saved to the ioHub DataStore file when the device
+    # is recording data ?
+    save_events: True
+
+    # Should eye tracker events be sent to the Experiment process when the device
+    # is recording data ?
+    stream_events: True
+
+    # How many eye events (including samples) should be saved in the ioHub event buffer before
+    # old eye events start being replaced by new events. When the event buffer reaches
+    # the maximum event length of the buffer defined here, older events will start to be dropped.
+    event_buffer_length: 1024
+
+    # The GP3 implementation of the common eye tracker interface supports the
+    # BinocularEyeSampleEvent event type.
+    monitor_event_types: [ BinocularEyeSampleEvent,]
+
+    device_timer:
+        interval: 0.005
+
+    # The model name of the device.
+    model_name: GP3
+
+    # The serial number of the GP3 device.
+    serial_number:
+
+    # manufacturer_name is used to store the name of the maker of the eye tracking
+    # device. This is for informational purposes only.
+    manufacturer_name: GazePoint
+    
+    # Do not change this value.
+    auto_report_events: False
+    
+    # The below parameters are not used by the GP3 common eye tracker
+    # interface implementation. They can be ignored an left out of your
+    # device configuration, or you can complete any ones that are relevent for FYI
+    # purposes only at this time.
+    device_number: 0
+    
+    model_number: N/A
+    
+    manufacture_date: DD-MM-YYYY
+    
+    software_version: N/A
+    
+    hardware_version: N/A
+    
+    firmware_version: N/A

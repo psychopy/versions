@@ -8,7 +8,15 @@ from os import path
 
 thisFolder = path.abspath(path.dirname(__file__))#the absolute path to the folder containing this path
 iconFile = path.join(thisFolder,'dots.png')
-tooltip = 'Random Dot Kinematogram'
+tooltip = _translate('Dots: Random Dot Kinematogram')
+# only use _localized values for label values, nothing functional:
+_localized = {'nDots': _translate('Number of dots'), 'dir': _translate('Direction'),
+              'speed': _translate('Speed'), 'coherence': _translate('Coherence'),
+              'dotSize': _translate('Dot size'), 'dotLife': _translate('Dot life-time'),
+              'signalDots': _translate('Signal dots'), 'noiseDots': _translate('Noise dots'),
+              'fieldShape': _translate('Field shape'), 'fieldSize': _translate('Field size'),
+              'fieldPos': _translate('Field position')
+              }
 
 class DotsComponent(VisualComponent):
     """An event class for presenting Random Dot stimuli"""
@@ -25,58 +33,56 @@ class DotsComponent(VisualComponent):
                 stopType='duration (s)', stopVal=1.0,
                 startEstim='', durationEstim=''):
         #initialise main parameters from base stimulus
-        VisualComponent.__init__(self,exp,parentName,name=name, units=units,
+        super(DotsComponent, self).__init__(exp,parentName,name=name, units=units,
                     color=color, colorSpace=colorSpace,
                     startType=startType, startVal=startVal,
                     stopType=stopType, stopVal=stopVal,
                     startEstim=startEstim, durationEstim=durationEstim)
         self.type='Dots'
         self.url="http://www.psychopy.org/builder/components/dots.html"
-        self.exp.requirePsychopyLibs(['visual'])
+
         #params
-        self.params['name']=Param(name, valType='code', allowedTypes=[],
-            label="Name")
         self.params['nDots']=Param(nDots, valType='code',
             updates='constant',
-            hint="Number of dots in the field (for circular fields this will be average number of dots)",
-            label="Number of dots")
+            hint=_translate("Number of dots in the field (for circular fields this will be average number of dots)"),
+            label=_localized['nDots'], categ='Dots')
         self.params['dir']=Param(direction, valType='code',
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="Direction of motion for the signal dots (degrees)",
-            label="Direction")
+            hint=_translate("Direction of motion for the signal dots (degrees)"),
+            label=_localized['dir'], categ='Dots')
         self.params['speed']=Param(speed, valType='code',
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="Speed of the dots (displacement per frame in the specified units)",
-            label="Speed")
+            hint=_translate("Speed of the dots (displacement per frame in the specified units)"),
+            label=_localized['speed'], categ='Dots')
         self.params['coherence']=Param(coherence, valType='code',
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="Coherence of the dots (fraction moving in the signal direction on any one frame)",
-            label="Coherence")
+            hint=_translate("Coherence of the dots (fraction moving in the signal direction on any one frame)"),
+            label=_localized['coherence'], categ='Dots')
         self.params['dotSize']=Param(dotSize, valType='code',
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="Size of the dots IN PIXELS regardless of the set units",
-            label="Dot Size")
+            hint=_translate("Size of the dots IN PIXELS regardless of the set units"),
+            label=_localized['dotSize'], categ='Dots')
         self.params['dotLife']=Param(dotLife, valType='code',
-            hint="Number of frames before each dot is killed and randomly assigned a new position",
-            label="Dot lifetime")
+            hint=_translate("Number of frames before each dot is killed and randomly assigned a new position"),
+            label=_localized['dotLife'], categ='Dots')
         self.params['signalDots']=Param(signalDots, valType='str', allowedVals=['same','different'],
-            hint="On each frame are the signals dots remaining the same or changing? See Scase et al.",
-            label="Signal dots", categ='Advanced')
+            hint=_translate("On each frame are the signals dots remaining the same or changing? See Scase et al."),
+            label=_localized['signalDots'], categ='Dots')
         self.params['noiseDots']=Param(noiseDots, valType='str', allowedVals=['direction','position','walk'],
-            hint="What governs the behaviour of the noise dots? See Scase et al.",
-            label="Noise dots", categ='Advanced')
+            hint=_translate("What governs the behaviour of the noise dots? See Scase et al."),
+            label=_localized['noiseDots'], categ='Dots')
         self.params['fieldShape']=Param(fieldShape, valType='str', allowedVals=['circle','square'],
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="What is the shape of the field?",
-            label="Field shape")
+            hint=_translate("What is the shape of the field?"),
+            label=_localized['fieldShape'])
         self.params['fieldSize']=Param(fieldSize, valType='code',
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="What is the size of the field (in the specified units)?",
-            label="Field size")
+            hint=_translate("What is the size of the field (in the specified units)?"),
+            label=_localized['fieldSize'])
         self.params['fieldPos']=Param(fieldPos, valType='code',
             updates='constant', allowedUpdates=['constant','set every repeat','set every frame'],
-            hint="Where is the field centred (in the specified units)?",
-            label="Field position")
+            hint=_translate("Where is the field centred (in the specified units)?"),
+            label=_localized['fieldPos'])
         del self.params['size']#should be fieldSize
         del self.params['pos']#should be fieldPos
         del self.params['ori']#should be dir for dots

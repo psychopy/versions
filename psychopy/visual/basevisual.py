@@ -28,7 +28,7 @@ from psychopy import logging
 # tools must only be imported *after* event or MovieStim breaks on win32
 # (JWP has no idea why!)
 from psychopy.tools.arraytools import val2array
-from psychopy.tools.attributetools import attributeSetter, setWithOperation, logAttrib
+from psychopy.tools.attributetools import attributeSetter, logAttrib, setAttribute
 from psychopy.tools.colorspacetools import dkl2rgb, lms2rgb
 from psychopy.tools.monitorunittools import cm2pix, deg2pix, pix2cm, pix2deg, convertToPix
 from psychopy.visual.helpers import pointInPolygon, polygonsOverlap, setColor
@@ -44,20 +44,22 @@ from psychopy.constants import NOT_STARTED, STARTED, STOPPED
 reportNImageResizes = 5 #permitted number of resizes
 
 """
-There are several base and mix-in visual classes for mulitple inheritance:
+There are several base and mix-in visual classes for multiple inheritance:
   - MinimalStim:       non-visual house-keeping code common to all visual stim
         RatingScale inherits only from MinimalStim.
+  - WindowMixin:       attributes/methods about the stim relative to a visual.Window.
   - LegacyVisualMixin: deprecated visual methods (eg, setRGB)
         added to BaseVisualStim
   - ColorMixin:        for Stim that need color methods (most, not Movie)
         color-related methods and attribs
   - ContainerMixin:    for stim that need polygon .contains() methods (most, not Text)
         .contains(), .overlaps()
-  - TextureMixin:      for texture methods namely createTexture (Grating, not Text)
+  - TextureMixin:      for texture methods namely _createTexture (Grating, not Text)
         seems to work; caveat: There were issues in earlier (non-MI) versions
-        of useing createTexture so it was pulled out of classes. Now its inside
+        of using _createTexture so it was pulled out of classes. Now it's inside
         classes again. Should be watched.
-  - BaseVisualStim:    = Minimal + Legacy
+  - BaseVisualStim:    = Minimal + Window + Legacy. Furthermore adds common attributes
+        like orientation, opacity, contrast etc.
 
 Typically subclass BaseVisualStim to create new visual stim classes, and add
 mixin(s) as needed to add functionality.
@@ -68,8 +70,8 @@ class MinimalStim(object):
 
     Includes: name, autoDraw, autoLog, status, __str__
     """
-    def __init__(self, name='', autoLog=True):
-        self.name = name
+    def __init__(self, name=None, autoLog=None):
+        self.__dict__['name'] = name if name not in (None, '') else 'unnamed %s' %self.__class__.__name__
         self.status = NOT_STARTED
         self.autoLog = autoLog
         super(MinimalStim, self).__init__()
@@ -107,35 +109,20 @@ class MinimalStim(object):
     # appears in docs and that name setting and updating is logged.
     @attributeSetter
     def name(self, value):
-        """The name of the object to be using during logged messages about
+        """String or None. The name of the object to be using during logged messages about
         this stim. If you have multiple stimuli in your experiment this really
         helps to make sense of log files!
 
-        type: String
-
-        Example::
-
-            upper = visual.TextStim(win, text='Monty', name='upperStim')
-            lower = visual.TextStim(win, text='Python', name='lowerStim')
-            upper.setAutoDraw(True)
-            for frameN in range(3):
-                win.flip()
-            # turn off top and turn on bottom
-            upper.setAutoDraw(False)
-            lower.setAutoDraw(True)
-            for frameN in range(3):
-                win.flip()
-            # log file will include names to identify which stim came on/off
+        If name = None your stimulus will be called "unnamed <type>", e.g.
+        visual.TextStim(win) will be called "unnamed TextStim" in the logs.
         """
         self.__dict__['name'] = value
 
     @attributeSetter
     def autoDraw(self, value):
-        """Determines whether the stimulus should be automatically drawn on
+        """Determines whether the stimulus should be automatically drawn on every frame flip.
 
-        Value should be: `True` or `False`
-
-        You do NOT need to set this on every frame flip!
+        Value should be: `True` or `False`. You do NOT need to set this on every frame flip!
         """
         self.__dict__['autoDraw'] = value
         toDraw = self.win._toDraw
@@ -160,27 +147,25 @@ class MinimalStim(object):
             toDraw.remove(self)  #remove from draw list
             self.status = STOPPED
 
-    def setAutoDraw(self, value, log=True):
-        """Usually you can use 'stim.attribute = value' syntax instead,
+    def setAutoDraw(self, value, log=None):
+        """Sets autoDraw. Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message"""
-        self.autoDraw = value
+        setAttribute(self, 'autoDraw', value, log)
 
     @attributeSetter
     def autoLog(self, value):
         """Whether every change in this stimulus should be logged automatically
 
-        Value should be: `True` or `False`
-
-        Set this to `False` if your stimulus is updating frequently (e.g.
-        updating its position every frame) or you will swamp the log file with
+        Value should be: `True` or `False`. Set to `False` if your stimulus is updating frequently (e.g.
+        updating its position every frame) and you want to avoid swamping the log file with
         messages that aren't likely to be useful.
         """
         self.__dict__['autoLog'] = value
 
-    def setAutoLog(self, value=True):
+    def setAutoLog(self, value=True, log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message"""
-        self.__dict__['autoLog'] = value
+        setAttribute(self, 'autoLog', value, log)
 
 class LegacyVisualMixin(object):
     """Class to hold deprecated visual methods and attributes.
@@ -192,20 +177,30 @@ class LegacyVisualMixin(object):
     #    super(LegacyVisualMixin, self).__init__()
 
     def _calcSizeRendered(self):
-        """DEPRECATED in 1.80.00. This funtionality is now handled by _updateVertices() and verticesPix"""
-        #raise DeprecationWarning, "_calcSizeRendered() was deprecated in 1.80.00. This funtionality is nowhanded by _updateVertices() and verticesPix"
+        """DEPRECATED in 1.80.00. This functionality is now handled by _updateVertices() and verticesPix"""
+        #raise DeprecationWarning, "_calcSizeRendered() was deprecated in 1.80.00. This functionality is now handled by _updateVertices() and verticesPix"
         if self.units in ['norm','pix', 'height']: self._sizeRendered=copy.copy(self.size)
         elif self.units in ['deg', 'degs']: self._sizeRendered=deg2pix(self.size, self.win.monitor)
         elif self.units=='cm': self._sizeRendered=cm2pix(self.size, self.win.monitor)
         else:
-            logging.ERROR("Stimulus units should be 'height', 'norm', 'deg', 'cm' or 'pix', not '%s'" %self.units)
+            logging.error("Stimulus units should be 'height', 'norm', 'deg', 'cm' or 'pix', not '%s'" %self.units)
 
     def _calcPosRendered(self):
-        """DEPRECATED in 1.80.00. This funtionality is now handled by _updateVertices() and verticesPix"""
-        #raise DeprecationWarning, "_calcSizeRendered() was deprecated in 1.80.00. This funtionality is now handled by _updateVertices() and verticesPix"
+        """DEPRECATED in 1.80.00. This functionality is now handled by _updateVertices() and verticesPix"""
+        #raise DeprecationWarning, "_calcSizeRendered() was deprecated in 1.80.00. This functionality is now handled by _updateVertices() and verticesPix"
         if self.units in ['norm','pix', 'height']: self._posRendered= copy.copy(self.pos)
         elif self.units in ['deg', 'degs']: self._posRendered=deg2pix(self.pos, self.win.monitor)
         elif self.units=='cm': self._posRendered=cm2pix(self.pos, self.win.monitor)
+
+    def _getPolyAsRendered(self):
+        """DEPRECATED. Return a list of vertices as rendered; used by overlaps()
+        """
+        oriRadians = numpy.radians(self.ori)
+        sinOri = numpy.sin(-oriRadians)
+        cosOri = numpy.cos(-oriRadians)
+        x = self._verticesRendered[:,0] * cosOri - self._verticesRendered[:,1] * sinOri
+        y = self._verticesRendered[:,0] * sinOri + self._verticesRendered[:,1] * cosOri
+        return numpy.column_stack((x,y)) + self._posRendered
 
     def setDKL(self, newDKL, operation=''):
         """DEPRECATED since v1.60.05: Please use the `color` attribute
@@ -217,17 +212,18 @@ class LegacyVisualMixin(object):
         """
         self._set('lms', value=newLMS, op=operation)
         self.setRGB(lms2rgb(self.lms, self.win.lms_rgb))
-    def setRGB(self, newRGB, operation=''):
+    def setRGB(self, newRGB, operation='', log=None):
         """DEPRECATED since v1.60.05: Please use the `color` attribute
         """
         from psychopy.visual.helpers import setTexIfNoShaders
         self._set('rgb', newRGB, operation)
         setTexIfNoShaders(self)
+        if self.__class__.__name__ == 'TextStim' and not self.useShaders:
+            self._needSetText=True
 
     @attributeSetter
     def depth(self, value):
-        """
-        Deprecated. Depth is now controlled simply by drawing order.
+        """DEPRECATED. Depth is now controlled simply by drawing order.
         """
         self.__dict__['depth'] = value
 
@@ -242,32 +238,45 @@ class ColorMixin(object):
         """Color of the stimulus
 
         Value should be one of:
-            + string: to specify a :ref:`colorNames` or :ref:`hexColors`
+            + string: to specify a :ref:`colorNames`. Any of the standard
+              html/X11 `color names <http://www.w3schools.com/html/html_colornames.asp>`
+              can be used.
+            + :ref:`hexColors`
             + numerically: (scalar or triplet) for DKL, RGB or other :ref:`colorspaces`. For
                 these, :ref:`operations <attrib-operations>` are supported.
 
         When color is specified using numbers, it is interpreted with
         respect to the stimulus' current colorSpace. If color is given as a
-        single value (scalar) then this wil be applied to all 3 channels.
+        single value (scalar) then this will be applied to all 3 channels.
 
         Examples::
+                # ... for whatever stim you have, e.g. stim = visual.ShapeStim(win):
+                stim.color = 'white'
+                stim.color = 'RoyalBlue'  # (the case is actually ignored)
+                stim.color = '#DDA0DD'  # DDA0DD is hexadecimal for plum
+                stim.color = [1.0, -1.0, -1.0]  # if stim.colorSpace='rgb': a red color in rgb space
+                stim.color = [0.0, 45.0, 1.0]  # if stim.colorSpace='dkl': DKL space with elev=0, azimuth=45
+                stim.color = [0, 0, 255]  # if stim.colorSpace='rgb255': a blue stimulus using rgb255 space
+                stim.color = 255  # interpreted as (255, 255, 255) which is white in rgb255.
 
-                myStim.color = 'white'
-                myStim.color = 'RoyalBlue'  #(the case is actually ignored)
-                myStim.color = '#DDA0DD'  #DDA0DD is hexadecimal for plum
-                myStim.color = [1.0,-1.0,-1.0]  #if colorSpace='rgb': a red color in rgb space
-                myStim.color = [0.0,45.0,1.0] #if colorSpace='dkl': DKL space with elev=0, azimuth=45
-                myStim.color = [0,0,255] #if colorSpace='rgb255': a blue stimulus using rgb255 space
 
+        :ref:`Operations <attrib-operations>` work as normal for all numeric
+        colorSpaces (e.g. 'rgb', 'hsv' and 'rgb255') but not for strings, like
+        named and hex. For example, assuming that colorSpace='rgb'::
 
-        :ref:`Operations <attrib-operations>` work as normal. For example,
-        assuming that colorSpace='rgb'::
+            stim.color += [1, 1, 1]  # increment all guns by 1 value
+            stim.color *= -1  # multiply the color by -1 (which in this space inverts the contrast)
+            stim.color *= [0.5, 0, 1]  # decrease red, remove green, keep blue
 
-            thisStim.color += [1,1,1]  #increment all guns by 1 value
-            thisStim.color *= -1  #multiply the color by -1 (which in this space inverts the contrast)
-            thisStim.color *= [0.5, 0, 1]  #decrease red, remove green, keep blue
+        You can use `setColor` if you want to set color and colorSpace in one
+        line. These two are equivalent::
+
+            stim.setColor((0, 128, 255), 'rgb255')
+            # ... is equivalent to
+            stim.colorSpace = 'rgb255'
+            stim.color = (0, 128, 255)
         """
-        setColor(self, value, rgbAttrib='rgb', colorAttrib='color')
+        self.setColor(value, log=False)  # logging already done by attributeSettter
 
     @attributeSetter
     def colorSpace(self, value):
@@ -279,7 +288,8 @@ class ColorMixin(object):
         If None the default colorSpace for the stimulus is
         used (defined during initialisation).
 
-        Please note that changing colorSpace does not change stimulus parameters. Example::
+        Please note that changing colorSpace does not change stimulus parameters.
+        Thus you usually want to specify colorSpace before setting the color. Example::
 
             # A light green text
             stim = visual.TextStim(win, 'Color me!', color=(0, 1, 0), colorSpace='rgb')
@@ -309,12 +319,12 @@ class ColorMixin(object):
             stim.contrast =  0.5  # decrease contrast
             stim.contrast =  0.0  # uniform, no contrast
             stim.contrast = -0.5  # slightly inverted
-            stim.contrast = -1   # totally inverted
+            stim.contrast = -1.0  # totally inverted
 
         Setting contrast outside range -1 to 1 is permitted, but may
         produce strange results if color values exceeds the monitor limits.::
 
-            stim.contrast = 1.2 # increases contrast.
+            stim.contrast =  1.2  # increases contrast
             stim.contrast = -1.2  # inverts with increased contrast
         """
         self.__dict__['contrast'] = value
@@ -325,7 +335,7 @@ class ColorMixin(object):
                 #we'll need to update the textures for the stimulus
                 #(sometime before drawing but not now)
                 if self.__class__.__name__ == 'TextStim':
-                    self.setText(self.text)
+                    self.text = self.text  # call attributeSetter to rebuild text
                 elif hasattr(self,'_needTextureUpdate'): #GratingStim, RadialStim, ImageStim etc
                     self._needTextureUpdate = True
                 elif self.__class__.__name__ in ('ShapeStim','DotStim'):
@@ -334,19 +344,23 @@ class ColorMixin(object):
                     logging.warning('Tried to set contrast while useShaders = False but stimulus was not rebuild. Contrast might remain unchanged.')
         elif self.autoLog:
             logging.warning('Contrast was set on class where useShaders was undefined. Contrast might remain unchanged')
-    def setColor(self, color, colorSpace=None, operation='', log=True):
+    def setColor(self, color, colorSpace=None, operation='', log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
+        and/or set colorSpace simultaneously.
         """
+        # NB: the setColor helper function! Not this function itself :-)
         setColor(self,color, colorSpace=colorSpace, operation=operation,
                     rgbAttrib='rgb', #or 'fillRGB' etc
-                    colorAttrib='color',
-                    log=log)
-    def setContrast(self, newContrast, operation='', log=True):
+                    colorAttrib='color')
+        if self.__class__.__name__ == 'TextStim' and not self.useShaders:
+            self._needSetText = True
+        logAttrib(self, log, 'color', value='%s (%s)' %(self.color, self.colorSpace))
+    def setContrast(self, newContrast, operation='', log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
         """
-        self._set('contrast', newContrast, operation, log=log)
+        setAttribute(self, 'contrast', newContrast, log, operation)
 
     def _getDesiredRGB(self, rgb, colorSpace, contrast):
         """ Convert color to RGB while adding contrast
@@ -367,7 +381,7 @@ class ColorMixin(object):
         return desiredRGB
 
 class ContainerMixin(object):
-    """Mixin class for visual stim that need polygon .contains() methods.
+    """Mixin class for visual stim that have verticesPix attrib and .contains() methods.
     """
     def __init__(self):
         super(ContainerMixin, self).__init__()
@@ -390,7 +404,7 @@ class ContainerMixin(object):
             verts = self.vertices
         else:
             verts = self._verticesBase
-        #check wheher stimulus needs flipping in either direction
+        #check whether stimulus needs flipping in either direction
         flip = numpy.array([1,1])
         if hasattr(self, 'flipHoriz'):
             flip[0] = self.flipHoriz*(-2)+1#True=(-1), False->(+1)
@@ -400,25 +414,25 @@ class ContainerMixin(object):
         verts = numpy.dot(self.size*verts*flip, self._rotationMatrix)
         #then combine with position and convert to pix
         verts = convertToPix(vertices=verts, pos=self.pos, win=self.win, units=self.units)
-        #assign to self attrbute
+        #assign to self attribute
         self.__dict__['verticesPix'] = verts
         self._needVertexUpdate = False
         self._needUpdate = True #but we presumably need to update the list
     def contains(self, x, y=None, units=None):
-        """Determines if a point x,y is inside the extent of the stimulus.
+        """Returns True if a point x,y is inside the extent of the stimulus.
 
         Can accept variety of input options:
             + two separate args, x and y
             + one arg (list, tuple or array) containing two vals (x,y)
             + an object with a getPos() method that returns x,y, such
-                as a :class:`~psychopy.event.Mouse`. Returns `True` if the point is
-                within the area defined by `vertices`.
+                as a :class:`~psychopy.event.Mouse`.
 
+        Returns `True` if the point is within the area defined by `vertices`.
         This method handles complex shapes, including concavities and self-crossings.
 
-        Note that, if your stimulus uses a mask (such as a Gaussian blob) then
+        Note that, if your stimulus uses a mask (such as a Gaussian) then
         this is not accounted for by the `contains` method; the extent of the
-        stmulus is determined purely by the size, pos and orientation settings
+        stimulus is determined purely by the size, position (pos), and orientation (ori) settings
         (and by the vertices for shape stimuli).
 
         See coder demo, shapeContains.py
@@ -446,21 +460,13 @@ class ContainerMixin(object):
         selfVerts = self.verticesPix
         return pointInPolygon(xy[0], xy[1], poly = selfVerts)
 
-    def _getPolyAsRendered(self):
-        """return a list of vertices as rendered; used by overlaps()
-        """
-        oriRadians = numpy.radians(self.ori)
-        sinOri = numpy.sin(-oriRadians)
-        cosOri = numpy.cos(-oriRadians)
-        x = self._verticesRendered[:,0] * cosOri - self._verticesRendered[:,1] * sinOri
-        y = self._verticesRendered[:,0] * sinOri + self._verticesRendered[:,1] * cosOri
-        return numpy.column_stack((x,y)) + self._posRendered
-
     def overlaps(self, polygon):
-        """Determines if this stimulus intersects another one. If `polygon` is
+        """Returns `True` if this stimulus intersects another one.
+
+        If `polygon` is
         another stimulus instance, then the vertices and location of that stimulus
-        will be used as the polygon. Overlap detection is only approximate; it
-        can fail with pointy shapes. Returns `True` if the two shapes overlap.
+        will be used as the polygon. Overlap detection is typically very good, but it
+        can fail with very pointy shapes in a crossed-swords configuration.
 
         Note that, if your stimulus uses a mask (such as a Gaussian blob) then
         this is not accounted for by the `overlaps` method; the extent of the
@@ -479,32 +485,25 @@ class TextureMixin(object):
     #def __init__(self):
     #    super(TextureMixin, self).__init__()
 
-    def createTexture(self, tex, id, pixFormat, stim, res=128, maskParams=None,
+    def _createTexture(self, tex, id, pixFormat, stim, res=128, maskParams=None,
                       forcePOW2=True, dataType=None):
         """
         :params:
-
             id:
                 is the texture ID
-
             pixFormat:
                 GL.GL_ALPHA, GL.GL_RGB
-
             useShaders:
                 bool
-
             interpolate:
                 bool (determines whether texture will use GL_LINEAR or GL_NEAREST
-
             res:
                 the resolution of the texture (unless a bitmap image is used)
-
             dataType:
                 None, GL.GL_UNSIGNED_BYTE, GL_FLOAT. Only affects image files (numpy arrays will be float)
 
         For grating stimuli (anything that needs multiple cycles) forcePOW2 should
         be set to be True. Otherwise the wrapping of the texture will not work.
-
         """
 
         """
@@ -514,11 +513,17 @@ class TextureMixin(object):
         wasImage=False #change this if image loading works
         useShaders = stim.useShaders
         interpolate = stim.interpolate
-        if dataType==None:
+        if dataType is None:
             if useShaders and pixFormat==GL.GL_RGB:
                 dataType = GL.GL_FLOAT
             else:
                 dataType = GL.GL_UNSIGNED_BYTE
+
+        # Fill out unspecified portions of maskParams with default values
+        if maskParams is None:
+            maskParams = {}
+        allMaskParams = {'fringeWidth': 0.2, 'sd': 3}  # fringeWidth affects the proportion of the stimulus diameter that is devoted to the raised cosine.
+        allMaskParams.update(maskParams)
 
         if type(tex) == numpy.ndarray:
             #handle a numpy array
@@ -543,12 +548,11 @@ class TextureMixin(object):
                 powerOf2 = 2**numpy.ceil(numpy.log2(maxDim))
                 if forcePOW2 and (tex.shape[0]!=powerOf2 or tex.shape[1]!=powerOf2):
                     logging.error("Requiring a square power of two (e.g. 16x16, 256x256) texture but didn't receive one")
-                    core.quit()
                 res=tex.shape[0]
             if useShaders:
                 dataType=GL.GL_FLOAT
         elif tex in [None,"none", "None"]:
-            res=1 #4x4 (2x2 is SUPPOSED to be fine but generates wierd colors!)
+            res = 1 #4x4 (2x2 is SUPPOSED to be fine but generates weird colors!)
             intensity = numpy.ones([res,res],numpy.float32)
             wasLum = True
         elif tex == "sin":
@@ -583,8 +587,7 @@ class TextureMixin(object):
             wasLum=True
         elif tex == "gauss":
             rad=makeRadialMatrix(res)
-            sigma = 1/3.0;
-            intensity = numpy.exp( -rad**2.0 / (2.0*sigma**2.0) )*2-1 #3sd.s by the edge of the stimulus
+            intensity = numpy.exp( -rad**2.0 / (2.0*(1.0 / allMaskParams['sd'])**2.0) )*2-1 #3sd.s by the edge of the stimulus
             wasLum=True
         elif tex == "cross":
             X, Y = numpy.mgrid[-1:1:1j*res, -1:1:1j*res]
@@ -601,22 +604,11 @@ class TextureMixin(object):
             wasLum=True
             hamming_len = 1000 # This affects the 'granularity' of the raised cos
 
-            # If no user input was provided:
-            if maskParams is None:
-                fringe_proportion = 0.2 # This one affects the proportion of the
-                                    # stimulus diameter that is devoted to the
-                                    # raised cosine.
-
-            # Users can provide the fringe proportion through a dict, maskParams
-            # input:
-            else:
-                fringe_proportion = maskParams['fringeWidth']
-
             rad = makeRadialMatrix(res)
             intensity = numpy.zeros_like(rad)
             intensity[numpy.where(rad < 1)] = 1
             raised_cos_idx = numpy.where(
-                [numpy.logical_and(rad <= 1, rad >= 1-fringe_proportion)])[1:]
+                [numpy.logical_and(rad <= 1, rad >= 1 - allMaskParams['fringeWidth'])])[1:]
 
             # Make a raised_cos (half a hamming window):
             raised_cos = numpy.hamming(hamming_len)[:hamming_len/2]
@@ -624,7 +616,7 @@ class TextureMixin(object):
             raised_cos /= numpy.max(raised_cos)
 
             # Measure the distance from the edge - this is your index into the hamming window:
-            d_from_edge = numpy.abs((1 - fringe_proportion)- rad[raised_cos_idx])
+            d_from_edge = numpy.abs((1 - allMaskParams['fringeWidth']) - rad[raised_cos_idx])
             d_from_edge /= numpy.max(d_from_edge)
             d_from_edge *= numpy.round(hamming_len/2)
 
@@ -747,6 +739,7 @@ class TextureMixin(object):
             data = intensity #float_uint8(intensity)
         elif pixFormat==GL.GL_ALPHA:
             internalFormat = GL.GL_ALPHA
+            dataType = GL.GL_UNSIGNED_BYTE
             if wasImage:
                 data = intensity
             else:
@@ -760,6 +753,7 @@ class TextureMixin(object):
             elif internalFormat==GL.GL_RGB32F_ARB:
                 internalFormat=GL.GL_RGBA32F_ARB
         texture = data.ctypes#serialise
+
         #bind the texture in openGL
         GL.glEnable(GL.GL_TEXTURE_2D)
         GL.glBindTexture(GL.GL_TEXTURE_2D, id)#bind that name to the target
@@ -788,25 +782,66 @@ class TextureMixin(object):
 
         return wasLum
 
-class BaseVisualStim(MinimalStim, LegacyVisualMixin):
-    """A template for a visual stimulus class.
-
-    Actual visual stim like GratingStim, TextStim etc... are based on this.
-    Not finished...?
-
-    Methods defined here will override Minimal & Legacy, but best to avoid
-    that for simplicity & clarity.
+    def clearTextures(self):
         """
-    def __init__(self, win, units=None, name='', autoLog=True):
-        self.autoLog = False  # just to start off during init, set at end
-        self.win = win
-        self.units = units
-        self._rotationMatrix = [[1.,0.],[0.,1.]] #no rotation as a default
-        # self.autoLog is set at end of MinimalStim.__init__
-        super(BaseVisualStim, self).__init__(name=name, autoLog=autoLog)
-        if self.autoLog:
-            logging.warning("%s is calling BaseVisualStim.__init__() with autolog=True. Set autoLog to True only at the end of __init__())" \
-                            %(self.__class__.__name__))
+        Clear all textures associated with the stimulus.
+        As of v1.61.00 this is called automatically during garbage collection of
+        your stimulus, so doesn't need calling explicitly by the user.
+        """
+        GL.glDeleteTextures(1, self._texID)
+        GL.glDeleteTextures(1, self._maskID)
+
+    @attributeSetter
+    def mask(self, value):
+        """The alpha mask (forming the shape of the image)
+
+        This can be one of various options:
+            + 'circle', 'gauss', 'raisedCos', 'cross', **None** (resets to default)
+            + the name of an image file (most formats supported)
+            + a numpy array (1xN or NxN) ranging -1:1
+        """
+        self.__dict__['mask'] = value
+        if self.__class__.__name__ == 'ImageStim':
+            dataType = GL.GL_UNSIGNED_BYTE
+        else:
+            dataType = None
+        self._createTexture(value, id=self._maskID, pixFormat=GL.GL_ALPHA, dataType=dataType,
+            stim=self, res=self.texRes, maskParams=self.maskParams)
+    def setMask(self, value, log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message.
+        """
+        setAttribute(self, 'mask', value, log)
+
+    @attributeSetter
+    def texRes(self, value):
+        """Power-of-two int. Sets the resolution of the mask and texture.
+        texRes is overridden if an array or image is provided as mask.
+
+        :ref:`Operations <attrib-operations>` supported.
+        """
+        self.__dict__['texRes'] = value
+
+        # ... now rebuild textures (call attributeSetters without logging).
+        if hasattr(self, 'tex'): setAttribute(self, 'tex', self.tex, log=False)
+        if hasattr(self, 'mask'): setAttribute(self, 'mask', self.mask, log=False)
+
+    @attributeSetter
+    def maskParams(self, value):
+        """Various types of input. Default to None.
+        This is used to pass additional parameters to the mask if those are needed.
+
+            - For 'gauss' mask, pass dict {'sd': 5} to control standard deviation.
+            - For the 'raisedCos' mask, pass a dict: {'fringeWidth':0.2},
+                where 'fringeWidth' is a parameter (float, 0-1), determining
+                the proportion of the patch that will be blurred by the raised
+                cosine edge."""
+        self.__dict__['maskParams'] = value
+        setAttribute(self, 'mask', self.mask, log=False)  # call attributeSetter without log
+
+class WindowMixin(object):
+    """Window-related attributes and methods.
+    Used by BaseVisualStim, SimpleImageStim and ElementArrayStim."""
 
     @attributeSetter
     def win(self, value):
@@ -834,7 +869,7 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
     @attributeSetter
     def units(self, value):
         """
-        None, 'norm', 'cm', 'deg' or 'pix'
+        None, 'norm', 'cm', 'deg', 'degFlat', 'degFlatPos', or 'pix'
 
         If None then the current units of the :class:`~psychopy.visual.Window` will be used.
         See :ref:`units` for explanation of other options.
@@ -853,31 +888,14 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
         else:
             self.__dict__['units'] = self.win.units
 
-        # Update size and position if they are defined. If not, this is probably
+        # Update size and position if they are defined (tested as numeric). If not, this is probably
         # during some init and they will be defined later, given the new unit.
-        if not isinstance(self.size, attributeSetter) and not isinstance(self.pos, attributeSetter):
+        try:
+            self.size * self.pos  # quick and dirty way to check that both are numeric. This avoids the heavier attributeSetter calls.
             self.size = self.size
             self.pos = self.pos
-
-    @attributeSetter
-    def opacity(self, value):
-        """Determines how visible the stimulus is relative to background
-
-        The value should be a single float ranging 1.0 (opaque) to 0.0
-        (transparent).
-        :ref:`Operations <attrib-operations>` are supported.
-
-        Precisely how this is used depends on the :ref:`blendMode`
-        """
-        self.__dict__['opacity'] = value
-
-        if not 0 <= value <= 1 and self.autoLog:
-            logging.warning('Setting opacity outside range 0.0 - 1.0 has no additional effect')
-
-        #opacity is coded by the texture, if not using shaders
-        if hasattr(self, 'useShaders') and not self.useShaders:
-            if hasattr(self,'mask'):
-                self.mask = self.mask
+        except:
+            pass
 
     @attributeSetter
     def useShaders(self, value):
@@ -888,18 +906,81 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
         various operations will be slower (notably, changes to stimulus color
         or contrast)
         """
-        #NB TextStim overrides this function, so changes here may need changing there too
-        self.__dict__['useShaders'] = value
         if value == True and self.win._haveShaders == False:
             logging.error("Shaders were requested but aren't available. Shaders need OpenGL 2.0+ drivers")
-        if value != self.useShaders:
-            self.useShaders = value
+        if value != self.useShaders:  # if there's a change...
+            self.__dict__['useShaders'] = value
             if hasattr(self,'tex'):
-                self.tex = self.tex
-            elif hasattr(self,'_imName'):
+                self.tex = self.tex  # calling attributeSetter
+            elif hasattr(self, 'mask'):
+                self.mask = self.mask  # calling attributeSetter (does the same as mask)
+            if hasattr(self,'_imName'):
                 self.setIm(self._imName, log=False)
-            self.mask = self.mask
+            if self.__class__.__name__ == 'TextStim':
+                self._needSetText = True
             self._needUpdate = True
+    def setUseShaders(self, value=True, log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message"""
+        setAttribute(self, 'useShaders', value, log)  # call attributeSetter
+
+    def draw(self):
+        raise NotImplementedError('Stimulus classes must override visual.BaseVisualStim.draw')
+
+    def _selectWindow(self, win):
+        #don't call switch if it's already the curr window
+        if win!=glob_vars.currWindow and win.winType=='pyglet':
+            win.winHandle.switch_to()
+            glob_vars.currWindow = win
+
+    def _updateList(self):
+        """
+        The user shouldn't need this method since it gets called
+        after every call to .set()
+        Chooses between using and not using shaders each call.
+        """
+        if self.useShaders:
+            self._updateListShaders()
+        else:
+            self._updateListNoShaders()
+
+class BaseVisualStim(MinimalStim, WindowMixin, LegacyVisualMixin):
+    """A template for a visual stimulus class.
+
+    Actual visual stim like GratingStim, TextStim etc... are based on this.
+    Not finished...?
+
+    Methods defined here will override Minimal & Legacy, but best to avoid
+    that for simplicity & clarity.
+    """
+    def __init__(self, win, units=None, name='', autoLog=None):
+        self.autoLog = False  # just to start off during init, set at end
+        self.win = win
+        self.units = units
+        self._rotationMatrix = [[1.,0.],[0.,1.]] #no rotation as a default
+        # self.autoLog is set at end of MinimalStim.__init__
+        super(BaseVisualStim, self).__init__(name=name, autoLog=autoLog)
+        if self.autoLog:
+            logging.warning("%s is calling BaseVisualStim.__init__() with autolog=True. Set autoLog to True only at the end of __init__())" \
+                            %(self.__class__.__name__))
+
+    @attributeSetter
+    def opacity(self, value):
+        """Determines how visible the stimulus is relative to background
+
+        The value should be a single float ranging 1.0 (opaque) to 0.0
+        (transparent). :ref:`Operations <attrib-operations>` are supported.
+        Precisely how this is used depends on the :ref:`blendMode`.
+        """
+        self.__dict__['opacity'] = value
+
+        if not 0 <= value <= 1 and self.autoLog:
+            logging.warning('Setting opacity outside range 0.0 - 1.0 has no additional effect')
+
+        #opacity is coded by the texture, if not using shaders
+        if hasattr(self, 'useShaders') and not self.useShaders:
+            if hasattr(self,'mask'):
+                self.mask = self.mask  # call attributeSetter
 
     @attributeSetter
     def ori(self, value):
@@ -921,7 +1002,7 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
 
     @attributeSetter
     def size(self, value):
-        """The size (w,h) of the stimulus in the stimulus :ref:`units <units>`
+        """The size (width, height) of the stimulus in the stimulus :ref:`units <units>`
 
         Value should be :ref:`x,y-pair <attrib-xy>`, :ref:`scalar <attrib-scalar>` (applies to both dimensions)
         or None (resets to default). :ref:`Operations <attrib-operations>` are supported.
@@ -940,7 +1021,7 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
         value = val2array(value)  # Check correct user input
         self._requestedSize = value  #to track whether we're just using a default
         # None --> set to default
-        if value == None:
+        if value is None:
             """Set the size to default (e.g. to the size of the loaded image etc)"""
             #calculate new size
             if self._origSize is None:  #not an image from a file
@@ -971,7 +1052,7 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
     def pos(self, value):
         """The position of the center of the stimulus in the stimulus :ref:`units <units>`
 
-        Value should be an :ref:`x,y-pair <attrib-xy>`. :ref:`Operations <attrib-operations>`
+        `value` should be an :ref:`x,y-pair <attrib-xy>`. :ref:`Operations <attrib-operations>`
         are also supported.
 
         Example::
@@ -980,79 +1061,51 @@ class BaseVisualStim(MinimalStim, LegacyVisualMixin):
             stim.pos += (0.5, -1)  # Increment pos rightwards and upwards. Is now (1.0, -1.0)
             stim.pos *= 0.2  # Move stim towards the center. Is now (0.2, -0.2)
 
-        Tip: if you can see the actual pixel range this corresponds to by
-        looking at `stim._posRendered`
+        Tip: If you need the position of stim in pixels, you can obtain it like this:
+
+            from psychopy.tools.monitorunittools import posToPix
+            posPix = posToPix(stim)
         """
         self.__dict__['pos'] = val2array(value, False, False)
         self._needVertexUpdate=True
         self._needUpdate = True
 
-    def draw(self):
-        raise NotImplementedError('Stimulus classes must overide visual.BaseVisualStim.draw')
-
-    def setPos(self, newPos, operation='', log=True):
+    def setPos(self, newPos, operation='', log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
         """
-        self._set('pos', val=newPos, op=operation, log=log)
-    def setDepth(self, newDepth, operation='', log=True):
+        setAttribute(self, 'pos', val2array(newPos, False), log, operation)
+    def setDepth(self, newDepth, operation='', log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
         """
-        self._set('depth', newDepth, operation, log)
-    def setSize(self, newSize, operation='', units=None, log=True):
+        setAttribute(self, 'depth', newDepth, log, operation)
+    def setSize(self, newSize, operation='', units=None, log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
         """
-        if units==None: units=self.units#need to change this to create several units from one
-        self._set('size', newSize, op=operation, log=log)
-    def setOri(self, newOri, operation='', log=True):
+        if units is None:
+            units=self.units#need to change this to create several units from one
+        setAttribute(self, 'size', val2array(newSize, False), log, operation)
+    def setOri(self, newOri, operation='', log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
         """
-        self._set('ori',val=newOri, op=operation, log=log)
-    def setOpacity(self, newOpacity, operation='', log=True):
+        setAttribute(self, 'ori', newOri, log, operation)
+    def setOpacity(self, newOpacity, operation='', log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message
         """
-        self._set('opacity', newOpacity, operation, log=log)
-    def _set(self, attrib, val, op='', log=True):
-        """
-        Use this method when you want to be able to suppress logging (e.g., in
-        tests). Typically better to use methods specific to the parameter, e.g. ::
-
-             stim.pos = [3,2.5]
-             stim.ori = 45
-             stim.phase += 0.5
-
-        NB this method does not flag the need for updates any more - that is
-        done by specific methods as described above.
-        """
-        if op==None: op=''
+        setAttribute(self, 'opacity', newOpacity, log, operation)
+    def _set(self, attrib, val, op='', log=None):
+        """DEPRECATED since 1.80.04 + 1. Use setAttribute() and val2array() instead."""
         #format the input value as float vectors
         if type(val) in [tuple, list, numpy.ndarray]:
             val = val2array(val)
-        # Handle operations
-        setWithOperation(self, attrib, val, op)
-        # logAttrib(self, log, attrib, val) #setWithOperation calls logAttrib
 
-    def setUseShaders(self, value=True):
-        """Usually you can use 'stim.attribute = value' syntax instead,
-        but use this method if you need to suppress the log message"""
-        self.useShaders = value
-    def _selectWindow(self, win):
-        #don't call switch if it's already the curr window
-        if win!=glob_vars.currWindow and win.winType=='pyglet':
-            win.winHandle.switch_to()
-            glob_vars.currWindow = win
+        # Set attribute with operation and log
+        setAttribute(self, attrib, val, log, op)
 
-    def _updateList(self):
-        """
-        The user shouldn't need this method since it gets called
-        after every call to .set()
-        Chooses between using and not using shaders each call.
-        """
-        if self.useShaders:
-            self._updateListShaders()
-        else:
-            self._updateListNoShaders()
+        # For DotStim
+        if attrib in ['nDots','coherence']:
+            self.coherence=round(self.coherence*self.nDots)/self.nDots

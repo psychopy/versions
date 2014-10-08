@@ -22,7 +22,7 @@ from psychopy import logging
 # tools must only be imported *after* event or MovieStim breaks on win32
 # (JWP has no idea why!)
 from psychopy.tools.arraytools import val2array
-from psychopy.tools.attributetools import attributeSetter, logAttrib
+from psychopy.tools.attributetools import attributeSetter, setAttribute
 from psychopy.visual.grating import GratingStim
 
 try:
@@ -69,20 +69,10 @@ class RadialStim(GratingStim):
                  depth=0,
                  rgbPedestal = (0.0,0.0,0.0),
                  interpolate=False,
-                 name='', autoLog=True):
-        """
-        :Parameters:
-
-            texRes : (default= *128* )
-                resolution of the texture (if not loading from an image file)
-            angularRes : (default= *100* )
-                100, the number of triangles used to make the sti
-            radialPhase :
-                the phase of the texture from the centre to the perimeter
-                of the stimulus (in radians)
-            angularPhase :
-                the phase of the texture around the stimulus (in radians)
-        """
+                 name=None,
+                 autoLog=None,
+                 maskParams=None):
+        """ """ # Empty docstring on __init__, Simply inherits methods from GratingStim
         #what local vars are defined (these are the init params) for use by __repr__
         self._initParams = dir()
         self._initParams.remove('self')
@@ -90,23 +80,6 @@ class RadialStim(GratingStim):
         super(RadialStim, self).__init__(win, units=units, name=name, autoLog=False) #autolog should start off false
 
         self.useShaders = win._haveShaders  #use shaders if available by default, this is a good thing
-
-        # JRG: hack to dodge method-resolution-order issues:
-        # work-around #1 (not currently implemented: ugly, and lead to test failures on travis-ci)
-        # self._updateList() is defined in BaseVisualStim and calls _updateListShaders or NoShaders
-        # as needed. However, this also gets called in GratingStim.__init__, which is
-        # called above by super(RadialStim, self).__init__()
-        # so strategy: let GratingStim.__init__ do its thing, THEN rearrange the
-        # namespace so that BaseVisualStim._updateList can do its thing during
-        # the normal operation of RadialStim. There's got to be a better way:
-        # initially hide _updateListShadersRadial and _updateListNoShadersRadial
-        # now unhide them, since will not need GratingStim.__init__ again:
-
-        # uncomment these lines to implement #1, and change _updataListShaders to _updateListShadersRadial, etc
-        #self._updateListShaders = self._updateListShadersRadial
-        #self._updateListNoShaders = self._updateListNoShadersRadial
-
-        # workaround #2: comment out self._updateList() in GratingStim.__init__ line 162
 
         # UGLY HACK again. (See same section in GratingStim for ideas)
         self.__dict__['contrast'] = 1
@@ -119,7 +92,7 @@ class RadialStim(GratingStim):
         GL.glGenTextures(1, ctypes.byref(self._texID))
         self._maskID = GL.GLuint()
         GL.glGenTextures(1, ctypes.byref(self._maskID))
-        self.maskParams = None
+        self.__dict__['maskParams'] = maskParams
         self.maskRadialPhase = 0
         self.texRes = texRes #must be power of 2
         self.interpolate = interpolate
@@ -132,23 +105,23 @@ class RadialStim(GratingStim):
         self.colorSpace=colorSpace
         if rgb!=None:
             logging.warning("Use of rgb arguments to stimuli are deprecated. Please use color and colorSpace args instead")
-            self.setColor(rgb, colorSpace='rgb')
+            self.setColor(rgb, colorSpace='rgb', log=False)
         elif dkl!=None:
             logging.warning("Use of dkl arguments to stimuli are deprecated. Please use color and colorSpace args instead")
-            self.setColor(dkl, colorSpace='dkl')
+            self.setColor(dkl, colorSpace='dkl', log=False)
         elif lms!=None:
             logging.warning("Use of lms arguments to stimuli are deprecated. Please use color and colorSpace args instead")
-            self.setColor(lms, colorSpace='lms')
+            self.setColor(lms, colorSpace='lms', log=False)
         else:
-            self.setColor(color)
+            self.setColor(color, log=False)
 
         self.ori = float(ori)
-        self.angularRes = angularRes
-        self.radialPhase = radialPhase
-        self.radialCycles = radialCycles
-        self.visibleWedge = visibleWedge
-        self.angularCycles = angularCycles
-        self.angularPhase = angularPhase
+        self.__dict__['angularRes'] = angularRes
+        self.__dict__['radialPhase'] = radialPhase
+        self.__dict__['radialCycles'] = radialCycles
+        self.__dict__['visibleWedge'] = numpy.array(visibleWedge)
+        self.__dict__['angularCycles'] = angularCycles
+        self.__dict__['angularPhase'] = angularPhase
         self.pos = numpy.array(pos, float)
         self.depth=depth
         self.__dict__['sf'] = 1
@@ -160,26 +133,12 @@ class RadialStim(GratingStim):
         self.opacity = float(opacity)
 
         #
-        self._triangleWidth = pi*2/self.angularRes
-        self._angles = numpy.arange(0,pi*2, self._triangleWidth, dtype='float64')
-        #which vertices are visible?
-        self._visible = (self._angles>=(self.visibleWedge[0]*pi/180))#first edge of wedge
-        self._visible[(self._angles+self._triangleWidth)*180/pi>(self.visibleWedge[1])] = False#second edge of wedge
-        self._nVisible = numpy.sum(self._visible)*3
+        self._updateEverything()
 
-        self._updateTextureCoords()
-        self._updateMaskCoords()
-        self._updateVerticesBase()
-        self._updateVertices()
-        if not self.useShaders:
-            #generate a displaylist ID
-            self._listID = GL.glGenLists(1)
-            self._updateList()#ie refresh display list
-
-        #set autoLog (now that params have been initialised)
-        self.autoLog= autoLog
-        if autoLog:
-            logging.exp("Created %s = %s" %(self.name, repr(self)))
+        # set autoLog now that params have been initialised
+        self.__dict__['autoLog'] = autoLog or autoLog is None and self.win.autoLog
+        if self.autoLog:
+            logging.exp("Created %s = %s" %(self.name, str(self)))
 
     @attributeSetter
     def mask(self, value):
@@ -214,7 +173,11 @@ class RadialStim(GratingStim):
             intensity = 255.0*(rad<=1)
             fromFile=0
         elif self.mask == "gauss":
-            sigma = 1/3.0;
+            # Set SD if specified
+            if self.maskParams is None:
+                sigma = 1.0 / 3
+            else:
+                sigma = 1.0 / self.maskParams['sd']
             intensity = 255.0*numpy.exp( -rad**2.0 / (2.0*sigma**2.0) )#3sd.s by the edge of the stimulus
             fromFile=0
         elif self.mask == "radRamp":#a radial ramp
@@ -226,6 +189,7 @@ class RadialStim(GratingStim):
             intensity = 255.0*numpy.ones(res,float)
             fromFile=0
         else:#might be a filename of a tiff
+            print value
             try:
                 im = Image.open(self.mask)
                 im = im.transpose(Image.FLIP_TOP_BOTTOM)
@@ -254,44 +218,106 @@ class RadialStim(GratingStim):
         GL.glEnable(GL.GL_TEXTURE_1D)
 
         self._needUpdate = True
-
-    def setSize(self, value, operation='', log=True):
-        self._set('size', value, operation, log=log)
-        self._needVertexUpdate=True
-        self._needUpdate = True
-    def setAngularCycles(self,value,operation='', log=True):
-        """Set the number of cycles going around the stimulus.
-
-        i.e. it controls the number of 'spokes'
+    def setMask(self, value, log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
         """
-        self._set('angularCycles', value, operation, log=log)
+        setAttribute(self, 'mask', value, log)
+
+    def _setRadialAtribute(self, attr, value):
+        """ Internal helper function to reduce redundancy """
+        self.__dict__[attr] = value  # dict to avoid recursing the attributeSetter
         self._updateTextureCoords()
         self._needUpdate = True
-    def setRadialCycles(self,value,operation='', log=True):
-        """Set the number of texture cycles from centre to periphery
 
-        i.e. it controls the number of 'rings'
+    @attributeSetter
+    def angularCycles(self, value):
+        """Float (but Int is prettiest). Set the number of cycles going around the stimulus.
+        i.e. it controls the number of 'spokes'.
+
+        :ref:`Operations <attrib-operations>` supported."""
+        self._setRadialAtribute('angularCycles', value)
+    def setAngularCycles(self, value, operation='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
         """
-        self._set('radialCycles', value, operation, log=log)
-        self._updateTextureCoords()
-        self._needUpdate = True
-    def setAngularPhase(self,value, operation='', log=True):
-        """Set the angular phase (like orientation) of the texture (wraps 0-1).
+        setAttribute(self, 'angularCycles', value, log, operation)  # calls the attributeSetter
+
+    @attributeSetter
+    def radialCycles(self, value):
+        """Float (but Int is prettiest). Set the number of texture cycles from centre to periphery,
+        i.e. it controls the number of 'rings'.
+
+        :ref:`Operations <attrib-operations>` supported."""
+        self._setRadialAtribute('radialCycles', value)
+    def setRadialCycles(self, value, operation='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
+        """
+        setAttribute(self, 'radialCycles', value, log, operation)  # calls the attributeSetter
+
+    @attributeSetter
+    def angularPhase(self, value):
+        """Float. Set the angular phase (like orientation) of the texture (wraps 0-1).
 
         This is akin to setting the orientation of the texture around the
-        stimulus. If possible, it is more efficient to rotate the stimulus
-        using its `ori` setting instead."""
-        self._set('angularPhase', value, operation, log=log)
-        self._updateTextureCoords()
-        self._needUpdate = True
-    def setRadialPhase(self,value, operation='', log=True):
-        """Set the radial phase of the texture (wraps 0-1).
+        stimulus in radians. If possible, it is more efficient to rotate the
+        stimulus using its `ori` setting instead.
 
-        Can be used to drift concentric rings out/inwards
+        :ref:`Operations <attrib-operations>` supported."""
+        self._setRadialAtribute('angularPhase', value)
+    def setAngularPhase(self, value, operation='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
         """
-        self._set('radialPhase', value, operation, log=log)
+        setAttribute(self, 'angularPhase', value, log, operation)  # calls the attributeSetter
+
+    @attributeSetter
+    def radialPhase(self, value):
+        """Float. Set the radial phase of the texture (wraps 0-1). This is the
+        phase of the texture from the centre to the perimeter of the stimulus
+        (in radians). Can be used to drift concentric rings out/inwards.
+
+        :ref:`Operations <attrib-operations>` supported."""
+        self._setRadialAtribute('radialPhase', value)
+    def setRadialPhase(self, value, operation='', log=None):
+        """Usually you can use 'stim.attribute = value' syntax instead,
+        but use this method if you need to suppress the log message
+        """
+        setAttribute(self, 'radialPhase', value, log, operation)  # calls the attributeSetter
+
+    def _updateEverything(self):
+        """Internal helper function for angularRes and visibleWedge (and init)"""
+        self._triangleWidth = pi * 2 / self.angularRes
+        self._angles = numpy.arange(0, pi * 2, self._triangleWidth, dtype='float64')
+        #which vertices are visible?
+        self._visible = (self._angles >= (self.visibleWedge[0] * pi / 180))#first edge of wedge
+        self._visible[(self._angles + self._triangleWidth) * 180 / pi > (self.visibleWedge[1])] = False#second edge of wedge
+        self._nVisible = numpy.sum(self._visible) * 3
+
         self._updateTextureCoords()
-        self._needUpdate = True
+        self._updateMaskCoords()
+        self._updateVerticesBase()
+        self._updateVertices()  # is this necessary? Works fine without...
+        if not self.useShaders:
+            #generate a displaylist ID
+            self._listID = GL.glGenLists(1)
+            self._updateList()#ie refresh display list
+
+    @attributeSetter
+    def angularRes(self, value):
+        """The number of triangles used to make the sti.
+
+         :ref:`Operations <attrib-operations>` supported."""
+        self.__dict__['angularRes'] = value
+        self._updateEverything()
+    @attributeSetter
+    def visibleWedge(self, value):
+        """tuple (start, end) in degrees. Determines visible range. (0, 360) is full visibility.
+
+        :ref:`Operations <attrib-operations>` supported."""
+        self.__dict__['visibleWedge'] = numpy.array(value)
+        self._updateEverything()
 
     def draw(self, win=None):
         """
@@ -302,7 +328,8 @@ class RadialStim(GratingStim):
 
         If `win` is specified then override the normal window of this stimulus.
         """
-        if win==None: win=self.win
+        if win is None:
+            win=self.win
         self._selectWindow(win)
 
         #do scaling
@@ -501,22 +528,7 @@ class RadialStim(GratingStim):
 
         GL.glEndList()
 
-    def setMask(self,value, log=True):
-        """Change the alpha-mask for the stimulus
-        """
-        self.mask = value
-        logAttrib(self, log, 'mask')
-
     def __del__(self):
         if not self.useShaders:
             GL.glDeleteLists(self._listID, 1)
         self.clearTextures()#remove textures from graphics card to prevent crash
-
-    def clearTextures(self):
-        """
-        Clear the textures associated with the given stimulus.
-        As of v1.61.00 this is called automatically during garbage collection of
-        your stimulus, so doesn't need calling explicitly by the user.
-        """
-        GL.glDeleteTextures(1, self._texID)
-        GL.glDeleteTextures(1, self._maskID)

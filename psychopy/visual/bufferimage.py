@@ -21,7 +21,7 @@ from psychopy import core, logging
 
 # tools must only be imported *after* event or MovieStim breaks on win32
 # (JWP has no idea why!)
-from psychopy.tools.attributetools import attributeSetter, logAttrib
+from psychopy.tools.attributetools import attributeSetter, setAttribute
 from psychopy.tools.typetools import float_uint8
 from psychopy.visual.image import ImageStim
 
@@ -157,6 +157,7 @@ class BufferImageStim(ImageStim):
         # set autoLog now that params have been initialised
         self.__dict__['autoLog'] = autoLog or autoLog is None and self.win.autoLog
         if self.autoLog:
+            logging.exp("Created %s = %s" %(self.name, str(self)))
             logging.exp('BufferImageStim %s: took %.1fms to initialize' % (name, 1000 * _clock.getTime()))
 
     @attributeSetter
@@ -175,21 +176,19 @@ class BufferImageStim(ImageStim):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message.
         """
-        self.flipHoriz = newVal
-        logAttrib(self, log, 'flipHoriz')
+        setAttribute(self, 'flipHoriz', newVal, log)  # call attributeSetter
     def setFlipVert(self, newVal=True, log=None):
         """Usually you can use 'stim.attribute = value' syntax instead,
         but use this method if you need to suppress the log message.
         """
-        self.flipVert = newVal
-        logAttrib(self, log, 'flipVert')
+        setAttribute(self, 'flipVert', newVal, log)  # call attributeSetter
     def draw(self, win=None):
         """
         Draws the BufferImage on the screen, similar to :class:`~psychopy.visual.ImageStim` `.draw()`.
         Allows dynamic position, size, rotation, mirroring, and opacity.
         Limitations / bugs: not sure what happens with shaders & self._updateList()
         """
-        if win==None:
+        if win is None:
             win=self.win
         self._selectWindow(win)
 

@@ -9,7 +9,7 @@
 import os, sys
 
 #version info for PsychoPy
-__version__='1.80.06'
+__version__='1.81.00'
 __license__='GNU GPLv3 (or more recent equivalent)'
 __author__='Jonathan Peirce'
 __author_email__='jon@peirce.org.uk'
@@ -17,7 +17,7 @@ __maintainer_email__='psychopy-dev@googlegroups.com'
 __users_email__='psychopy-users@googlegroups.com'
 __url__='http://www.psychopy.org'
 __downloadUrl__='http://code.google.com/p/psychopy/downloads'
-__git_sha__='e67acec'
+__git_sha__='7141584'
 __build_platform__='n/a'
 
 __all__ = ["gui", "misc", "visual", "core", "event", "data", "filters", "sound"]
@@ -41,5 +41,5 @@ import sys
 for pathName in prefs.general['paths']:
     sys.path.append(pathName)
 
-from tools.versionchooser import useVersion
+from psychopy.tools.versionchooser import useVersion
 
