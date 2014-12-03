@@ -62,6 +62,7 @@ Testing has only been done on Windows and Linux so far.
 # If True, a print will be done on each flip a new movie frame is displayed
 # giving the frame index, flip time, and time since last movie frame flip.
 PRINT_FRAME_FLIP_TIMES = False
+reportNDroppedFrames = 10
 
 import os
 
@@ -165,6 +166,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
         self._reset()
         self.loadMovie(self.filename)
         self.setVolume(volume)
+        self.nDroppedFrames = 0
 
         self.aspectRatio = self._video_width/float(self._video_height)
         #size
@@ -339,20 +341,32 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
     def play(self, log=True):
         """Continue a paused movie from current position.
         """
-        if self.status != PLAYING:
+        cstat = self.status
+        if cstat != PLAYING:
+            self.status = PLAYING
 
-            if self.status == PAUSED:
+            if self._next_frame_sec is None:
+                # movie has no current position, need to reset the clock
+                # to zero in order to have the timing logic work
+                # otherwise the video stream would skip frames until the
+                # time since creating the movie object has passed
+                self._video_track_clock.reset()
+
+            if cstat == PAUSED:
                 # toggle audio pause
                 if self._audio_stream_player:
                     self._audio_stream_player.pause()
                     self._audio_stream_clock.reset(-self._audio_stream_player.get_time()/1000.0)
+                if self._next_frame_sec:
+                    self._video_track_clock.reset(-self._next_frame_sec)
+            else:
+                nt = self._getNextFrame()
+                self._video_track_clock.reset(-nt)
 
-            self.status = PLAYING
             if log and self.autoLog:
                     self.win.logOnFlip("Set %s playing" %(self.name),
                                        level=logging.EXP, obj=self)
 
-            self._video_track_clock.reset(-self._getNextFrame())
             self._updateFrameTexture()
             self.win.callOnFlip(self._flipCallback)
             return self._next_frame_index
@@ -392,15 +406,26 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
         """ Seek to a particular timestamp in the movie.
         """
         if self.status in [PLAYING, PAUSED]:
-            if self.status == PLAYING:
-                self.pause()
+            if timestamp > 0.0:
+                if self.status == PLAYING:
+                    self.pause()
+
                 if self._audio_stream_player and self._audio_stream_player.is_seekable():
                     self._audio_stream_player.set_time(int(timestamp*1000.0))
+                    self._audio_stream_clock.reset(-timestamp)
+
                 self._video_stream.set(cv2.cv.CV_CAP_PROP_POS_MSEC,
                                         timestamp*1000.0)
-                self.play()
-                if log:
-                    logAttrib(self, log, 'seek', timestamp)
+                self._video_track_clock.reset(-timestamp)
+                self._next_frame_index = self._video_stream.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)
+                self._next_frame_sec = self._video_stream.get(cv2.cv.CV_CAP_PROP_POS_MSEC)/1000.0
+            else:
+                self.stop()
+                self.loadMovie(self.filename)
+            if log:
+                logAttrib(self, log, 'seek', timestamp)
+
+            self.play()
 
     def setFlipHoriz(self, newVal=True, log=True):
         """If set to True then the movie will be flipped horizontally (left-to-right).
@@ -514,7 +539,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
 
     def _getNextFrame(self):
         # get next frame info ( do not decode frame yet)
-        while 1:
+        while self.status == PLAYING:
             if self._video_stream.grab():
                 self._prev_frame_index = self._next_frame_index
                 self._prev_frame_sec = self._next_frame_sec
@@ -528,8 +553,13 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
                 if self.getTimeToNextFrameDraw() > -self._inter_frame_interval/2.0:
                     return self._next_frame_sec
                 else:
-                    logging.warning("MovieStim2 dropping video frame index: %d"%(self._next_frame_index))
-                    logging.flush()
+                    self.nDroppedFrames += 1
+                    if self.nDroppedFrames < reportNDroppedFrames:
+                        logging.warning("MovieStim2 dropping video frame index: %d"%(self._next_frame_index))
+                    elif self.nDroppedFrames == reportNDroppedFrames:
+                        logging.warning("Multiple Movie frames have "
+                                        "occurred - I'll stop bothering you "
+                                        "about them!")
             else:
                 self._onEos()
                 break
