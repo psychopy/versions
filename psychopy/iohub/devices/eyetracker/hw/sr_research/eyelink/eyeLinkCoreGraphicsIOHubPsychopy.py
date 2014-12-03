@@ -67,15 +67,15 @@ class FixationTarget(object):
 
 # Intro Screen
 class BlankScreen(object):
-    WINDOW_BACKGROUND_COLOR=(128,128,128)
-    def __init__(self,psychopy_win):
+    def __init__(self, psychopy_win, color):
         self.display_size = psychopy_win.size
         w,h = self.display_size
         self.win = psychopy_win
+        self.color = color
         self.background = visual.Rect(self.win, w, h,
-                                                   lineColor=self.WINDOW_BACKGROUND_COLOR,
+                                                   lineColor=self.color,
                                                    lineColorSpace='rgb255',
-                                                   fillColor=self.WINDOW_BACKGROUND_COLOR,
+                                                   fillColor=self.color,
                                                    fillColorSpace='rgb255',
                                                    units='pix',
                                                    name='BACKGROUND',
@@ -164,7 +164,7 @@ class IntroScreen(object):
             wrapWidth=self.display_size[0]*.8))
 
         self.introlines.append(visual.TextStim(self.window,
-            text="* V: Start Calidation Procedure",
+            text="* V: Start Validation Procedure",
             pos=(left_margin,topline_y-space_per_lines*(len(self.introlines)+2)),
             height = font_height,
             color=(0, 0, 0), colorSpace='rgb255',
@@ -295,16 +295,14 @@ class EyeLinkCoreGraphicsIOHubPsychopy(pylink.EyeLinkCustomDisplay):
         self.window = visual.Window(display.getPixelResolution(),
                                   monitor=display.getPsychopyMonitorName(),
                                   units=display.getCoordinateType(),
+                                  color=self.WINDOW_BACKGROUND_COLOR,
+                                  colorSpace='rgb255',
                                   fullscr=True,
                                   allowGUI=False,
                                   screen=display.getIndex()
                                   )
 
-        self.window.setColor(color=self.WINDOW_BACKGROUND_COLOR,
-                             colorSpace='rgb255')
-        self.window.flip(clearBuffer=True)
-
-        self.blankdisplay = BlankScreen(self.window)
+        self.blankdisplay = BlankScreen(self.window,self.WINDOW_BACKGROUND_COLOR)
         self.textmsg = TextLine(self.window)
         self.introscreen = IntroScreen(self.window)
         self.fixationpoint = FixationTarget(self)
@@ -366,9 +364,9 @@ class EyeLinkCoreGraphicsIOHubPsychopy(pylink.EyeLinkCustomDisplay):
         event_type_index = DeviceEvent.EVENT_TYPE_ID_INDEX
         if event[event_type_index] == EventConstants.KEYBOARD_RELEASE:
             from psychopy.iohub.devices.keyboard import KeyboardInputEvent
-            char_index = KeyboardInputEvent.CLASS_ATTRIBUTE_NAMES.index('char')
+            key_index = KeyboardInputEvent.CLASS_ATTRIBUTE_NAMES.index('key')
             modifiers_index = KeyboardInputEvent.CLASS_ATTRIBUTE_NAMES.index('modifiers')
-            char = event[char_index]
+            char = event[key_index]
             #mods = event[modifiers_index]
 
             if char:
@@ -393,9 +391,9 @@ class EyeLinkCoreGraphicsIOHubPsychopy(pylink.EyeLinkCustomDisplay):
                 self.state = "validation"
             elif char == "a":
                 pylink_key = ord(char)
-            elif char == "page_up":
+            elif char == "pageup":
                 pylink_key = pylink.PAGE_UP
-            elif char == "page_down":
+            elif char == "pagedown":
                 pylink_key = pylink.PAGE_DOWN
             elif char == "-":
                 pylink_key = ord(char)
@@ -410,7 +408,6 @@ class EyeLinkCoreGraphicsIOHubPsychopy(pylink.EyeLinkCustomDisplay):
             elif char == "right":
                 pylink_key = pylink.CURS_RIGHT
             else:
-                #print2err("EyeLink Setup: Unhandled keyboard evt: [%s] [%s]"%(char, mods))
                 return
             self.keys.append(pylink.KeyInput(pylink_key, 0))
 
