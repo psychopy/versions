@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import sys, psychopy
@@ -248,7 +248,7 @@ class PsychoPyApp(wx.App):
 
     def _wizard(self, selector, arg=''):
         from psychopy import core
-        wizard = os.path.join(self.prefs.paths['psychopy'], 'wizard.py')
+        wizard = os.path.join(self.prefs.paths['psychopy'], 'tools', 'wizard.py')
         so, se = core.shellCall([sys.executable, wizard, selector, arg], stderr=True)
         if se and self.prefs.app['debugMode']:
             print se  # stderr contents; sometimes meaningless
@@ -415,7 +415,7 @@ class PsychoPyApp(wx.App):
             self.newBuilderFrame(fileName=fileName)
     def terminateHubProcess(self):
         """
-        Send a UPD message to iohub informing it to exit.
+        Send a UDP message to iohub informing it to exit.
 
         Use this when force quiting the experiment script process so iohub
         knows to exit as well.
@@ -504,7 +504,7 @@ class PsychoPyApp(wx.App):
         info.SetVersion('v'+psychopy.__version__)
         info.SetDescription(msg)
 
-        info.SetCopyright('(C) 2002-2014 Jonathan Peirce')
+        info.SetCopyright('(C) 2002-2015 Jonathan Peirce')
         info.SetWebSite('http://www.psychopy.org')
         info.SetLicence(license)
         info.AddDeveloper('Jonathan Peirce')

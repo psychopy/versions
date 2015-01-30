@@ -1,5 +1,5 @@
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 #--------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 import os, sys
 
 #version info for PsychoPy
-__version__='1.81.03'
+__version__='1.82.00'
 __license__='GNU GPLv3 (or more recent equivalent)'
 __author__='Jonathan Peirce'
 __author_email__='jon@peirce.org.uk'
@@ -17,7 +17,7 @@ __maintainer_email__='psychopy-dev@googlegroups.com'
 __users_email__='psychopy-users@googlegroups.com'
 __url__='http://www.psychopy.org'
 __downloadUrl__='http://code.google.com/p/psychopy/downloads'
-__git_sha__='1aeb393'
+__git_sha__='efb3a22'
 __build_platform__='n/a'
 
 __all__ = ["gui", "misc", "visual", "core", "event", "data", "filters", "sound"]

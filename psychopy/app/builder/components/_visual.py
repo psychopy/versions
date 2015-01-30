@@ -1,5 +1,5 @@
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from _base import BaseComponent, Param
@@ -27,7 +27,8 @@ class VisualComponent(BaseComponent):
                 startEstim=startEstim, durationEstim=durationEstim)
         self.psychopyLibs=['visual']#needs this psychopy lib to operate
 
-        self.params['units']=Param(units, valType='str', allowedVals=['from exp settings', 'deg', 'cm', 'pix', 'norm'],
+        self.params['units']=Param(units, valType='str',
+            allowedVals=['from exp settings', 'deg', 'cm', 'pix', 'norm','height','degFlatPos','degFlat'],
             hint=_translate("Units of dimensions for this stimulus"),
             label=_localized['units'])
         self.params['color']=Param(color, valType='str', allowedTypes=[],

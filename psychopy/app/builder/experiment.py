@@ -1,5 +1,5 @@
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import StringIO, sys, codecs
@@ -1180,7 +1180,7 @@ class Routine(list):
         buff.writeIndented('%s.reset()  # clock \n' %(self._clockName))
         buff.writeIndented('frameN = -1\n')
         #can we use non-slip timing?
-        maxTime, useNonSlip, onlyStaticComps = self.getMaxTime()
+        maxTime, useNonSlip = self.getMaxTime()
         if useNonSlip:
             buff.writeIndented('routineTimer.add(%f)\n' %(maxTime))
 
@@ -1270,6 +1270,8 @@ class Routine(list):
             if comp.params['name'].val==name:
                 return comp
         return None
+    def hasOnlyStaticComp(self):
+        return all([comp.type == 'Static' for comp in self])
     def getMaxTime(self):
         """What the last (predetermined) stimulus time to be presented. If
         there are no components or they have code-based times then will default
@@ -1277,8 +1279,7 @@ class Routine(list):
         """
         maxTime=0
         nonSlipSafe = True # if possible
-        onlyStaticComps = True
-        for n, component in enumerate(self):
+        for component in self:
             if 'startType' in component.params:
                 start, duration, nonSlip = component.getStartAndDuration()
                 if not nonSlip:
@@ -1292,13 +1293,10 @@ class Routine(list):
                 except:
                     thisT=0
                 maxTime=max(maxTime,thisT)
-                #update onlyStaticComps if needed
-                if component.type != 'Static':
-                    onlyStaticComps = False
         if maxTime==0:#if there are no components
             maxTime=10
             nonSlipSafe=False
-        return maxTime, nonSlipSafe, onlyStaticComps
+        return maxTime, nonSlipSafe
 
 class ExpFile(list):
     """An ExpFile is similar to a Routine except that it generates its code

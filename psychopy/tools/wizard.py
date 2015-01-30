@@ -4,7 +4,7 @@
 """Libraries for wizards, currently firstrun configuration and benchmark."""
 
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 # Author: Jeremy Gray, Oct 2012; localization 2014
@@ -75,7 +75,7 @@ class ConfigWizard(object):
             dlg.addText(_translate("drivers cannot support PsychoPy, so you'll need to update the drivers."), color='red')
             msg = _translate("""<p>Critical issue:\n</p><p>Your video card (%(card)s) has drivers
                 that cannot support the high-performance features that PsychoPy depends on.
-                Fortunately, its typically free and straightforward to get new drivers
+                Fortunately, it's typically free and straightforward to get new drivers
                 directly from the manufacturer.</p>
                 <p><strong>To update the drivers:</strong>
                 <li> You'll need administrator privileges.
@@ -561,7 +561,7 @@ class ConfigWizard(object):
         f.close()
 
 class BenchmarkWizard(ConfigWizard):
-    """Class to get system info, run benchmarks, optional upload to psychopy.org"""
+    """Class to get system info, run benchmarks""" #, optional upload to psychopy.org"""
     def __init__(self, fullscr=True, interactive=True, log=True):
         self.firstrun = False
         self.prefs = prefs
@@ -583,7 +583,7 @@ class BenchmarkWizard(ConfigWizard):
                             autoLog=False)
 
         # do system info etc first to get fps, add to list later because
-        # its nicer for benchmark results to appears at top of the report:
+        # it's nicer for benchmark results to appears at top of the report:
         diagnostics = self.runDiagnostics(win, verbose=True)
         info = {}
         for k, v, m, w in diagnostics:  # list of tuples --> dict, ignore msg m, warning w
@@ -617,6 +617,9 @@ class BenchmarkWizard(ConfigWizard):
         dlg = gui.Dlg(title=self.name)
         dlg.addText('')
         dlg.addText(_translate('Benchmark complete! (See the Coder output window.)'))
+
+        # disable upload for now at least:
+        '''
         dlg.addText(_translate('Are you willing to share your data at psychopy.org?'))
         dlg.addText(_translate('Only configuration and performance data are shared;'))
         dlg.addText(_translate('No personally identifying information is sent.'))
@@ -628,7 +631,7 @@ class BenchmarkWizard(ConfigWizard):
                 dlg = gui.Dlg(title=self.name + ' result')
                 dlg.addText('')
                 if status and status.startswith('success good_upload'):
-                    dlg.addText(_translate('Configutation data were successfully uploaded to'))
+                    dlg.addText(_translate('Configuration data were successfully uploaded to'))
                     dlg.addText('http://upload.psychopy.org/benchmark/report.html')
                     dlg.addText(_translate('Thanks for participating!'))
                 else:
@@ -637,6 +640,7 @@ class BenchmarkWizard(ConfigWizard):
                     else:
                         dlg.addText('Upload error status: %s' % status[:20])
                 dlg.show()
+        '''
 
         self.htmlReport(itemsList)
         self.reportPath = os.path.join(self.prefs.paths['userPrefsDir'], 'benchmarkReport.html')

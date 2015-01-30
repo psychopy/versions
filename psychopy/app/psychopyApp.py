@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from psychopy.app._psychopyApp import *
@@ -12,14 +12,14 @@ from psychopy.app._psychopyApp import *
 
 if __name__=='__main__':
     if '-v' in sys.argv or '--version' in sys.argv:
-        print 'PsychoPy2, version %s (c)Jonathan Peirce, 2014, GNU GPL license' %psychopy.__version__
+        print 'PsychoPy2, version %s (c)Jonathan Peirce, 2015, GNU GPL license' %psychopy.__version__
         sys.exit()
     if '-h' in sys.argv or '--help' in sys.argv:
         print """Starts the PsychoPy2 application.
 
 Usage:  python PsychoPy.py [options] [file]
 
-Without options or files provided starts the psychopy using prefs to
+Without options or files provided this starts PsychoPy using prefs to
 decide on the view(s) to open.  If optional [file] is provided action
 depends on the type of the [file]:
 
@@ -35,7 +35,7 @@ Options:
     -h, --help       prints this help and exit
 
     --firstrun       launches configuration wizard
-    --nosplash       suppresses splash screen
+    --no-splash      suppresses splash screen
 
 """
         sys.exit()

@@ -1,5 +1,5 @@
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from _base import *
@@ -224,24 +224,17 @@ class RatingScaleComponent(BaseComponent):
             self.params['startVal'].val = 0 # time, frame
             if self.params['startType'].val == 'condition':
                 self.params['startVal'].val = 'True'
-        if self.params['startType'].val == 'frame N':
-            buff.writeIndented("if frameN > %(startVal)s:\n" % self.params)
-        elif self.params['startType'].val == 'condition':
-            buff.writeIndented("if %(startVal)s:\n" % self.params)
-        else: # self.params['startType'].val == 'time (s)':
-            buff.writeIndented("if t > %(startVal)s:\n" % self.params)
-        buff.setIndentLevel(1, relative=True)
-        buff.writeIndented("%(name)s.draw()\n" % (self.params))
+
+        self.writeStartTestCode(buff)
+        buff.writeIndented("%(name)s.setAutoDraw(True)\n" % (self.params))
+        buff.setIndentLevel(-1, relative=True)
+
+        # handle a response:
         # if requested, force end of trial when the subject 'accepts' the current rating:
         if self.params['forceEndRoutine'].val:
-            buff.writeIndented("continueRoutine = %s.noResponse\n" % (name))
-        # only need to do the following the first time it goes False, here gets set every frame:
-        buff.writeIndented("if %s.noResponse == False:\n" % name)
-        buff.setIndentLevel(1, relative=True)
-        buff.writeIndented("%s.response = %s.getRating()\n" % (name, name));
-        if self.params['storeRatingTime'].val:
-            buff.writeIndented("%s.rt = %s.getRT()\n" % (name, name));
-        buff.setIndentLevel(-2, relative=True)
+            buff.writeIndented("continueRoutine &= %s.noResponse  # a response ends the trial\n" % name)
+
+        # for completeness: could handle going beyond self.params['stopVal'].val with no response
 
     def writeRoutineEndCode(self, buff):
         name = self.params['name']

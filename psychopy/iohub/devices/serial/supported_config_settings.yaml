@@ -1,4 +1,4 @@
-mcu.iosync.MCU:
+serial.Serial:
     enable: IOHUB_BOOL
     name:
         IOHUB_STRING:
@@ -64,7 +64,7 @@ mcu.iosync.MCU:
                 max: 0.500
     save_events: IOHUB_BOOL
     stream_events: IOHUB_BOOL
-    auto_report_events: False    
+    auto_report_events: IOHUB_BOOL
     monitor_event_types:
         IOHUB_LIST:
             valid_values: [SerialInputEvent, SerialByteChangeEvent]

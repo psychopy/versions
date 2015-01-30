@@ -1,5 +1,5 @@
 # Part of the PsychoPy library
-# Copyright (C) 2014 Jonathan Peirce
+# Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from _visual import * #to get the template visual component
@@ -99,6 +99,8 @@ class PolygonComponent(VisualComponent):
         buff.writeIndented("    lineWidth=%(lineWidth)s, lineColor=%(lineColor)s, lineColorSpace=%(lineColorSpace)s,\n" %(inits) )
         buff.writeIndented("    fillColor=%(fillColor)s, fillColorSpace=%(fillColorSpace)s,\n" %(inits) )
         buff.writeIndented("    opacity=%(opacity)s," %(inits) )
+        depth = -self.getPosInRoutine()
+        buff.write("depth=%.1f, \n" %depth)#finish with newline
         if self.params['interpolate'].val=='linear':
             buff.write("interpolate=True)\n")
         else: buff.write("interpolate=False)\n")
