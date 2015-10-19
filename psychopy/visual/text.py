@@ -91,7 +91,7 @@ class TextStim(BaseVisualStim, ColorMixin):
         the attributes that affect the shapes of the letters:
         ``text``, ``height``, ``font``, ``bold`` etc. These make the next .draw()
         slower because that sets the text again. You can make the draw()
-        quick by calling re-setting the text (```myTextStim.text = myTextStim.text)
+        quick by calling re-setting the text (``myTextStim.text = myTextStim.text``)
         when you've changed the parameters.
 
         In general, other attributes which merely affect the presentation of
@@ -226,7 +226,8 @@ class TextStim(BaseVisualStim, ColorMixin):
     @attributeSetter
     def text(self, text):
         """String
-        The text to be rendered. Use \n to make new lines. OBS: may be slow."""
+        The text to be rendered. Use \\\\n to make new lines. OBS: may be slow.
+        """
         if text != None:  #make sure we have unicode object to render
             self.__dict__['text'] = unicode(text)
         if self.useShaders:
@@ -521,7 +522,18 @@ class TextStim(BaseVisualStim, ColorMixin):
         self.__dict__['wrapWidth'] = wrapWidth
         self._wrapWidthPix = convertToPix(pos = numpy.array([0, 0]), vertices=numpy.array([self.wrapWidth, 0]), units=self.units, win=self.win)[0]
         self._needSetText = True
-
+        
+    @property
+    def boundingBox(self):
+        """(read only) attribute representing the bounding box of the text (w,h). 
+        This differs from `width` in that the width represents the width of the
+        margins, which might differ from the width of the text within them
+        
+        NOTE: currently always returns the size in pixels 
+        (this will change to return in stimulus units)
+        """
+        return (self._pygletTextObj._layout.content_width, self._pygletTextObj._layout.content_height)
+        
     @property
     def posPix(self):
         """This determines the coordinates in pixels of the position for the

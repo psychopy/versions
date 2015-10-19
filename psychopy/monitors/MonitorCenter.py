@@ -535,10 +535,10 @@ class MainFrame(wx.Frame):
         #insert values from new calib into GUI
         self.ctrlCalibDate.SetValue(
             monitors.strFromDate(self.currentMon.getCalibDate()))
-        self.ctrlScrDist.SetValue(locale.str(self.currentMon.getDistance()))
-        self.ctrlScrWidth.SetValue(locale.str(self.currentMon.getWidth()))
-        self.ctrlScrPixHoriz.SetValue(locale.str(self.currentMon.currentCalib['sizePix'][0]))
-        self.ctrlScrPixVert.SetValue(locale.str(self.currentMon.currentCalib['sizePix'][1]))
+        self.ctrlScrDist.SetValue(locale.str(self.currentMon.getDistance() or 0))
+        self.ctrlScrWidth.SetValue(locale.str(self.currentMon.getWidth() or 0))
+        self.ctrlScrPixHoriz.SetValue(locale.str(self.currentMon.currentCalib['sizePix'][0] or 0))
+        self.ctrlScrPixVert.SetValue(locale.str(self.currentMon.currentCalib['sizePix'][1] or 0))
         #self.ctrlScrGamma.SetValue(str(self.currentMon.getGamma()))
         self.ctrlCalibNotes.SetValue(self.currentMon.getNotes() or '')
         self.ctrlUseBits.SetValue(self.currentMon.getUseBits())
@@ -654,10 +654,14 @@ class MainFrame(wx.Frame):
         self.unSavedMonitor=True
     def onChangeScrDist(self, event):
         newVal = unicodeToFloat(self.ctrlScrDist.GetValue())
+        if newVal == 0:
+            newVal = None # zero means "not set" but can't be used in calculations
         self.currentMon.setDistance( newVal )
         self.unSavedMonitor=True
     def onChangeScrWidth(self, event):
         newVal = unicodeToFloat(self.ctrlScrWidth.GetValue())
+        if newVal == 0:
+            newVal = None # zero means "not set" but can't be used in calculations
         self.currentMon.setWidth( newVal )
         self.unSavedMonitor=True
     def onChangeScrPixHoriz(self, event):
@@ -964,9 +968,6 @@ class MainFrame(wx.Frame):
             plt.plot(nm,spectraRGB[2,:], 'b-', linewidth=2)
         figureCanvas.draw()#update the canvas
         plotWindow.addCanvas(figureCanvas)
-
-    def onClosePlotWindow(self, event):
-        print event
 
 class GammaLumValsDlg(wx.Dialog):
     '''a dialogue to manually get the luminance values recorded for each level'''

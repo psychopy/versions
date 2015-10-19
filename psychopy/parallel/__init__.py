@@ -5,7 +5,8 @@ The :class:`~psychopy.parallel.Parallel` class described below will attempt to
 load whichever parallel port driver is first found on your system and should
 suffice in most instances. If you need to use a specific driver then, instead of
 using :class:`~psychopy.parallel.ParallelPort` shown below you can use one of the following as
-drop-in replacemnts, forcing the use of a specific driver:
+drop-in replacements, forcing the use of a specific driver:
+
     - `psychopy.parallel.PParallelInpOut32`
     - `psychopy.parallel.PParallelDLPortIO`
     - `psychopy.parallel.PParallelLinux`
@@ -52,6 +53,16 @@ else:
             port.readPin(2)
             port.setPin(2, 1)
         """
+
+        def __init__(self, address):
+            """This is just a dummy constructor to avoid errors 
+            when the parallel port cannot be initiated
+            """
+
+            logging.warning("psychopy.parallel has been imported but "
+                        "(1) no parallel port driver could be found or accessed on Windows or"
+                        "(2) PsychoPy is run on a Mac (without parallel-port support for now)")
+
         def setData(self, data):
             """
             Set the data to be presented on the parallel port (one ubyte).

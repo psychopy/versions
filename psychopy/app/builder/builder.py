@@ -90,14 +90,12 @@ class FileDropTarget(wx.FileDropTarget):
         wx.FileDropTarget.__init__(self)
         self.builder = builder
     def OnDropFiles(self, x, y, filenames):
-        logging.debug('PsychoPyBuilder: received dropped files: filenames')
+        logging.debug('PsychoPyBuilder: received dropped files: %s' % filenames)
         for filename in filenames:
-            if filename.endswith('.psyexp'):
+            if filename.endswith('.psyexp') or filename.lower().endswith('.py'):
                 self.builder.fileOpen(filename=filename)
-            elif filename.lower().endswith('.py'):
-                self.app.fileOpen(filename=filename)
             else:
-                logging.warning('dropped file ignored: did not end in .psyexp')
+                logging.warning('dropped file ignored: did not end in .psyexp or .py')
 
 class WindowFrozen(object):
     """
@@ -795,7 +793,7 @@ class FlowPanel(wx.ScrolledWindow):
             self.removeComponent(component, compID)
             self.frame.addToUndoStack("REMOVE `%s` from Flow" %component.params['name'])
         if op=='rename':
-            print 'rename is not implemented yet'
+            print('rename is not implemented yet')
             #if component is a loop: DlgLoopProperties
             #elif component is a routine: DlgRoutineProperties
         self.draw()
@@ -1654,10 +1652,9 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
             panelWidth = 3*24+50
         scrolledpanel.ScrolledPanel.__init__(self,frame,id,size=(panelWidth,10*self.dpi))
         self.sizer=wx.BoxSizer(wx.VERTICAL)
-        self.components=components.getAllComponents()
         self.components=experiment.getAllComponents(self.app.prefs.builder['componentsFolders'])
         categories = ['Favorites']
-        categories.extend(components.getAllCategories())
+        categories.extend(components.getAllCategories(self.app.prefs.builder['componentsFolders']))
         #get rid of hidden components
         for hiddenComp in self.frame.prefs['hiddenComponents']:
             if hiddenComp in self.components:
@@ -1674,7 +1671,10 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
             if sys.platform.startswith('linux'): # Localized labels on PlateButton may be corrupted in Ubuntu.
                 label = categ
             else:
-                label = _localized[categ]
+                if categ in _localized.keys():
+                    label = _localized[categ]
+                else:
+                    label = categ
             sectionBtn = platebtn.PlateButton(self,-1,label,
                 style=platebtn.PB_STYLE_DROPARROW, name=categ)
             sectionBtn.Bind(wx.EVT_LEFT_DOWN, self.onSectionBtn) #mouse event must be bound like this
@@ -2029,8 +2029,6 @@ class ParamCtrls:
         else:
             #create the full set of ctrls
             val = unicode(param.val)
-            if fieldName == 'conditionsFile':
-                val = getAbbrev(val)
             self.valueCtrl = wx.TextCtrl(parent,-1,val,size=wx.Size(self.valueWidth,-1))
             # focus seems to get reset elsewhere, try "git grep -n SetFocus"
             if fieldName in ['allowedKeys', 'image', 'movie', 'scaleDescription', 'sound', 'Begin Routine']:
@@ -2104,7 +2102,7 @@ class ParamCtrls:
         elif hasattr(ctrl, 'GetLabel'): #for wx.StaticText
             return ctrl.GetLabel()
         else:
-            print "failed to retrieve the value for %s" %(ctrl)
+            print("failed to retrieve the value for %s" %(ctrl))
             return None
     def _setCtrlValue(self, ctrl, newVal):
         """Set the current value of the control (whatever type of ctrl it
@@ -2113,7 +2111,7 @@ class ParamCtrls:
         This function checks them all and returns the value or None.
 
         .. note::
-            Don't use SetStringSelection() here to avoid using tranlated
+            Don't use SetStringSelection() here to avoid using translated
             value.  Instead, get index of the value using _choices attribute
             and use SetSelection() to set the value.
         """
@@ -2130,7 +2128,7 @@ class ParamCtrls:
         elif hasattr(ctrl, 'SetLabel'): #for wx.StaticText
             ctrl.SetLabel(newVal)
         else:
-            print "failed to retrieve the value for %s" %(ctrl)
+            print("failed to retrieve the value for %s" %(ctrl))
     def getValue(self):
         """Get the current value of the value ctrl
         """
@@ -2579,7 +2577,7 @@ class _BaseParamsDlg(wx.Dialog):
         elif hasattr(ctrl, 'GetValue'):  #e.g. TextCtrl
             val = ctrl.GetValue()
         else:
-            raise ValueError, 'Unknown type of ctrl in _testCompile: %s' %(type(ctrl))
+            raise ValueError('Unknown type of ctrl in _testCompile: %s' %(type(ctrl)))
         try:
             compile(val, '', mode)
             syntaxOk = True
@@ -2715,12 +2713,12 @@ class _BaseParamsDlg(wx.Dialog):
             used = namespace.exists(newName)
             same_as_old_name = bool(newName == self.params['name'].val)
             if used and not same_as_old_name:
-                return _translate("That name is in use (it's a %s). Try another name.") % namespace._localized(used), False
+                return _translate("That name is in use (it's a %s). Try another name.") % namespace._localized[used], False
             elif not namespace.isValid(newName): # valid as a var name
                 return _translate("Name must be alpha-numeric or _, no spaces"), False
             elif namespace.isPossiblyDerivable(newName): # warn but allow, chances are good that its actually ok
                 msg = namespace.isPossiblyDerivable(newName)
-                return namespace._localized(msg), True
+                return namespace._localized[msg], True
             else:
                 return "", True
     def checkName(self, event=None):
@@ -3057,7 +3055,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         if 'conditionsFile' in self.currentCtrls.keys(): # as set via DlgConditions
             valCtrl = self.currentCtrls['conditionsFile'].valueCtrl
             valCtrl.Clear()
-            valCtrl.WriteText(getAbbrev(self.conditionsFile))
+            valCtrl.WriteText(self.conditionsFile)
         # still need to do namespace and internal updates (see end of onBrowseTrialsFile)
 
     def setCtrls(self, ctrlType):
@@ -3110,8 +3108,8 @@ class DlgLoopProperties(_BaseParamsDlg):
                 self.conditions, self.condNamesInFile = data.importConditions(dlg.GetPath(),
                                                         returnFieldNames=True)
                 needUpdate = True
-            except ImportError, msg:
-                msg = str(msg)
+            except ImportError as msg:
+                msg = unicode(msg)
                 if msg.startswith('Could not open'):
                     self.currentCtrls['conditions'].setValue(_translate('Could not read conditions from:\n') + newFullPath.split(os.path.sep)[-1])
                     logging.error('Could not open as a conditions file: %s' % newFullPath)
@@ -3139,7 +3137,7 @@ class DlgLoopProperties(_BaseParamsDlg):
                 if isSameFilePathAndName:
                     logging.info('Assuming reloading file: same filename and duplicate condition names in file: %s' % self.conditionsFile)
                 else:
-                    self.currentCtrls['conditionsFile'].setValue(getAbbrev(newPath))
+                    self.currentCtrls['conditionsFile'].setValue(newPath)
                     self.currentCtrls['conditions'].setValue(
                         'Warning: Condition names conflict with existing:\n['+duplCondNamesStr+
                         ']\nProceed anyway? (= safe if these are in old file)')
@@ -3148,7 +3146,7 @@ class DlgLoopProperties(_BaseParamsDlg):
             self.duplCondNames = duplCondNames # add after self.show() in __init__
 
             if needUpdate or 'conditionsFile' in self.currentCtrls.keys() and not duplCondNames:
-                self.currentCtrls['conditionsFile'].setValue(getAbbrev(newPath))
+                self.currentCtrls['conditionsFile'].setValue(newPath)
                 self.currentCtrls['conditions'].setValue(self.getTrialsSummary(self.conditions))
 
     def getParams(self):
@@ -3172,7 +3170,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         return self.currentHandler.params
     def refreshConditions(self):
         """user might have manually edited the conditionsFile name, which in turn
-        affects self.conditions and namespace. its harder to handle changes to
+        affects self.conditions and namespace. It's harder to handle changes to
         long names that have been abbrev()'d, so skip them (names containing '...').
         """
         val = self.currentCtrls['conditionsFile'].valueCtrl.GetValue()
@@ -3184,7 +3182,7 @@ class DlgLoopProperties(_BaseParamsDlg):
                 try:
                     self.conditions = data.importConditions(self.conditionsFile)
                     self.currentCtrls['conditions'].setValue(self.getTrialsSummary(self.conditions))
-                except ImportError, msg:
+                except ImportError as msg:
                     self.currentCtrls['conditions'].setValue(
                         _translate('Badly formed condition name(s) in file:\n')+str(msg).replace(':','\n')+
                         _translate('.\nNeed to be legal as var name; edit file, try again.'))
@@ -3268,11 +3266,15 @@ class DlgExperimentProperties(_BaseParamsDlg):
         if self.paramCtrls['Full-screen window'].valueCtrl.GetValue():
             #get screen size for requested display
             num_displays = wx.Display.GetCount()
-            if int(self.paramCtrls['Screen'].valueCtrl.GetValue())>num_displays:
+            try:
+                screen_value=int(self.paramCtrls['Screen'].valueCtrl.GetValue())
+            except ValueError:
+                screen_value=1#param control currently contains no integer value
+            if screen_value<1 or screen_value>num_displays:
                 logging.error("User requested non-existent screen")
                 screenN=0
             else:
-                screenN=int(self.paramCtrls['Screen'].valueCtrl.GetValue())-1
+                screenN=screen_value-1
             size=list(wx.Display(screenN).GetGeometry()[2:])
             #set vals and disable changes
             self.paramCtrls['Window size (pixels)'].valueCtrl.SetValue(unicode(size))
@@ -3678,11 +3680,11 @@ class DlgConditions(wx.Dialog):
                     else: #if thisType in ['NoneType']:
                         #assert False, 'programer error, unknown type: '+thisType
                         exec("lastRow.append("+unicode(thisVal)+')')
-                except ValueError, msg:
-                    print 'ValueError:', msg, '; using unicode'
+                except ValueError as msg:
+                    print('ValueError:', msg, '; using unicode')
                     exec("lastRow.append("+unicode(thisVal)+')')
-                except NameError, msg:
-                    print 'NameError:', msg, '; using unicode'
+                except NameError as msg:
+                    print('NameError:', msg, '; using unicode')
                     exec("lastRow.append("+repr(thisVal)+')')
             self.data.append(lastRow)
         if self.trim:
@@ -3857,9 +3859,9 @@ class DlgConditions(wx.Dialog):
                 self.parent.conditionsFile = fileName
             return contents
         elif not os.path.isfile(fileName):
-            print 'file %s not found' % fileName
+            print('file %s not found' % fileName)
         else:
-            print 'only .pkl supported at the moment'
+            print('only .pkl supported at the moment')
     def asConditions(self):
         """converts self.data into self.conditions for TrialHandler, returns conditions
         """
@@ -3884,6 +3886,9 @@ class BuilderFrame(wx.Frame):
     def __init__(self, parent, id=-1, title='PsychoPy (Experiment Builder)',
                  pos=wx.DefaultPosition, fileName=None,frameData=None,
                  style=wx.DEFAULT_FRAME_STYLE, app=None):
+
+        if fileName is not None:
+            fileName = fileName.decode(sys.getfilesystemencoding())
 
         self.app=app
         self.dpi=self.app.dpi
@@ -4259,8 +4264,8 @@ class BuilderFrame(wx.Frame):
             self.exp = experiment.Experiment(prefs=self.app.prefs)
             try:
                 self.exp.loadFromXML(filename)
-            except Exception, err:
-                print "Failed to load %s. Please send the following to the PsychoPy user list" %filename
+            except Exception:
+                print("Failed to load %s. Please send the following to the PsychoPy user list" %filename)
                 traceback.print_exc()
                 logging.flush()
             self.resetUndoStack()
@@ -4334,7 +4339,7 @@ class BuilderFrame(wx.Frame):
                 self.filename = newPath
                 returnVal = 1
             else:
-                print "'Save-as' canceled; existing file NOT overwritten.\n"
+                print("'Save-as' canceled; existing file NOT overwritten.\n")
         try: #this seems correct on PC, but not on mac
             dlg.destroy()
         except:
@@ -4591,7 +4596,7 @@ class BuilderFrame(wx.Frame):
         fileDir = self.demos[event.GetId()]
         files = glob.glob(os.path.join(fileDir,'*.psyexp'))
         if len(files)==0:
-            print "Found no psyexp files in %s" %fileDir
+            print("Found no psyexp files in %s" %fileDir)
         else:
             self.fileOpen(event=None, filename=files[0], closeCurrent=True)
     def demosMenuUpdate(self):
@@ -4639,7 +4644,7 @@ class BuilderFrame(wx.Frame):
         sys.stderr = self.stdoutFrame
 
         #provide a running... message
-        print "\n"+(" Running: %s " %(fullPath)).center(80,"#")
+        print("\n"+(" Running: %s " %(fullPath)).center(80,"#"))
         self.stdoutFrame.lenLastRun = len(self.stdoutFrame.getText())
 
         self.scriptProcess=wx.Process(self) #self is the parent (which will receive an event when the process ends)
@@ -4817,7 +4822,7 @@ class ReadmeFrame(wx.Frame):
         #attempt to open
         try:
             f=codecs.open(filename, 'r', 'utf-8')
-        except IOError, err:
+        except IOError as err:
             logging.warning("Found readme file for %s and appear to have permissions, but can't open" %self.expName)
             logging.warning(err)
             return False
@@ -4844,8 +4849,11 @@ class ReadmeFrame(wx.Frame):
         else:
             self.Show()
 def getAbbrev(longStr, n=30):
-    """for a filename (or any string actually), give the first
-    10 characters, an ellipsis and then n-10 of the final characters"""
+    """For a filename (or any string actually), give the first
+    10 characters, an ellipsis and then n-10 of the final characters.
+    This was previously used to abbreviate the path to a conditions file
+    in the loop dialog but this caused more problems than it solved, so
+    this is no longer used there."""
     if len(longStr)>35:
         return longStr[0:10]+'...'+longStr[(-n+10):]
     else:

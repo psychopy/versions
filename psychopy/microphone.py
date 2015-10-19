@@ -185,7 +185,9 @@ class AudioCapture(object):
             onsettime = '-%d' % self.fileOnset + ms[1:]
             self.savedFile = onsettime.join(os.path.splitext(self.wavOutFilename))
         else:
-            self.savedFile = os.path.abspath(filename).strip('.wav') + '.wav'
+            self.savedFile = os.path.abspath(filename)
+            if not self.savedFile.endswith('.wav'):
+                self.savedFile += '.wav'
 
         t0 = core.getTime()
         self.recorder.run(self.savedFile, self.duration, **self.options)
@@ -242,7 +244,7 @@ class AudioCapture(object):
 
         Can take several visual frames to resample a 2s recording.
 
-        The default values for resample() are for google-speech, keeping the
+        The default values for resample() are for Google-speech, keeping the
         original (presumably recorded at 48kHz) to archive.
         A warning is generated if the new rate not an integer factor / multiple of the old rate.
 
@@ -583,7 +585,7 @@ class MicrophoneError(StandardError):
     """Class to report a microphone error"""
 
 class _GSQueryThread(threading.Thread):
-    """Internal thread class to send a sound file to google, stash the response.
+    """Internal thread class to send a sound file to Google, stash the response.
     """
     def __init__(self, request):
         threading.Thread.__init__(self, None, 'GoogleSpeechQuery', None)
@@ -675,7 +677,7 @@ class Speech2Text(object):
 
         Google's speech API is currently free to use, and seems to work well.
         Intended for within-experiment processing (near real-time, 1-2s delayed), in which
-        its often important to skip a slow or failed response, and not wait a long time;
+        it's often important to skip a slow or failed response, and not wait a long time;
         `BatchSpeech2Text()` reverses these priorities.
 
         It is possible (and
@@ -701,16 +703,16 @@ class Speech2Text(object):
         b) Then, either: Initiate a query and wait for response from google (or until the time-out limit is reached). This is "blocking" mode, and is the easiest to do::
 
             resp = gs.getResponse() # execution blocks here
-            print resp.word, resp.confidence
+            print(resp.word, resp.confidence)
 
         c) Or instead (advanced usage): Initiate a query, but do not wait for a response ("thread" mode: no blocking, no timeout, more control). `running` will change to False when a response is received (or hang indefinitely if something goes wrong--so you might want to implement a time-out as well)::
 
             resp = gs.getThread() # returns immediately
             while resp.running:
-                print '.', # displays dots while waiting
+                print('.',) # displays dots while waiting
                 sys.stdout.flush()
                 core.wait(0.1)
-            print resp.words
+            print(resp.words)
 
         d) Options: Set-up with a different language for the same speech clip; you'll get a different response (possibly having UTF-8 characters)::
 
@@ -727,7 +729,7 @@ class Speech2Text(object):
             makes along the way could either cause complete failure (disruptive),
             or could cause slightly different results to be obtained (without it being
             readily obvious that something had changed). For this reason,
-            its probably a good idea to re-run speech samples through `Speech2Text` at the end of
+            it's probably a good idea to re-run speech samples through `Speech2Text` at the end of
             a study; see `BatchSpeech2Text()`.
 
         :Author: Jeremy R. Gray, with thanks to Lefteris Zafiris for his help
@@ -745,7 +747,7 @@ class Speech2Text(object):
                 `filename` : <required>
                     name of the speech file (.flac, .wav, or .spx) to process. wav files will be
                     converted to flac, and for this to work you need to have flac (as an
-                    executable). spx format is speex-with-headerbyte (for google).
+                    executable). spx format is speex-with-headerbyte (for Google).
                 `lang` :
                     the presumed language of the speaker, as a locale code; default 'en-US'
                 `timeout` :
@@ -813,7 +815,7 @@ class Speech2Text(object):
             core.wait(0.2, 0)
             self.request = urllib2.Request(url, audio, header)
     def getThread(self):
-        """Send a query to google using a new thread, no blocking or timeout.
+        """Send a query to Google using a new thread, no blocking or timeout.
 
         Returns a thread which will **eventually** (not immediately) have the speech
         data in its namespace; see getResponse. In theory, you could have several
@@ -840,11 +842,11 @@ class Speech2Text(object):
             `resp.word` :
                 the best match, i.e., the most probably word, or `None`
             `resp.confidence` :
-                google's confidence about `.word`, ranging 0 to 1
+                Google's confidence about `.word`, ranging 0 to 1
             `resp.words` :
                 tuple of up to 5 guesses; so `.word` == `.words[0]`
             `resp.raw` :
-                the raw response from google (just a string)
+                the raw response from Google (just a string)
             `resp.json` :
                 a parsed version of raw, from `json.load(raw)`
         """
@@ -994,7 +996,7 @@ def switchOn(sampleRate=48000, outputDevice=None, bufferSize=None):
         CD-quality   = 44,100 / 24 bit
         human hearing: ~15,000 (adult); children & young adult higher
         human speech: 100-8,000 (useful for telephone: 100-3,300)
-        google speech API: 16,000 or 8,000 only
+        Google speech API: 16,000 or 8,000 only
         Nyquist frequency: twice the highest rate, good to oversample a bit
 
     pyo's downsamp() function can reduce 48,000 to 16,000 in about 0.02s (uses integer steps sizes)

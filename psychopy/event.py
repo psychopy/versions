@@ -33,6 +33,7 @@ if havePygame: usePygame=True#will become false later if win not initialised
 else: usePygame=False
 
 if havePyglet:
+    from pyglet.window.mouse import LEFT, MIDDLE, RIGHT  # takes ~250ms, so do it now
     global _keyBuffer
     _keyBuffer = []
     global mouseButtons
@@ -110,34 +111,44 @@ def _onPygletKey(symbol, modifiers, emulated=False):
     _keyBuffer.append( (thisKey,keyTime) ) # tuple
     logging.data("%s: %s" % (keySource, thisKey))
 
-def _onPygletMousePress(x,y, button, modifiers):
+
+def _onPygletMousePress(x,y, button, modifiers, emulated=False):
+    """button left=1, middle=2, right=4;
+    """
     global mouseButtons, mouseClick, mouseTimes
-    if button == pyglet.window.mouse.LEFT:
+    if emulated:
+        label = 'Emulated'
+    else:
+        label = ''
+    if button & LEFT:
         mouseButtons[0]=1
         mouseTimes[0]= psychopy.clock.getTime()-mouseClick[0].getLastResetTime()
-        label='Left'
-    if button == pyglet.window.mouse.MIDDLE:
+        label += ' Left'
+    if button & MIDDLE:
         mouseButtons[1]=1
         mouseTimes[1]= psychopy.clock.getTime()-mouseClick[1].getLastResetTime()
-        label='Middle'
-    if button == pyglet.window.mouse.RIGHT:
+        label += ' Middle'
+    if button & RIGHT:
         mouseButtons[2]=1
         mouseTimes[2]= psychopy.clock.getTime()-mouseClick[2].getLastResetTime()
-        label='Right'
-    logging.data("Mouse: %s button down, pos=(%i,%i)" %(label, x,y))
+        label += ' Right'
+    logging.data("Mouse: %s button down, pos=(%i,%i)" %(label.strip(), x,y))
 
-def _onPygletMouseRelease(x,y, button, modifiers):
+def _onPygletMouseRelease(x,y, button, modifiers, emulated=False):
     global mouseButtons
-    label = 'unknownButton'
-    if button == pyglet.window.mouse.LEFT:
+    if emulated:
+        label = 'Emulated'
+    else:
+        label = ''
+    if button & LEFT:
         mouseButtons[0]=0
-        label='Left'
-    if button == pyglet.window.mouse.MIDDLE:
+        label += ' Left'
+    if button & MIDDLE:
         mouseButtons[1]=0
-        label='Middle'
-    if button == pyglet.window.mouse.RIGHT:
+        label += ' Middle'
+    if button & RIGHT:
         mouseButtons[2]=0
-        label='Right'
+        label += ' Right'
     logging.data("Mouse: %s button up, pos=(%i,%i)" %(label, x,y))
 
 def _onPygletMouseWheel(x,y,scroll_x, scroll_y):
@@ -364,7 +375,8 @@ class Mouse:
         else:
             if hasattr(self.win.winHandle, 'set_mouse_position'):
                 newPosPix = self.win.size / 2 + newPosPix
-                self.win.winHandle.set_mouse_position(*newPosPix)
+                x, y = int(newPosPix[0]), int(newPosPix[1])
+                self.win.winHandle.set_mouse_position(x, y)
             else:
                 logging.error('mouse position could not be set (pyglet %s)' % pyglet.version)
 
@@ -463,7 +475,7 @@ class Mouse:
     def getWheelRel(self):
         """Returns the travel of the mouse scroll wheel since last call.
         Returns a numpy.array(x,y) but for most wheels y is the only
-        value that will change (except mac mighty mice?)
+        value that will change (except Mac mighty mice?)
         """
         global mouseWheelRel
         rel = mouseWheelRel
@@ -473,8 +485,10 @@ class Mouse:
     def getVisible(self):
         """Gets the visibility of the mouse (1 or 0)
         """
-        if usePygame: return mouse.get_visible()
-        else: print "Getting the mouse visibility is not supported under pyglet, but you can set it anyway"
+        if usePygame: 
+            return mouse.get_visible()
+        else: 
+            print("Getting the mouse visibility is not supported under pyglet, but you can set it anyway")
 
     def setVisible(self,visible):
         """Sets the visibility of the mouse to 1 or 0
@@ -558,7 +572,23 @@ class Mouse:
         elif self.win.units=='cm': return cm2pix(pos, self.win.monitor)
         elif self.win.units=='deg': return deg2pix(pos, self.win.monitor)
         elif self.win.units=='height': return pos*float(self.win.size[1])
+    def setExclusive(self, exclusivity):
+        """Binds the mouse to the experiment window. Only works in Pyglet.
+        In multi-monitor settings, or with a window that is not fullscreen, the mouse pointer can drift, and thereby
+        PsychoPy might not get the events from that window. setExclusive(True) works with Pyglet to bind the
+        mouse to the experiment window.
 
+        Note that binding the mouse pointer to a window will cause the pointer to vanish, and absolute positions will
+        no longer be meaningful getPos() returns [0, 0] in this case.
+        """
+        if type(exclusivity) is not bool:
+            raise ValueError('Exclusivity must be a boolean!')
+        if not usePygame:
+            psychopy.logging.warning('Setting mouse exclusivity in Pyglet will cause the cursor to disappear, ' +
+                                     'and getPos() will be rendered meaningless, returning [0, 0]')
+            self.win.winHandle.set_exclusive_mouse(exclusivity)
+        else:
+            print('Mouse exclusivity can only be set for Pyglet!')
 
 class BuilderKeyResponse():
     """Used in scripts created by the builder to keep track of a clock and

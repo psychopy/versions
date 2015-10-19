@@ -6,6 +6,7 @@
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
+import copy
 import sys
 import numpy
 
@@ -142,9 +143,14 @@ class RatingScale(MinimalStim):
         high :
             Highest numeric rating (integer), default = 7.
         precision :
-            Portions of a tick to accept as input [1, 10, 100]; default = 1 (a whole tick).
+            Portions of a tick to accept as input [1, 10, 60, 100]; default = 1 (a whole tick).
             Pressing a key in `leftKeys` or `rightKeys` will move the marker by
-            one portion of a tick.
+            one portion of a tick. precision=60 is intended to support ratings
+            of time-based quantities, with seconds being fractional minutes (or
+            minutes being fractional hours). The display uses a colon (min:sec, or hours:min)
+            to signal this to participants. The value returned by getRating()
+            will be a proportion of a minute (e.g., 1:30 -> 1.5, or 59 seconds
+            -> 59/60 = 0.98333). hours:min:sec is not supported.
         scale :
             Optional reminder message about how to respond or rate an item,
             displayed above the line; default = '<low>=not at all, <high>=extremely'.
@@ -227,7 +233,7 @@ class RatingScale(MinimalStim):
             Require the subject to use keys to respond; disable and hide the mouse.
             `markerStart` will default to the left end.
         minTime :
-            Seconds that must elapse before a reponse can be accepted,
+            Seconds that must elapse before a response can be accepted,
             default = `0.4`.
         maxTime :
             Seconds after which a response cannot be accepted.
@@ -347,9 +353,6 @@ class RatingScale(MinimalStim):
                 self.mouseOnly = False
                 logging.warning("RatingScale %s: ignoring mouseOnly (because showAccept and singleClick are False)" % self.name)
 
-        self.scale = scale
-        self.showScale = (scale is not None)
-
         # 'choices' is a list of non-numeric (unordered) alternatives:
         if choices and len(list(choices)) < 2:
             logging.error("RatingScale %s: choices requires 2 or more items" % self.name)
@@ -391,6 +394,7 @@ class RatingScale(MinimalStim):
             else:
                 self.labelTexts = [unicode(self.low)] + [''] * (self.high-self.low - 1) + [unicode(self.high)]
 
+        self.scale = scale
         if tickMarks and not(labels is False):
             if labels is None:
                 self.labelTexts = tickMarks
@@ -401,6 +405,7 @@ class RatingScale(MinimalStim):
                 self.labelTexts = tickMarks
             if self.scale == "<default>":
                 self.scale = False
+        self.showScale = (self.scale not in [None, False])
 
         # Marker pre-positioned? [do after anchors]
         try:
@@ -426,6 +431,8 @@ class RatingScale(MinimalStim):
         if type(self.precision) != int or self.precision < 10:
             self.precision = 1
             self.fmtStr = "%.0f" # decimal places, purely for display
+        elif self.precision == 60:
+            self.fmtStr = "%d:%s"  # minutes:seconds.zfill(2)
         elif self.precision < 100:
             self.precision = 10
             self.fmtStr = "%.1f"
@@ -544,7 +551,7 @@ class RatingScale(MinimalStim):
         ### Notes (JRG Aug 2010)
         Conceptually, the response line is always -0.5 to +0.5 ("internal" units). This line, of unit length,
         is scaled and translated for display. The line is effectively "center justified", expanding both left
-        and right with scaling, with pos[] specifiying the screen coordinate (in window units, norm or pix)
+        and right with scaling, with pos[] specifying the screen coordinate (in window units, norm or pix)
         of the mid-point of the response line. Tick marks are in integer units, internally 0 to (high-low),
         with 0 being the left end and (high-low) being the right end. (Subjects see low to high on the screen.)
         Non-numeric (categorical) choices are selected using tick-marks interpreted as an index, choice[tick].
@@ -567,7 +574,7 @@ class RatingScale(MinimalStim):
         To elaborate: tick-0 is the left-most tick, or "low anchor"; here 0 is internal, the subject sees <low>.
         tick-n is the right-most tick, or "high anchor", or internal-tick-(high-low), and the subject sees <high>.
         Intermediate ticks, i, are located proportionally between -0.5 to + 0.5, based on their proportion
-        of the total number of ticks, float(i)/n. The "proportion of total" is used because its a line of unit length,
+        of the total number of ticks, float(i)/n. The "proportion of total" is used because it's a line of unit length,
         i.e., the same length as used to internally represent the scale (-0.5 to +0.5).
         If precision > 1, the user / experimenter is asking for fractional ticks. These map correctly
         onto [0, 1] as well without requiring special handling (just do ensure float() ).
@@ -738,6 +745,7 @@ class RatingScale(MinimalStim):
             self.markerBaseSize = self.baseSize
         self.markerColor = markerColor
         self.markerYpos = self.offsetVert + self.markerOffsetVert
+        self.markerOrig = copy.copy(self.marker)  # save initial state, restore on reset
 
     def _initTextElements(self, win, scale, textColor,
                           textFont, textSize, showValue, tickMarks):
@@ -775,6 +783,7 @@ class RatingScale(MinimalStim):
                     self.labels.append(TextStim(win=self.win, text=unicode(label), font=textFont,
                         pos=[self.tickPositions[i//self.autoRescaleFactor], vertPosTmp],
                         height=self.textSizeSmall, color=self.textColor, autoLog=False))
+        self.origScaleDescription = scale
         self.setDescription(scale) # do after having set the relevant things
 
     def setDescription(self, scale=None, log=True):
@@ -787,6 +796,7 @@ class RatingScale(MinimalStim):
         if scale is None:
             scale = self.origScaleDescription
         self.scaleDescription.setText(scale)
+        self.showScale = True
         if log and self.autoLog:
             logging.exp('RatingScale %s: setDescription="%s"' % (self.name, self.scaleDescription.text))
 
@@ -903,6 +913,15 @@ class RatingScale(MinimalStim):
 
     # autoDraw and setAutoDraw are inherited from basevisual.MinimalStim
 
+    def acceptResponse(self, triggeringAction, log=True):
+        """Commit and optionally log a response and the action.
+        """
+        self.noResponse = False
+        self.history.append((self.getRating(), self.getRT()))
+        if log and self.autoLog:
+            logging.data('RatingScale %s: (%s) rating=%s' %
+                (self.name, triggeringAction, unicode(self.getRating())) )
+
     def draw(self, log=True):
         """Update the visual display, check for response (key, mouse, skip).
 
@@ -932,13 +951,7 @@ class RatingScale(MinimalStim):
         if self.allowTimeOut and not self.timedOut and self.maxTime < self.clock.getTime():
             # only do this stuff once
             self.timedOut = True
-            self.noResponse = False
-            # getRT() returns a value because noResponse==False
-            self.history.append((self.getRating(), self.getRT()))
-            if log and self.autoLog:
-                logging.data('RatingScale %s: rating=%s (no response, timed out after %.3fs)' %
-                         (self.name, unicode(self.getRating()), self.maxTime) )
-                logging.data('RatingScale %s: rating RT=%.3fs' % (self.name, self.getRT()) )
+            self.acceptResponse('timed out: %.3fs' % self.maxTime, log=log)
 
         # 'disappear' == draw nothing if subj is done:
         if self.noResponse == False and self.disappear:
@@ -976,8 +989,11 @@ class RatingScale(MinimalStim):
 
         # draw a dynamic marker:
         if self.markerPlaced or self.singleClick:
-            # expansion for 'glow', based on proportion of total line
+            # update position:
+            if self.singleClick and mouseNearLine:
+                self.setMarkerPos(self._getMarkerFromPos(mouseX))
             proportion = self.markerPlacedAt / self.tickMarks
+            # expansion for 'glow', based on proportion of total line
             if self.markerStyle == 'glow' and self.markerExpansion != 0:
                 if self.markerExpansion > 0:
                     newSize = 0.1 * self.markerExpansion * proportion
@@ -987,11 +1003,6 @@ class RatingScale(MinimalStim):
                     newOpacity = 1.2 - proportion
                 self.marker.setSize(self.markerBaseSize + newSize, log=False)
                 self.marker.setOpacity(min(1, max(0, newOpacity)), log=False)
-            # update position:
-            if self.singleClick and mouseNearLine:
-                self.setMarkerPos(self._getMarkerFromPos(mouseX))
-            elif not hasattr(self, 'markerPlacedAt'):
-                self.markerPlacedAt = False
             # set the marker's screen position based on tick (== markerPlacedAt)
             if self.markerPlacedAt is not False:
                 x = self.offsetHoriz + self.hStretchTotal * (-0.5 + proportion)
@@ -1005,12 +1016,19 @@ class RatingScale(MinimalStim):
                 if self.showValue and self.markerPlacedAt is not False:
                     if self.choices:
                         val = unicode(self.choices[int(self.markerPlacedAt)])
+                    elif self.precision == 60:
+                        valTmp = self.markerPlacedAt + self.low
+                        minutes = int(valTmp)  # also works for hours:minutes
+                        seconds = int(60. * (valTmp - minutes))
+                        val = self.fmtStr % (minutes, str(seconds).zfill(2))
                     else:
                         valTmp = self.markerPlacedAt + self.low
                         val = self.fmtStr % (valTmp * self.autoRescaleFactor)
-                    self.accept.setText(val)
+                    if self.accept.text != val:  # not just for speed: reduce impact of mem leaks in TextStim
+                        self.accept.setText(val)
                 elif self.markerPlacedAt is not False:
-                    self.accept.setText(self.acceptText)
+                    if self.accept.text != self.acceptText:
+                        self.accept.setText(self.acceptText)
 
         # handle key responses:
         if not self.mouseOnly:
@@ -1044,21 +1062,15 @@ class RatingScale(MinimalStim):
                         self.markerPlacedAt = self.markerPlacedAt + rightIncrement
                         self.markerPlacedBySubject = True
                     elif key in self.acceptKeys:
-                        self.noResponse = False
-                        self.history.append((self.getRating(), self.getRT()))  # RT when accept pressed
-                        logging.data('RatingScale %s: (key response) rating=%s' %
-                                         (self.name, unicode(self.getRating())) )
+                        self.acceptResponse('key response', log=log)
                     # off the end?
                     self.markerPlacedAt = max(0, self.markerPlacedAt)
                     self.markerPlacedAt = min(self.tickMarks, self.markerPlacedAt)
 
                 if (self.markerPlacedBySubject and self.singleClick
                         and self.beyondMinTime):
-                    self.noResponse = False
                     self.marker.setPos((0, self.offsetVert), '+', log=False)
-                    if log and self.autoLog:
-                        logging.data('RatingScale %s: (key single-click) rating=%s' %
-                                 (self.name, unicode(self.getRating())) )
+                    self.acceptResponse('key single-click', log=log)
 
         # handle mouse left-click:
         if not self.noMouse and self.myMouse.getPressed()[0]:
@@ -1069,32 +1081,25 @@ class RatingScale(MinimalStim):
                 self.markerPlacedBySubject = True
                 self.markerPlacedAt = self._getMarkerFromPos(mouseX)
                 if self.singleClick and self.beyondMinTime:
-                    self.noResponse = False
-                    if log and self.autoLog:
-                        logging.data('RatingScale %s: (mouse single-click) rating=%s' %
-                                 (self.name, unicode(self.getRating())) )
+                    self.acceptResponse('mouse single-click', log=log)
             # if click in accept box and conditions are met, accept the response:
             elif (self.showAccept and self.markerPlaced and self.beyondMinTime and
                     self.acceptBox.contains(mouseX, mouseY)):
-                self.noResponse = False  # accept the currently marked value
-                self.history.append((self.getRating(), self.getRT()))
-                if log and self.autoLog:
-                    logging.data('RatingScale %s: (mouse response) rating=%s' %
-                            (self.name, unicode(self.getRating())) )
+                self.acceptResponse('mouse response', log=log)
 
         if self.markerStyle == 'hover' and self.markerPlaced:
             # 'hover' --> noMouse = False during init
             if mouseNearLine or self.markerPlacedAt != self.markerPlacedAtLast:
                 if hasattr(self, 'targetWord'):
                     self.targetWord.setColor(self.textColor, log=False)
-                    self.targetWord.setHeight(self.textSizeSmall, log=False)
+                    #self.targetWord.setHeight(self.textSizeSmall, log=False)  # avoid TextStim memory leak
                 self.targetWord = self.labels[int(self.markerPlacedAt)]
                 self.targetWord.setColor(self.markerColor, log=False)
-                self.targetWord.setHeight(1.05 * self.textSizeSmall, log=False)
+                #self.targetWord.setHeight(1.05 * self.textSizeSmall, log=False)
                 self.markerPlacedAtLast = self.markerPlacedAt
             elif not mouseNearLine and self.wasNearLine:
                 self.targetWord.setColor(self.textColor, log=False)
-                self.targetWord.setHeight(self.textSizeSmall, log=False)
+                #self.targetWord.setHeight(self.textSizeSmall, log=False)
             self.wasNearLine = mouseNearLine
 
         # decision time = secs from first .draw() to when first 'accept' value:
@@ -1126,6 +1131,7 @@ class RatingScale(MinimalStim):
         """
         # only resets things that are likely to have changed when the ratingScale instance is used by a subject
         self.noResponse = True
+        self.marker = copy.copy(self.markerOrig)  # restore in case it turned gray, etc
         self.markerPlaced = False  # placed by subject or markerStart: show on screen
         self.markerPlacedBySubject = False  # placed by subject is actionable: show value, singleClick
         self.markerPlacedAt = False

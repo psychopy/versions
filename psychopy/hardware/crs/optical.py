@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #coding=utf-8
 
 # Copyright (c) 2009-2012 Valentin Haenel <valentin.haenel@gmx.de>
@@ -57,8 +57,8 @@
         >>> op = pyoptical.OptiCAL('dev/dev/ttyUSB0')
         >>> try:
         >>>     op.read_luminance()
-        >>> except pyoptical.NACKException, e:
-        >>>     print e
+        >>> except pyoptical.NACKException as e:
+        >>>     print(e)
 
     Notes about the com-port
     ------------------------

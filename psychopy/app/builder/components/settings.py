@@ -33,7 +33,7 @@ class SettingsComponent(object):
                  saveLogFile=True, showExpInfo=True, expInfo="{'participant':'', 'session':'001'}",units='use prefs',
                  logging='exp', color='$[0,0,0]', colorSpace='rgb', enableEscape=True, blendMode='avg',
                  saveXLSXFile=False, saveCSVFile=False, saveWideCSVFile=True, savePsydatFile=True,
-                 savedDataFolder='', filename="'xxxx/%s_%s_%s' %(expInfo['participant'], expName, expInfo['date'])"):
+                 savedDataFolder='', filename="u'xxxx/%s_%s_%s' %(expInfo['participant'], expName, expInfo['date'])"):
         self.type='Settings'
         self.exp=exp#so we can access the experiment if necess
         self.exp.requirePsychopyLibs(['visual', 'gui'])
@@ -41,10 +41,10 @@ class SettingsComponent(object):
         self.url="http://www.psychopy.org/builder/settings.html"
 
         #if filename is the default value fetch the builder pref for the folder instead
-        if filename.startswith("'xxxx"):
+        if filename.startswith("u'xxxx"):
             filename = filename.replace("xxxx", self.exp.prefsBuilder['savedDataFolder'].strip())
         else:
-            print filename[0:5]
+            print(filename[0:6])
         #params
         self.params={}
         self.order=['expName','Show info dlg','Experiment info',
@@ -150,7 +150,7 @@ class SettingsComponent(object):
         return saveToDir or u'data'
     def writeStartCode(self,buff):
         buff.writeIndentedLines("# Ensure that relative paths start from the same directory as this script\n"
-            "_thisDir = os.path.dirname(os.path.abspath(__file__))\n"
+            "_thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())\n"
             "os.chdir(_thisDir)\n\n")
 
         buff.writeIndented("# Store info about the experiment session\n")
@@ -163,9 +163,9 @@ class SettingsComponent(object):
             expInfo = '{}'
         try:
             expInfoDict = eval('dict(' + expInfo + ')')
-        except SyntaxError, err:
+        except SyntaxError:
             logging.error('Builder Expt: syntax error in "Experiment info" settings (expected a dict)')
-            raise SyntaxError, 'Builder: error in "Experiment info" settings (expected a dict)'
+            raise AttributeError('Builder: error in "Experiment info" settings (expected a dict)')
         buff.writeIndented("expInfo = %s\n" % expInfo)
         if self.params['Show info dlg'].val:
             buff.writeIndented("dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)\n")
@@ -230,7 +230,11 @@ class SettingsComponent(object):
                if thisComp.type=='RatingScale': allowGUI = True # to have a mouse; BUT might not want it shown in other routines
 
         requestedScreenNumber = int(self.params['Screen'].val)
-        if requestedScreenNumber > wx.Display.GetCount():
+        try:
+            nScreens = wx.Display.GetCount()
+        except:
+		    nScreens = 10 #will fail if application hasn't been created (e.g. in test environments)
+        if requestedScreenNumber > nScreens:
             logging.warn("Requested screen can't be found. Writing script using first available screen.")
             screenNumber = 0
         else:

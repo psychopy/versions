@@ -198,7 +198,8 @@ class SoundPygame(_SoundBase):
 
         bits(=16):  Pygame uses the same bit depth for all sounds once initialised
     """
-    def __init__(self,value="C",secs=0.5,octave=4, sampleRate=44100, bits=16, name='', autoLog=True):
+    def __init__(self,value="C",secs=0.5,octave=4, sampleRate=44100, bits=16,
+                 name='', autoLog=True, loops=0):
         """
         """
         self.name=name#only needed for autoLogging
@@ -279,9 +280,18 @@ class SoundPygame(_SoundBase):
 
     def _setSndFromFile(self, fileName):
         #load the file
+        if not path.isfile(filename):
+            msg = "Sound file %s could not be found." % fileName
+            logging.error(msg)
+            raise ValueError(msg)
         self.fileName = fileName
         self.loops = self.requestedLoops #in case a tone with inf loops had been used before
-        self._snd = mixer.Sound(self.fileName)
+        try:
+            self._snd = mixer.Sound(self.fileName)
+        except:
+            msg = "Sound file %s could not be opened using pygame for sound." % fileName
+            logging.error(msg)
+            raise ValueError(msg)
 
     def _setSndFromArray(self, thisArray):
         #get a mixer.Sound object from an array of floats (-1:1)
@@ -467,8 +477,13 @@ class SoundPyo(_SoundBase):
         self._sndTable = pyo.SndTable(initchnls=self.channels)
         self.loops = self.requestedLoops #in case a tone with inf loops had been used before
         # mono file loaded to all chnls:
-        self._sndTable.setSound(self.fileName,
+        try:
+            self._sndTable.setSound(self.fileName,
                                 start=self.startTime, stop=self.stopTime)
+        except:
+            msg = 'Could not open sound file `%s` using pyo; not found or format not supported.' % fileName
+            logging.error(msg)
+            raise TypeError(msg)
         self._updateSnd()
         self.duration = self._sndTable.getDur()
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #coding=utf-8
 
 # Part of the PsychoPy library
@@ -31,6 +31,7 @@ bitsMonoModeFrag="""
         index = fboFrag.r * 65535.0 + 0.01;
         gl_FragColor.r = floor(index / 256.0) / 255.0;
         gl_FragColor.g = mod(index, 256.0) / 255.0;
+        gl_FragColor.b = 0.0;
     }
 """
 

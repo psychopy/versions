@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #coding=utf-8
 
 # Part of the PsychoPy library
@@ -108,7 +108,7 @@ class ColorCAL:
         prevOut = self.com.read(self.com.inWaiting())#read as many chars as are in the buffer
         if len(prevOut) and prevOut not in ['>'+eol, eol]:
             #do not use log messages here
-            print 'Resp found to prev cmd (%s):%s' %(self.lastCmd, prevOut)
+            print('Resp found to prev cmd (%s):%s' %(self.lastCmd, prevOut))
         self.lastCmd=message
 
         if message[-2:] not in ['\n', '\n\r']:
@@ -238,14 +238,14 @@ class ColorCAL:
             logging.error('There seems to be some light getting to the detector. It should be well-covered for zero calibration')
             return False
         self._zeroCalibrated=True
+        self.calibMatrix = self.getCalibMatrix()
         return True
 
     def getCalibMatrix(self):
         """Get the calibration matrix from the device, needed for transforming
         measurements into real-world values.
 
-        This is normally retrieved during __init__ and stored as
-            ColorCal.calibMatrix
+        This is normally retrieved during __init__ and stored as `ColorCal.calibMatrix`
         so most users don't need to call this function
         """
         matrix=numpy.zeros((3,3),dtype=float)
@@ -260,7 +260,7 @@ class ColorCAL:
                 floats = _minolta2float(rawVals)
                 matrix[rowN,:]=floats
             else:
-                print 'ColorCAL got this from command %s: %s' %(rowName, repr(val))
+                print('ColorCAL got this from command %s: %s' %(rowName, repr(val)))
         return matrix
     def _error(self, msg):
         self.OK=False

@@ -21,12 +21,6 @@ import ctypes
 
 #try to find avbin (we'll overload pyglet's load_library tool and then add some paths)
 haveAvbin = False
-if pyglet.version < "1.2":
-    # This piece of code does no longer work with pyglet 1.2alpha and results in the pyglet.gl
-    # library to no longer be found when the window is created
-    import pyglet.lib
-    import _pygletLibOverload
-    pyglet.lib.load_library = _pygletLibOverload.load_library
 
 #on windows try to load avbin now (other libs can interfere)
 if sys.platform == 'win32':
@@ -122,15 +116,14 @@ psychopy.event.visualOpenWindows = openWindows
 
 class Window(object):
     """Used to set up a context in which to draw objects,
-    using either PyGame (python's SDL binding) or pyglet.
+    using either `pyglet <www.pyglet.org>`_ or `pygame <www.pygame.org>`_
 
     The pyglet backend allows multiple windows to be created, allows the user
     to specify which screen to use (if more than one is available, duh!) and
     allows movies to be rendered.
 
-    Pygame has fewer bells and whistles, but does seem a little faster in text
-    rendering. Pygame is used for all sound production and for monitoring the
-    joystick.
+    Pygame may still work for you but it's officially deprecated in this project
+    (we won't be fixing pygame-specific bugs).
 
     """
     def __init__(self,
@@ -173,7 +166,7 @@ class Window(object):
                 Location of the window on the screen
             rgb : [0,0,0]
                 Color of background as [r,g,b] list or single value.
-                Each gun can take values betweeen -1 and 1
+                Each gun can take values between -1 and 1
             fullscr : *None*, True or False
                 Better timing can be achieved in full-screen mode
             allowGUI :  *None*, True or False (if None prefs are used)
@@ -212,8 +205,8 @@ class Window(object):
                 (notably, allowing the class:`~psychopy.visual.Aperture`
                 to be used).
             stereo : True or *False*
-                If True and your graphics card supports quad buffers then t
-                his will be enabled.
+                If True and your graphics card supports quad buffers then
+                this will be enabled.
                 You can switch between left and right-eye scenes for drawing
                 operations using :func:`~psychopy.visual.Window.setBuffer`
 
@@ -390,6 +383,13 @@ class Window(object):
         if self._closed==False:
             self.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if not self._closed:
+            self.close()
+
     def __str__(self):
         className = 'Window'
         paramStrings = []
@@ -452,7 +452,7 @@ class Window(object):
         :Parameters:
 
         fileName : *None* or the filename (including path if necessary) in
-        which to store the data.
+            which to store the data.
             If None then 'lastFrameIntervals.log' will be used.
 
         """
@@ -471,7 +471,7 @@ class Window(object):
         '''A default resize event handler.
 
         This default handler updates the GL viewport to cover the entire
-        window and sets the ``GL_PROJECTION`` matrix to be orthagonal in
+        window and sets the ``GL_PROJECTION`` matrix to be orthogonal in
         window space.  The bottom-left corner is (0, 0) and the top-right
         corner is the width and height of the :class:`~psychopy.visual.Window`
         in pixels.
@@ -854,8 +854,8 @@ class Window(object):
             mpgCodec: the code to be used **by pymedia** if the filename ends
                 in .mpg
 
-            fps: the frame rate to be used throughout the movie **only for
-                quicktime (.mov) movies**
+            fps: the frame rate to be used throughout the movie
+                **only for quicktime (.mov) movies**
 
             clearFrames: set this to False if you want the frames to be kept
                 for additional calls to `saveMovieFrames`
@@ -918,8 +918,8 @@ class Window(object):
 
         power2 can be useful with older OpenGL versions to avoid interpolation
         in PatchStim. If power2 or squarePower2, it will expand rect dimensions
-        up to next power of two. squarePower2 uses the max dimenions. You need
-        to check what your hardware & opengl supports, and call
+        up to next power of two. squarePower2 uses the max dimensions. You need
+        to check what your hardware & OpenGL supports, and call
         _getRegionOfFrame as appropriate.
         """
         # Ideally: rewrite using GL frame buffer object; glReadPixels == slow
@@ -968,27 +968,45 @@ class Window(object):
     def close(self):
         """Close the window (and reset the Bits++ if necess)."""
         self._closed=True
+
+        try:
+            openWindows.remove(self)
+        except:
+            pass
         if (not self.useNativeGamma) and self.origGammaRamp is not None:
             setGammaRamp(self.winHandle, self.origGammaRamp)
-        self.mouseVisible = True  # call attributeSetter
+        try:
+            self.mouseVisible = True
+        except: #can cause unimportant "'NoneType' object is not callable"
+            pass
         if self.winType == 'pyglet':
+            _hw_handle = None
+            try:
+                _hw_handle = self._hw_handle
+                self.winHandle.close()
+            except:
+                pass
             # If iohub is running, inform it to stop looking for this win id
             # when filtering kb and mouse events (if the filter is enabled of course)
-            #
-            if IOHUB_ACTIVE:
-                from psychopy.iohub.client import ioHubConnection
-                ioHubConnection.ACTIVE_CONNECTION.unregisterPygletWindowHandles(self._hw_handle)
             try:
-                self.winHandle.close()
+                if IOHUB_ACTIVE and _hw_handle:
+                    from psychopy.iohub.client import ioHubConnection
+                    ioHubConnection.ACTIVE_CONNECTION.unregisterPygletWindowHandles(_hw_handle)
             except:
                 pass
         else:
             #pygame.quit()
             pygame.display.quit()
-        if self.bits is not None:
-            self.bits.reset()
-        openWindows.remove(self)
-        logging.flush()
+
+        try:
+            if self.bits is not None:
+                self.bits.reset()
+        except:
+            pass
+        try:
+            logging.flush()
+        except:
+            pass
 
     def fps(self):
         """Report the frames per second since the last call to this function
@@ -1510,10 +1528,11 @@ class Window(object):
         GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
         GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
         return True
-    def setMouseVisible(self, visibility):
+    @attributeSetter
+    def mouseVisible(self, visibility):
         """Sets the visibility of the mouse cursor.
 
-        If Window was initilised with noGUI=True then the mouse is initially
+        If Window was initialized with noGUI=True then the mouse is initially
         set to invisible, otherwise it will initially be visible.
 
         Usage::
@@ -1548,7 +1567,7 @@ class Window(object):
                 Higher --> greater precision. Lower --> faster.
 
             nMaxFrames:
-                the maxmimum number of frames to wait for a matching set of
+                the maximum number of frames to wait for a matching set of
                 nIdentical
 
             nWarmUpFrames:
@@ -1611,6 +1630,7 @@ class Window(object):
         wait for that long in ms.
 
         Returns timing stats (in ms) of:
+
         - average time per frame, for all frames
         - standard deviation of all frames
         - median, as the average of 12 frame times around the median
@@ -1618,6 +1638,7 @@ class Window(object):
 
         :Author:
             - 2010 written by Jeremy Gray
+
         """
 
         # lower bound of 60 samples--need enough to estimate the SD
@@ -1755,7 +1776,7 @@ def _onResize(width, height):
         '''A default resize event handler.
 
         This default handler updates the GL viewport to cover the entire
-        window and sets the ``GL_PROJECTION`` matrix to be orthagonal in
+        window and sets the ``GL_PROJECTION`` matrix to be orthogonal in
         window space.  The bottom-left corner is (0, 0) and the top-right
         corner is the width and height of the :class:`~psychopy.visual.Window`
         in pixels.

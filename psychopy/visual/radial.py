@@ -41,7 +41,7 @@ class RadialStim(GratingStim):
 
     Many of the capabilities are built on top of the GratingStim.
 
-    This stimulus is still relatively new and I'm finding occasional gliches. it also takes longer to draw
+    This stimulus is still relatively new and I'm finding occasional glitches. It also takes longer to draw
     than a typical GratingStim, so not recommended for tasks where high frame rates are needed.
     """
     def __init__(self,
@@ -189,12 +189,11 @@ class RadialStim(GratingStim):
             intensity = 255.0*numpy.ones(res,float)
             fromFile=0
         else:#might be a filename of a tiff
-            print value
             try:
                 im = Image.open(self.mask)
                 im = im.transpose(Image.FLIP_TOP_BOTTOM)
                 im = im.resize([max(im.size), max(im.size)],Image.BILINEAR)#make it square
-            except IOError, (details):
+            except IOError as details:
                 logging.error("couldn't load mask...%s: %s" %(value,details))
                 return
             res = im.size[0]

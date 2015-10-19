@@ -44,9 +44,9 @@ class Dlg(wx.Dialog):
         myDlg.show()  # show dialog and wait for OK or Cancel
         if myDlg.OK:  # then the user pressed OK
             thisInfo = myDlg.data
-            print thisInfo
+            print(thisInfo)
         else:
-            print 'user cancelled'
+            print('user cancelled')
     """
     def __init__(self,title=_translate('PsychoPy dialogue'),
             pos=None, size=wx.DefaultSize,
@@ -97,7 +97,11 @@ class Dlg(wx.Dialog):
             initial=initial.tolist() #convert numpy arrays to lists
         container=wx.GridSizer(cols=2, hgap=10)
         #create label
-        labelLength = wx.Size(9*len(label)+16,25)#was 8*until v0.91.4
+        font = self.GetFont()
+        dc = wx.WindowDC(self)
+        dc.SetFont(font)
+        labelWidth, labelHeight = dc.GetTextExtent(label)
+        labelLength = wx.Size(labelWidth + 16, labelHeight)
         inputLabel = wx.StaticText(self,-1,label,
                                         size=labelLength,
                                         style=wx.ALIGN_RIGHT)
@@ -108,7 +112,8 @@ class Dlg(wx.Dialog):
             inputBox = wx.CheckBox(self, -1)
             inputBox.SetValue(initial)
         elif not choices:
-            inputLength = wx.Size(max(50, 5*len(unicode(initial))+16), 25)
+            inputWidth, inputHeight = dc.GetTextExtent(unicode(initial))
+            inputLength = wx.Size(max(50, inputWidth+16), max(25,inputHeight+8))
             inputBox = wx.TextCtrl(self,-1,unicode(initial),size=inputLength)
         else:
             inputBox = wx.Choice(self, -1, choices=[unicode(option) for option in list(choices)])
@@ -194,8 +199,9 @@ class DlgFromDict(Dlg):
         info = {'Observer':'jwp', 'GratingOri':45, 'ExpVersion': 1.1, 'Group': ['Test', 'Control']}
         infoDlg = gui.DlgFromDict(dictionary=info, title='TestExperiment', fixed=['ExpVersion'])
         if infoDlg.OK:
-            print info
-        else: print 'User Cancelled'
+            print(info)
+        else: 
+            print('User Cancelled')
 
     In the code above, the contents of *info* will be updated to the values
     returned by the dialogue box.
@@ -217,7 +223,6 @@ class DlgFromDict(Dlg):
             keys = order + list(set(keys).difference(set(order)))
         types=dict([])
         for field in keys:
-            #DEBUG: print field, type(dictionary[field])
             types[field] = type(self.dictionary[field])
             tooltip = ''
             if field in tip.keys(): tooltip = tip[field]

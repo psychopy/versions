@@ -780,7 +780,7 @@ class TextureMixin(object):
                             data.shape[1],data.shape[0], 0, # [JRG] for non-square, want data.shape[1], data.shape[0]
                             pixFormat, dataType, texture)
         GL.glTexEnvi(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE)#?? do we need this - think not!
-
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)#unbind our texture so that it doesn't affect other rendering
         return wasLum
 
     def clearTextures(self):
@@ -1013,7 +1013,7 @@ class BaseVisualStim(MinimalStim, WindowMixin, LegacyVisualMixin):
         Example::
 
             stim.size = 0.8  # Set size to (xsize, ysize) = (0.8, 0.8), quadratic.
-            print stim.size  # Outputs array([0.8, 0.8])
+            print(stim.size)  # Outputs array([0.8, 0.8])
             stim.size += (0.5, -0.5)  # make wider and flatter. Is now (1.3, 0.3)
 
         Tip: if you can see the actual pixel range this corresponds to by

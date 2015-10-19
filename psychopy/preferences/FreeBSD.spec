@@ -38,7 +38,7 @@
     # Add paths here to your custom Python modules
     paths=list(default=list())
     # choice of audio library
-    audioLib = list(default=list('pygame', 'pyo'))
+    audioLib = list(default=list('pyo', 'pygame'))
     # audio driver to use
     audioDriver = list(default=list('portaudio'))
     # path to flac (lossless audio compression) on this operating system
@@ -65,6 +65,8 @@
 
 # Settings for the Coder window
 [coder]
+    # open Coder files as read-only (allows running without accidental changes)
+    readonly = boolean(default=False)
     # a list of font names; the first one found on the system will be used
     codeFont = string(default='Palatino Linotype')
     # a list of font names; the first one found on the system will be used

@@ -1,7 +1,7 @@
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
-
+from __future__ import print_function
 import StringIO, sys, codecs
 from components import getInitVals, getComponents, getAllComponents
 import psychopy
@@ -164,18 +164,13 @@ class Experiment(object):
                     '  Peirce, JW (2007) PsychoPy - Psychophysics software in Python. Journal of Neuroscience Methods, 162(1-2), 8-13.\n' +
                     '  Peirce, JW (2009) Generating stimuli for neuroscience using PsychoPy. Frontiers in Neuroinformatics, 2:10. doi: 10.3389/neuro.11.010.2008\n"""\n')
         script.write("\nfrom __future__ import division  # so that 1/3=0.333 instead of 1/3=0\n")
-        # This functionality is not ready to be exposed to end-users in a script
-        #if self.prefsApp['locale']:
-        #    # if locale is set explicitly as a pref, add it to the script:
-        #    localeValue = '.'.join(locale.getlocale())
-        #    script.write("from psychopy import localization\n" +
-        #             "localization.init(%s)\n\n" % repr(localeValue))
-        script.write("from psychopy import %s\n" % ', '.join(self.psychopyLibs) +
+        script.write("from psychopy import locale_setup, %s\n" % ', '.join(self.psychopyLibs) +
                     "from psychopy.constants import *  # things like STARTED, FINISHED\n" +
                     "import numpy as np  # whole numpy lib is available, prepend 'np.'\n" +
                     "from numpy import %s\n" % ', '.join(_numpyImports) +
                     "from numpy.random import %s\n" % ', '.join(_numpyRandomImports) +
-                    "import os  # handy system and path functions\n")
+                    "import os  # handy system and path functions\n" + 
+                    "import sys # to get file system encoding\n")
         script.write("\n")
         self.settings.writeStartCode(script) #present info dlg, make logfile
         self.flow.writeStartCode(script) #writes any components with a writeStartCode()
@@ -361,7 +356,7 @@ class Experiment(object):
     def loadFromXML(self, filename):
         """Loads an xml file and parses the builder Experiment from it
         """
-        #open the file using a parser that ignores prettyprint blank text
+        #open the file using a parser that ignores prettyprinted blank text
         parser = etree.XMLParser(remove_blank_text=True)
         f=open(filename)
         self._doc=etree.XML(f.read(),parser)
@@ -397,6 +392,7 @@ class Experiment(object):
             self.setExpName(shortName)
         #fetch routines
         routinesNode=root.find('Routines')
+        allCompons = getAllComponents(self.prefsBuilder['componentsFolders'], fetchIcons=False)
         for routineNode in routinesNode:#get each routine node from the list of routines
             routine_good_name = self.namespace.makeValid(routineNode.get('name'))
             if routine_good_name != routineNode.get('name'):
@@ -406,16 +402,16 @@ class Experiment(object):
             #self._getXMLparam(params=routine.params, paramNode=routineNode)
             self.routines[routineNode.get('name')]=routine
             for componentNode in routineNode:
-                allCompons = getAllComponents(self.prefsBuilder['componentsFolders'])
+                
                 componentType=componentNode.tag
                 if componentType in allCompons:
                     #create an actual component of that type
-                    component=getAllComponents(self.prefsBuilder['componentsFolders'])[componentType](\
+                    component=allCompons[componentType](\
                         name=componentNode.get('name'),
                         parentName=routineNode.get('name'), exp=self)
                 else:
-                    from components._base import UnknownComponent
-                    component = UnknownComponent(
+                    #create UnknownComponent instead
+                    component=allCompons['UnknownComponent'](\
                         name=componentNode.get('name'),
                         parentName=routineNode.get('name'), exp=self)
                 # check for components that were absent in older versions of the builder and change the default behavior
@@ -505,53 +501,53 @@ class Param:
     """Defines parameters for Experiment Components
     A string representation of the parameter will depend on the valType:
 
-    >>> print Param(val=[3,4], valType='num')
+    >>> print(Param(val=[3,4], valType='num'))
     asarray([3, 4])
-    >>> print Param(val=3, valType='num') # num converts int to float
+    >>> print(Param(val=3, valType='num')) # num converts int to float
     3.0
-    >>> print Param(val=3, valType='str') # str keeps as int, converts to code
+    >>> print(Param(val=3, valType='str') # str keeps as int, converts to code
     3
-    >>> print Param(val='3', valType='str') # ... and keeps str as str
+    >>> print(Param(val='3', valType='str')) # ... and keeps str as str
     '3'
-    >>> print Param(val=[3,4], valType='str') # val is <type 'list'> -> code
+    >>> print(Param(val=[3,4], valType='str')) # val is <type 'list'> -> code
     [3, 4]
-    >>> print Param(val='[3,4]', valType='str')
+    >>> print(Param(val='[3,4]', valType='str'))
     '[3,4]'
-    >>> print Param(val=[3,4], valType='code')
+    >>> print(Param(val=[3,4], valType='code'))
     [3, 4]
 
     >>> #### auto str -> code:  at least one non-escaped '$' triggers str -> code: ####
-    >>> print Param('[x,y]','str') # str normally returns string
+    >>> print(Param('[x,y]','str')) # str normally returns string
     '[x,y]'
-    >>> print Param('$[x,y]','str') # code, as triggered by $
+    >>> print(Param('$[x,y]','str')) # code, as triggered by $
     [x,y]
-    >>> print Param('[$x,$y]','str') # code, redundant $ ok, cleaned up
+    >>> print(Param('[$x,$y]','str')) # code, redundant $ ok, cleaned up
     [x,y]
-    >>> print Param('[$x,y]','str') # code, a $ anywhere means code
+    >>> print(Param('[$x,y]','str')) # code, a $ anywhere means code
     [x,y]
-    >>> print Param('[x,y]$','str') # ... even at the end
+    >>> print(Param('[x,y]$','str')) # ... even at the end
     [x,y]
-    >>> print Param('[x,\$y]','str') # string, because the only $ is escaped
+    >>> print(Param('[x,\$y]','str')) # string, because the only $ is escaped
     '[x,$y]'
-    >>> print Param('[x,\ $y]','str') # improper escape -> code (note that \ is not adjacent to $)
+    >>> print(Param('[x,\ $y]','str')) # improper escape -> code (note that \ is not adjacent to $)
     [x,\ y]
-    >>> print Param('/$[x,y]','str') # improper escape -> code (/ is not the same as \)
+    >>> print(Param('/$[x,y]','str')) # improper escape -> code (/ is not the same as \)
     /[x,y]
-    >>> print Param('[\$x,$y]','str') # code, python syntax error
+    >>> print(Param('[\$x,$y]','str')) # code, python syntax error
     [$x,y]
-    >>> print Param('["\$x",$y]','str') # ... python syntax ok
+    >>> print(Param('["\$x",$y]','str') # ... python syntax ok
     ["$x",y]
-    >>> print Param("'$a'",'str') # code, with the code being a string, $ removed
+    >>> print(Param("'$a'",'str')) # code, with the code being a string, $ removed
     'a'
-    >>> print Param("'\$a'",'str') # string, with the string containing a string, $ escaped (\ removed)
+    >>> print(Param("'\$a'",'str')) # string, with the string containing a string, $ escaped (\ removed)
     "'$a'"
-    >>> print Param('$$$$$myPathologicalVa$$$$$rName','str')
+    >>> print(Param('$$$$$myPathologicalVa$$$$$rName','str'))
     myPathologicalVarName
-    >>> print Param('\$$$$$myPathologicalVa$$$$$rName','str')
+    >>> print(Param('\$$$$$myPathologicalVa$$$$$rName','str'))
     $myPathologicalVarName
-    >>> print Param('$$$$\$myPathologicalVa$$$$$rName','str')
+    >>> print(Param('$$$$\$myPathologicalVa$$$$$rName','str'))
     $myPathologicalVarName
-    >>> print Param('$$$$\$$$myPathologicalVa$$$\$$$rName','str')
+    >>> print(Param('$$$$\$$$myPathologicalVa$$$\$$$rName','str'))
     $myPathologicalVa$rName
     """
 
@@ -621,7 +617,7 @@ class Param:
         elif self.valType == 'bool':
             return "%s" %(self.val)
         else:
-            raise TypeError, "Can't represent a Param of type %s" %self.valType
+            raise TypeError("Can't represent a Param of type %s" %self.valType)
 
 class TrialHandler(object):
     """A looping experimental control object
@@ -691,7 +687,7 @@ class TrialHandler(object):
         #write the code
         buff.writeIndentedLines("\n# set up handler to look after randomisation of conditions etc\n")
         buff.writeIndented("%(name)s = data.TrialHandler(nReps=%(nReps)s, method=%(loopType)s, \n" %(inits))
-        buff.writeIndented("    extraInfo=expInfo, originPath=%s,\n" %repr(self.exp.expPath))
+        buff.writeIndented("    extraInfo=expInfo, originPath=-1,\n")
         buff.writeIndented("    trialList=%s,\n" %(condsStr))
         buff.writeIndented("    seed=%(random seed)s, name='%(name)s')\n" %(inits))
         buff.writeIndented("thisExp.addLoop(%(name)s)  # add the loop to the experiment\n" %self.params)
@@ -812,7 +808,7 @@ class StairHandler(object):
         buff.writeIndented("    nReversals=%(N reversals)s, nTrials=%(nReps)s, \n" %self.params)
         buff.writeIndented("    nUp=%(N up)s, nDown=%(N down)s,\n" %self.params)
         buff.writeIndented("    minVal=%(min value)s, maxVal=%(max value)s,\n" %self.params)
-        buff.writeIndented("    originPath=%s" %repr(self.exp.expPath))
+        buff.writeIndented("    originPath=-1")
         buff.write(", name='%(name)s')\n"%self.params)
         buff.writeIndented("thisExp.addLoop(%(name)s)  # add the loop to the experiment" %self.params)
         buff.writeIndented("level = %s = %s  # initialise some vals\n" %(self.thisName, self.params['start value']))
@@ -887,7 +883,7 @@ class MultiStairHandler(object):
         buff.writeIndented("%(name)s = data.MultiStairHandler(stairType=%(stairType)s, name='%(name)s',\n" %(self.params))
         buff.writeIndented("    nTrials=%(nReps)s,\n" %self.params)
         buff.writeIndented("    conditions=conditions,\n")
-        buff.writeIndented("    originPath=%s" %repr(self.exp.expPath))
+        buff.writeIndented("    originPath=-1")
         buff.write(")\n"%self.params)
         buff.writeIndented("thisExp.addLoop(%(name)s)  # add the loop to the experiment\n" %self.params)
         buff.writeIndented("# initialise values for first condition\n")
@@ -1077,16 +1073,16 @@ class Flow(list):
             for field, key, component, routine in trailingWhitespace:
                 warnings.append( msg % (field, routine.params['name'],
                                 component.params['name'], key.capitalize()) )
-            print 'Note: Trailing white-space removed:\n ',
-            print '\n  '.join(list(set(warnings)))  # non-redundant, order unknown
+            print('Note: Trailing white-space removed:\n ',end='')
+            print('\n  '.join(list(set(warnings))))  # non-redundant, order unknown
         if constWarnings:
             warnings = []
             msg = '"%s", in Routine %s (%s: %s)'
             for field, key, component, routine in constWarnings:
                 warnings.append( msg % (field, routine.params['name'],
                                 component.params['name'], key.capitalize()) )
-            print 'Note: Dynamic code seems intended but updating is "constant":\n ',
-            print '\n  '.join(list(set(warnings)))  # non-redundant, order unknown
+            print('Note: Dynamic code seems intended but updating is "constant":\n ',end='')
+            print('\n  '.join(list(set(warnings))))  # non-redundant, order unknown
     def writeStartCode(self, script):
         """Write the code that comes before the Window is created
         """
@@ -1225,7 +1221,6 @@ class Routine(list):
         #are we done yet?
         buff.writeIndentedLines('\n# check if all components have finished\n')
         buff.writeIndentedLines('if not continueRoutine:  # a component has requested a forced-end of Routine\n')
-        buff.writeIndentedLines('    routineTimer.reset()  # if we abort early the non-slip timer needs reset\n')
         buff.writeIndentedLines('    break\n')
         buff.writeIndentedLines('continueRoutine = False  # will revert to True if at least one component still running\n')
         buff.writeIndentedLines('for thisComponent in %sComponents:\n' %self.name)
@@ -1242,9 +1237,6 @@ class Routine(list):
         buff.writeIndentedLines('\n# refresh the screen\n')
         buff.writeIndented("if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen\n")
         buff.writeIndented('    win.flip()\n')
-        if not useNonSlip:
-            buff.writeIndented("else:  # this Routine was not non-slip safe so reset non-slip timer\n")
-            buff.writeIndented('    routineTimer.reset()\n')
 
         #that's done decrement indent to end loop
         buff.setIndentLevel(-1,True)
@@ -1256,6 +1248,11 @@ class Routine(list):
         buff.writeIndentedLines('    if hasattr(thisComponent, "setAutoDraw"):\n        thisComponent.setAutoDraw(False)\n')
         for event in self:
             event.writeRoutineEndCode(buff)
+
+        # reset routineTimer at the *very end* of all non-nonSlip routines
+        if not useNonSlip:
+            buff.writeIndented('# the Routine "%s" was not non-slip safe, so reset the non-slip timer\n' % self.name)
+            buff.writeIndented('routineTimer.reset()\n')
 
     def writeExperimentEndCode(self,buff):
         """This defines the code for the frames of a single routine
@@ -1357,7 +1354,7 @@ class NameSpace():
 
     The aim is to help detect and avoid name-space collisions from user-entered variable names.
     Track four groups of variables:
-        numpy =    part of numpy or numpy.random (maybe its ok for a user to redefine these?)
+        numpy =    part of numpy or numpy.random (maybe it's ok for a user to redefine these?)
         psychopy = part of psychopy, such as event or data; include os here
         builder =  used internally by the builder when constructing an experiment
         user =     used 'externally' by a user when programming an experiment
@@ -1412,8 +1409,8 @@ class NameSpace():
             'PLAYING', 'FOREVER', 'PSYCHOPY_USERAGENT']
         self.builder = ['KeyResponse', 'key_resp', 'buttons', 'continueRoutine',
             'expInfo', 'expName', 'thisExp', 'filename', 'logFile', 'paramName',
-            't', 'frameN', 'currentLoop', 'dlg',
-            'globalClock', 'routineTimer',
+            't', 'frameN', 'currentLoop', 'dlg', '_thisDir', 'endExpNow',
+            'globalClock', 'routineTimer', 'frameDur',
             'theseKeys', 'win', 'x', 'y', 'level', 'component', 'thisComponent']
         # user-entered, from Builder dialog or conditions file:
         self.user = []
