@@ -54,21 +54,15 @@ if havePyglet:
         MOD_SCROLLLOCK
     )
 
-    global _keyBuffer
     _keyBuffer = []
-    global mouseButtons
     mouseButtons = [0, 0, 0]
-    global mouseWheelRel
     mouseWheelRel = numpy.array([0.0, 0.0])
-    global mouseClick
     # list of 3 clocks that are reset on mouse button presses
     mouseClick = [psychopy.core.Clock(), psychopy.core.Clock(),
                   psychopy.core.Clock()]
-    global mouseTimes
     # container for time elapsed from last reset of mouseClick[n] for any
     # button pressed
     mouseTimes = [0.0, 0.0, 0.0]
-    global mouseMove
     # clock for tracking time of mouse movement, reset when mouse is moved,
     # reset on mouse motion:
     mouseMove = psychopy.core.Clock()
@@ -342,12 +336,12 @@ def getKeys(keyList=None, modifiers=False, timeStamped=False):
         _last = timeStamped.getLastResetTime()
         _clockLast = psychopy.core.monotonicClock.getLastResetTime()
         timeBaseDiff = _last - _clockLast
-        relTuple = [filter(None, (k[0], modifiers and modifiers_dict(k[1]) or None, k[2] - timeBaseDiff)) for k in targets]
+        relTuple = [filter(None, (k[0], modifiers and modifiers_dict(k[1]) or None, k[-1] - timeBaseDiff)) for k in targets]
         return relTuple
     elif timeStamped is True:
-        return [filter(None, (k[0], modifiers and modifiers_dict(k[1]) or None, k[2])) for k in targets]
+        return [filter(None, (k[0], modifiers and modifiers_dict(k[1]) or None, k[-1])) for k in targets]
     elif isinstance(timeStamped, (float, int, long)):
-        relTuple = [filter(None, (k[0], modifiers and modifiers_dict(k[1]) or None, k[2] - timeStamped)) for k in targets]
+        relTuple = [filter(None, (k[0], modifiers and modifiers_dict(k[1]) or None, k[-1] - timeStamped)) for k in targets]
         return relTuple
 
 
