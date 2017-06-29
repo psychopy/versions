@@ -490,10 +490,12 @@ class KeyboardComponent(BaseComponent):
 
         if self.params['storeCorrect'].val:  # check for correct NON-repsonse
             code = ("// was no response the correct answer?!\n"
-                    "if (psychoJS.str(%(correctAns)s).toLowerCase() == 'none') {\n"
-                    "   %(name)s.corr = 1  // correct non-response\n"
-                    "} else {\n"
-                    "   %(name)s.corr = 0  // failed to respond (incorrectly)\n"
+                    "if (%(name)s.keys == undefined) {\n"
+                    "  if (psychoJS.str(%(correctAns)s).toLowerCase() == 'none') {\n"
+                    "     %(name)s.corr = 1  // correct non-response\n"
+                    "  } else {\n"
+                    "     %(name)s.corr = 0  // failed to respond (incorrectly)\n"
+                    "  }\n"
                     "}\n"
                     % self.params)
 
@@ -519,6 +521,3 @@ class KeyboardComponent(BaseComponent):
                     "    {loopName}.addData('{name}.rt', {name}.rt)\n}}\n"
                     .format(loopName=currLoop.params['name'], name=name))
             buff.writeIndentedLines(code)
-
-        if currLoop.params['name'].val == self.exp._expHandler.name:
-            buff.writeIndented("%s.nextEntry()\n" % self.exp._expHandler.name)

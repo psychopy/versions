@@ -142,8 +142,9 @@ class Experiment(object):
         # this can be checked by the builder that this is an experiment and a
         # compatible version
         self.psychopyVersion = __version__
-        self.psychopyLibs = ['gui', 'visual', 'core',
-                             'data', 'event', 'logging', 'sound']
+        # What libs are needed (make sound come first)
+        self.psychopyLibs = ['sound', 'gui', 'visual', 'core',
+                             'data', 'event', 'logging']
         _settingsComp = getComponents(fetchIcons=False)['SettingsComponent']
         self.settings = _settingsComp(parentName='', exp=self)
         # this will be the xml.dom.minidom.doc object for saving
@@ -1054,15 +1055,15 @@ class TrialHandler(object):
                 "      trialList:psychoJS.data.importConditions({params[conditionsFile]}),\n"
                 "      seed:{seed}, name:'{params[name]}'}});\n"
                 "    thisExp.addLoop({params[name]}); // add the loop to the experiment\n"
-                "    {thisName} = {params[name]}.trialList[0]; // so we can initialise stimuli with some values\n"
+                "    {thisName} = {params[name]}.trialList[{params[name]}.trialSequence[0]]; // so we can initialise stimuli with some values\n"
                 "    // abbreviate parameter names if possible (e.g. rgb={thisName}.rgb)\n"
                 "    abbrevNames({thisName});\n"
                 .format(params=self.params, thisName=self.thisName, seed=seed))
         buff.writeIndentedLines(code)
         # for the scheduler
         code = ("    // Schedule each of the trials in the list to occur\n"
-                "    for (var i = 0; i < {params[name]}.trialList.length; ++i) {{\n"
-                "      {thisName} = {params[name]}.trialList[i];\n"
+                "    for (var i = 0; i < {params[name]}.trialSequence.length; ++i) {{\n"
+                "      {thisName} = {params[name]}.trialList[{params[name]}.trialSequence[i]];\n"
                 "      thisScheduler.add(abbrevNames({thisName}));\n"
                 .format(params=self.params, thisName=self.thisName, seed=seed))
         buff.writeIndentedLines(code)
@@ -1087,6 +1088,11 @@ class TrialHandler(object):
                     "      thisScheduler.add({name}LoopEnd);\n"
                     .format(params=self.params, name=thisChild.params['name'])
                     )
+        if self.params['isTrials'].val == True:
+            code += (
+                   "      thisScheduler.add(recordLoopIteration({name}));\n"
+                   .format(name=self.params['name'])
+                   )
         buff.writeIndentedLines(code)
         code = ("    }}\n"
                 "  }} catch (exception) {{\n"
@@ -1147,7 +1153,7 @@ class TrialHandler(object):
                 "    params = Object.keys({params[name]}.trialList[0]);\n"
                 "  }}\n\n"
                 "  // save data for this loop\n"
-                "  thisExp.save({{stimOut: params, dataOut: ['n','all_mean','all_std', 'all_raw']}});\n"
+                "  thisExp.loopEnded({params[name]});\n"
                 "  return psychoJS.NEXT;\n"
                 "  }}\n"
                 .format(params=self.params))
