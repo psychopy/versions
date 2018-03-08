@@ -5,6 +5,11 @@ Created on Mon Jan 07 11:18:51 2013
 @author: Sol
 """
 from __future__ import print_function  # for compatibility with python3
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import numpy as np
 from weakref import proxy
 from psychopy import core
@@ -15,7 +20,7 @@ from pyglet.gl import (glCallList, glGenLists, glNewList, glDisable, glEnable,
                        GL_TEXTURE_ENV_MODE, GL_MODULATE, GL_UNSIGNED_INT,
                        glPopMatrix, glBindTexture, glActiveTexture, glTexEnvf,
                        glPushMatrix, glCallLists, glVertex2i)
-import parsedtext
+from . import parsedtext
 getTime = core.getTime
 
 
@@ -78,9 +83,9 @@ class TextGrid(object):
         self._position = dx, dy
 
         # TextGrid cell boundaries
-        self._col_lines = [int(np.floor(x)) for x in xrange(
+        self._col_lines = [int(np.floor(x)) for x in range(
             0, self._size[0] + 1, self._cell_size[0])]
-        self._row_lines = [int(np.floor(y)) for y in xrange(
+        self._row_lines = [int(np.floor(y)) for y in range(
             0, -self._size[1] - 1, -self._cell_size[1])]
 
         self._apply_padding = False
@@ -223,11 +228,11 @@ class TextGrid(object):
                         active_text_style_dlist(c) for c in line_ords]
 
                 glTranslatef(cline._trans_left * cell_width, -
-                             int(line_spacing / 2.0 + cline._trans_top * cell_height), 0)
+                             int(old_div(line_spacing, 2.0) + cline._trans_top * cell_height), 0)
                 glCallLists(line_length, GL_UNSIGNED_INT,
                             line_display_list[0:line_length].ctypes)
                 glTranslatef(-line_length * cell_width - cline._trans_left * cell_width, -
-                             cell_height + int(line_spacing / 2.0 + cline._trans_top * cell_height), 0)
+                             cell_height + int(old_div(line_spacing, 2.0) + cline._trans_top * cell_height), 0)
 
                 ###
             glPopMatrix()

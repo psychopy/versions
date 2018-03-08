@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
@@ -10,12 +10,18 @@
 
 from __future__ import absolute_import, print_function, division
 
+from builtins import map
+from builtins import str
+from builtins import object
 import os
 import copy
 import numpy
 import re
 import wx
-from wx.lib import flatnotebook
+try:
+    from wx.lib.agw import flatnotebook
+except ImportError:  # was here wx<4.0:
+    from wx.lib import flatnotebook
 
 from ... import dialogs
 from .. import experiment
@@ -72,6 +78,7 @@ class ParamCtrls(object):
         # try to find the experiment
         self.exp = None
         tryForExp = self.dlg
+
         while self.exp is None:
             if hasattr(tryForExp, 'frame'):
                 self.exp = tryForExp.frame.exp
@@ -95,7 +102,7 @@ class ParamCtrls(object):
         _nonCode = ('name', 'Experiment info')
         if param.valType == 'code' and fieldName not in _nonCode:
             label += ' $'
-        self.nameCtrl = wx.StaticText(parent, -1, label, size=None,
+        self.nameCtrl = wx.StaticText(parent, -1, label, size=wx.DefaultSize,
                                       style=wx.ALIGN_RIGHT)
 
         if fieldName == 'Use version':
@@ -117,7 +124,7 @@ class ParamCtrls(object):
                                      size=wx.Size(sx, sy), style=0,
                                      prefs=appPrefs)
             if len(param.val):
-                self.valueCtrl.AddText(unicode(param.val))
+                self.valueCtrl.AddText(str(param.val))
             if fieldName == 'text':
                 self.valueCtrl.SetFocus()
         elif fieldName == 'Experiment info':
@@ -132,7 +139,7 @@ class ParamCtrls(object):
                                      size=wx.Size(100, 100), style=0,
                                      prefs=appPrefs)
             if len(param.val):
-                self.valueCtrl.AddText(unicode(param.val))
+                self.valueCtrl.AddText(str(param.val))
             # code input fields: one day change these to wx.stc fields?
             # self.valueCtrl = wx.TextCtrl(parent,-1,unicode(param.val),
             #    style=wx.TE_MULTILINE,
@@ -175,7 +182,7 @@ class ParamCtrls(object):
             self.valueCtrl.SetSelection(index)
         else:
             # create the full set of ctrls
-            val = unicode(param.val)
+            val = str(param.val)
             self.valueCtrl = wx.TextCtrl(parent, -1, val, name=fieldName,
                                          size=wx.Size(self.valueWidth, -1))
             # set focus for these fields; seems to get reset elsewhere (?)
@@ -211,7 +218,7 @@ class ParamCtrls(object):
             # allowedUpdates = extend version of allowed updates that includes
             # "set during:static period"
             allowedUpdates = copy.copy(param.allowedUpdates)
-            for routineName, routine in self.exp.routines.items():
+            for routineName, routine in list(self.exp.routines.items()):
                 for static in routine.getStatics():
                     msg = _translate(
                         "set during: %(routineName)s.%(staticName)s")
@@ -330,7 +337,7 @@ class ParamCtrls(object):
         """
         expInfo = eval(expInfoStr)
         listOfDicts = []
-        for field, default in expInfo.items():
+        for field, default in list(expInfo.items()):
             listOfDicts.append({'Field': field, 'Default': default})
         return listOfDicts
 
@@ -344,6 +351,25 @@ class ParamCtrls(object):
         expInfoStr = repr(expInfo)
         return expInfoStr
 
+    def setChangesCallback(self, callbackFunction):
+        """Set a callback to detect any changes in this value (whether it's
+        a checkbox event or a text event etc
+
+        :param callbackFunction: the function to be called when the valueCtrl
+        changes value
+        :return:
+        """
+        if isinstance(self.valueCtrl, CodeBox):
+            self.valueCtrl.Bind(wx.stc.EVT_STC_CHANGE, callbackFunction)
+        elif isinstance(self.valueCtrl, wx.ComboBox):
+            self.valueCtrl.Bind(wx.EVT_COMBOBOX, callbackFunction)
+        elif isinstance(self.valueCtrl, wx.Choice):
+            self.valueCtrl.Bind(wx.EVT_CHOICE, callbackFunction)
+        elif isinstance(self.valueCtrl, wx.CheckBox):
+            self.valueCtrl.Bind(wx.EVT_CHECKBOX, callbackFunction)
+        else:
+            print("setChangesCallback doesn't know how to handle ctrl {}"
+                  .format(type(self.valueCtrl)))
 
 class _BaseParamsDlg(wx.Dialog):
     _style = wx.DEFAULT_DIALOG_STYLE | wx.DIALOG_NO_PARENT | wx.TAB_TRAVERSAL
@@ -352,7 +378,8 @@ class _BaseParamsDlg(wx.Dialog):
                  helpUrl=None, suppressTitles=True,
                  showAdvanced=False,
                  size=wx.DefaultSize,
-                 style=_style, editing=False):
+                 style=_style, editing=False,
+                 depends=[]):
 
         # translate title
         if ' Properties' in title:  # Components and Loops
@@ -362,7 +389,7 @@ class _BaseParamsDlg(wx.Dialog):
             localizedTitle = _translate(title)
 
         # use translated title for display
-        wx.Dialog.__init__(self, frame, -1, localizedTitle,
+        wx.Dialog.__init__(self, parent=None, id=-1, title=localizedTitle,
                            size=size, style=style)
         self.frame = frame
         self.app = frame.app
@@ -372,7 +399,7 @@ class _BaseParamsDlg(wx.Dialog):
         self.title = title
         if (not editing and
                 title != 'Experiment Settings' and
-                'name' in self.params.keys()):
+                'name' in self.params):
             # then we're adding a new component, so provide known-valid name:
             makeValid = self.frame.exp.namespace.makeValid
             self.params['name'].val = makeValid(params['name'].val)
@@ -381,6 +408,7 @@ class _BaseParamsDlg(wx.Dialog):
         self.suppressTitles = suppressTitles
         self.showAdvanced = showAdvanced
         self.order = order
+        self.depends = depends
         self.data = []
         self.nameOKlabel = None
         # max( len(str(self.params[x])) for x in keys )
@@ -440,19 +468,21 @@ class _BaseParamsDlg(wx.Dialog):
                       'Dots': _translate('Dots'),
                       'Grating': _translate('Grating'),
                       'Advanced': _translate('Advanced'),
-                      'Custom': _translate('Custom')}
+                      'Custom': _translate('Custom'),
+                      'Carrier': _translate('Carrier'),
+                      'Envelope': _translate('Envelope')}
         for categName in categNames:
             theseParams = categs[categName]
             page = wx.Panel(self.ctrls, -1)
             ctrls = self.addCategoryOfParams(theseParams, parent=page)
-            if categName in categLabel.keys():
+            if categName in categLabel:
                 cat = categLabel[categName]
             else:
                 cat = categName
             self.ctrls.AddPage(page, cat)
             # so the validator finds this set of controls
             self.panels.append(page)
-            if 'customize_everything' in self.params.keys():
+            if 'customize_everything' in self.params:
                 if self.params['customize_everything'].val.strip():
                     # set focus to the custom panel
                     page.SetFocus()
@@ -469,6 +499,46 @@ class _BaseParamsDlg(wx.Dialog):
             page.SetSizerAndFit(ctrls)
             page.SetAutoLayout(True)
         self.SetSizerAndFit(self.mainSizer)
+        #set up callbacks for any dependent params to update others
+        for thisDepend in self.depends:
+            paramName = thisDepend['dependsOn']
+            paramCtrl = self.paramCtrls[paramName]  # hint : ParamCtrl
+            paramCtrl.setChangesCallback(self.checkDepends)
+        self.checkDepends()
+
+    def checkDepends(self, event=None):
+        """Checks the relationships between params that depend on each other
+
+        Dependencies are a list of dicts like this (as in BaseComponent):
+        {"dependsOn": "shape",
+         "condition": "=='n vertices",
+         "param": "n vertices",
+         "true": "Enable",  # what to do with param if condition is True
+         "false": "Disable",  # permitted: hide, show, enable, disable
+        }"""
+        for thisDep in self.depends:
+            dependentCtrls = self.paramCtrls[thisDep['param']]
+            dependencyCtrls = self.paramCtrls[thisDep['dependsOn']]
+            condString = "dependencyCtrls.getValue() {}".format(thisDep['condition'])
+            if eval(condString):
+                action = thisDep['true']
+            else:
+                action = thisDep['false']
+            if action == "hide":
+                dependentCtrls.setVisible(False)
+            elif action == "show":
+                dependentCtrls.setVisible(True)
+            else:
+                # if action is "enable" then do ctrl.Enable() etc
+                for ctrlName in ['valueCtrl', 'nameCtrl', 'updatesCtrl']:
+                    # disable/enable all parts of the control
+                    if hasattr(dependentCtrls, ctrlName):
+                        evalStr = ("dependentCtrls.{}.{}()"
+                                   .format(ctrlName, action.title()))
+                        eval(evalStr)
+            self.mainSizer.Layout()
+            self.Fit()
+            self.Refresh()
 
     def addCategoryOfParams(self, paramNames, parent):
         """Add all the params for a single category
@@ -544,16 +614,16 @@ class _BaseParamsDlg(wx.Dialog):
                                    style=wx.ALIGN_CENTER)
         labelEstim.SetForegroundColour('gray')
         # the method to be used to interpret this start/stop
-        _choices = map(_translate, startTypeParam.allowedVals)
+        _choices = list(map(_translate, startTypeParam.allowedVals))
         self.startTypeCtrl = wx.Choice(parent, choices=_choices)
         self.startTypeCtrl.SetStringSelection(_translate(startTypeParam.val))
         self.startTypeCtrl.SetToolTipString(self.params['startType'].hint)
         # the value to be used as the start/stop
-        _start = unicode(startValParam.val)
+        _start = str(startValParam.val)
         self.startValCtrl = wx.TextCtrl(parent, -1, _start)
         self.startValCtrl.SetToolTipString(self.params['startVal'].hint)
         # the value to estimate start/stop if not numeric
-        _est = unicode(self.params['startEstim'].val)
+        _est = str(self.params['startEstim'].val)
         self.startEstimCtrl = wx.TextCtrl(parent, -1, _est)
         self.startEstimCtrl.SetToolTipString(self.params['startEstim'].hint)
         # add the controls to a new line
@@ -586,15 +656,15 @@ class _BaseParamsDlg(wx.Dialog):
                                    style=wx.ALIGN_CENTER)
         labelEstim.SetForegroundColour('gray')
         # the method to be used to interpret this start/stop
-        _choices = map(_translate, stopTypeParam.allowedVals)
+        _choices = list(map(_translate, stopTypeParam.allowedVals))
         self.stopTypeCtrl = wx.Choice(parent, choices=_choices)
         self.stopTypeCtrl.SetStringSelection(_translate(stopTypeParam.val))
         self.stopTypeCtrl.SetToolTipString(self.params['stopType'].hint)
         # the value to be used as the start/stop
-        self.stopValCtrl = wx.TextCtrl(parent, -1, unicode(stopValParam.val))
+        self.stopValCtrl = wx.TextCtrl(parent, -1, str(stopValParam.val))
         self.stopValCtrl.SetToolTipString(self.params['stopVal'].hint)
         # the value to estimate start/stop if not numeric
-        _est = unicode(self.params['durationEstim'].val)
+        _est = str(self.params['durationEstim'].val)
         self.durationEstimCtrl = wx.TextCtrl(parent, -1, _est)
         _hnt = self.params['durationEstim'].hint
         self.durationEstimCtrl.SetToolTipString(_hnt)
@@ -904,7 +974,7 @@ class _BaseParamsDlg(wx.Dialog):
         used in __init__ and are also returned from this method.
         """
         # get data from input fields
-        for fieldName in self.params.keys():
+        for fieldName in self.params:
             param = self.params[fieldName]
             if fieldName == 'advancedParams':
                 pass
@@ -1004,7 +1074,7 @@ class DlgLoopProperties(_BaseParamsDlg):
 
     def __init__(self, frame, title="Loop Properties", loop=None,
                  helpUrl=None, pos=wx.DefaultPosition, size=wx.DefaultSize,
-                 style=_style):
+                 style=_style, depends=[]):
         # translate title
         localizedTitle = title.replace(' Properties',
                                        _translate(' Properties'))
@@ -1156,7 +1226,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         # that can be hidden or shown
         handler = self.trialHandler
         # loop through the params
-        keys = handler.params.keys()
+        keys = list(handler.params.keys())
         panel = wx.Panel(parent=self)
         panelSizer = wx.GridBagSizer(5, 5)
         panel.SetSizer(panelSizer)
@@ -1232,7 +1302,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         # that can be hidden or shown
         handler = self.multiStairHandler
         # loop through the params
-        keys = handler.params.keys()
+        keys = list(handler.params.keys())
         # add conditions stuff to the *end*
         # add conditions stuff to the *end*
         if 'conditionsFile' in keys:
@@ -1337,7 +1407,7 @@ class DlgLoopProperties(_BaseParamsDlg):
             # annoying for novice)
             paramStr = "["
             for param in conditions[0]:
-                paramStr += (unicode(param) + ', ')
+                paramStr += (str(param) + ', ')
             paramStr = paramStr[:-2] + "]"  # remove final comma and add ]
             # generate summary info
             msg = _translate('%(nCondition)i conditions, with %(nParam)i '
@@ -1382,7 +1452,7 @@ class DlgLoopProperties(_BaseParamsDlg):
                     self.conditionsFile = gridGUI.fileName
         self.currentHandler.params['conditionsFile'].val = self.conditionsFile
         # as set via DlgConditions
-        if 'conditionsFile' in self.currentCtrls.keys():
+        if 'conditionsFile' in self.currentCtrls:
             valCtrl = self.currentCtrls['conditionsFile'].valueCtrl
             valCtrl.Clear()
             valCtrl.WriteText(self.conditionsFile)
@@ -1426,7 +1496,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         self.conditionsOrig = self.conditions
         expFolder, expName = os.path.split(self.frame.filename)
         dlg = wx.FileDialog(self, message=_translate("Open file ..."),
-                            style=wx.OPEN, defaultDir=expFolder)
+                            style=wx.FD_OPEN, defaultDir=expFolder)
         if dlg.ShowModal() == wx.ID_OK:
             newFullPath = dlg.GetPath()
             if self.conditionsFile:
@@ -1444,7 +1514,7 @@ class DlgLoopProperties(_BaseParamsDlg):
                 self.conditions, self.condNamesInFile = _c, _n
                 needUpdate = True
             except ImportError as msg:
-                msg = unicode(msg)
+                msg = str(msg)
                 if msg.startswith('Could not open'):
                     msg = _translate('Could not read conditions from:\n')
                     _file = newFullPath.split(os.path.sep)[-1]
@@ -1496,7 +1566,7 @@ class DlgLoopProperties(_BaseParamsDlg):
             self.duplCondNames = duplCondNames
 
             if (needUpdate or
-                    ('conditionsFile' in self.currentCtrls.keys() and
+                    ('conditionsFile' in list(self.currentCtrls.keys()) and
                      not duplCondNames)):
                 self.currentCtrls['conditionsFile'].setValue(newPath)
                 self.currentCtrls['conditions'].setValue(
@@ -1507,7 +1577,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         those handler params
         """
         # get data from input fields
-        for fieldName in self.currentHandler.params.keys():
+        for fieldName in self.currentHandler.params:
             if fieldName == 'endPoints':
                 continue  # this was deprecated in v1.62.00
             param = self.currentHandler.params[fieldName]
@@ -1536,7 +1606,7 @@ class DlgLoopProperties(_BaseParamsDlg):
         if val.find('...') == -1 and self.conditionsFile != val:
             self.conditionsFile = val
             if self.conditions:
-                self.exp.namespace.remove(self.conditions[0].keys())
+                self.exp.namespace.remove(list(self.conditions[0].keys()))
             if os.path.isfile(self.conditionsFile):
                 try:
                     self.conditions = data.importConditions(
@@ -1565,7 +1635,7 @@ class DlgLoopProperties(_BaseParamsDlg):
 
     def onOK(self, event=None):
         # intercept OK in case user deletes or edits the filename manually
-        if 'conditionsFile' in self.currentCtrls.keys():
+        if 'conditionsFile' in self.currentCtrls:
             self.refreshConditions()
         event.Skip()  # do the OK button press
 
@@ -1575,11 +1645,11 @@ class DlgComponentProperties(_BaseParamsDlg):
     def __init__(self, frame, title, params, order,
                  helpUrl=None, suppressTitles=True, size=wx.DefaultSize,
                  style=wx.DEFAULT_DIALOG_STYLE | wx.DIALOG_NO_PARENT,
-                 editing=False):
+                 editing=False, depends=[]):
         style = style | wx.RESIZE_BORDER
         _BaseParamsDlg.__init__(self, frame, title, params, order,
                                 helpUrl=helpUrl, size=size, style=style,
-                                editing=editing)
+                                editing=editing, depends=depends)
         self.frame = frame
         self.app = frame.app
         self.dpi = self.app.dpi
@@ -1620,10 +1690,11 @@ class DlgExperimentProperties(_BaseParamsDlg):
 
     def __init__(self, frame, title, params, order, suppressTitles=False,
                  size=wx.DefaultSize, helpUrl=None,
-                 style=wx.DEFAULT_DIALOG_STYLE | wx.DIALOG_NO_PARENT):
+                 style=wx.DEFAULT_DIALOG_STYLE | wx.DIALOG_NO_PARENT,
+                 depends=[]):
         style = style | wx.RESIZE_BORDER
         _BaseParamsDlg.__init__(self, frame, 'Experiment Settings',
-                                params, order,
+                                params, order, depends=depends,
                                 size=size, style=style, helpUrl=helpUrl)
         self.frame = frame
         self.app = frame.app
@@ -1662,7 +1733,7 @@ class DlgExperimentProperties(_BaseParamsDlg):
             size = list(wx.Display(screenN).GetGeometry()[2:])
             # set vals and disable changes
             field = 'Window size (pixels)'
-            self.paramCtrls[field].valueCtrl.SetValue(unicode(size))
+            self.paramCtrls[field].valueCtrl.SetValue(str(size))
             self.paramCtrls[field].valueCtrl.Disable()
             self.paramCtrls[field].nameCtrl.Disable()
         else:

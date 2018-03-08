@@ -6,11 +6,14 @@
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
+from __future__ import print_function
+from builtins import str
+from past.builtins import basestring
 try:
     from PyQt4 import QtGui
     QtWidgets = QtGui  # in qt4 these were all in one package
     from PyQt4.QtCore import Qt
-except Exception:
+except ImportError:
     from PyQt5 import QtWidgets
     from PyQt5 import QtGui
     from PyQt5.QtCore import Qt
@@ -171,33 +174,33 @@ class Dlg(QtWidgets.QDialog):
             inputBox.stateChanged.connect(handleCheckboxChange)
         elif not choices:
             self.data.append(initial)
-            inputBox = QtWidgets.QLineEdit(unicode(initial), parent=self)
+            inputBox = QtWidgets.QLineEdit(str(initial), parent=self)
 
             def handleLineEditChange(new_text):
                 ix = self.inputFields.index(inputBox)
                 thisType = self.inputFieldTypes[ix]
 
                 try:
-                    if thisType in (str, unicode):
-                        self.data[ix] = unicode(new_text)
+                    if issubclass(thisType, basestring):
+                        self.data[ix] = str(new_text)
                     elif thisType == tuple:
-                        jtext = "[" + unicode(new_text) + "]"
+                        jtext = "[" + str(new_text) + "]"
                         self.data[ix] = json.loads(jtext)[0]
                     elif thisType == list:
-                        jtext = "[" + unicode(new_text) + "]"
+                        jtext = "[" + str(new_text) + "]"
                         self.data[ix] = json.loads(jtext)[0]
                     elif thisType == float:
                         self.data[ix] = string.atof(str(new_text))
                     elif thisType == int:
                         self.data[ix] = string.atoi(str(new_text))
-                    elif thisType == long:
+                    elif thisType == int:
                         self.data[ix] = string.atol(str(new_text))
                     elif thisType == dict:
-                        jtext = "[" + unicode(new_text) + "]"
+                        jtext = "[" + str(new_text) + "]"
                         self.data[ix] = json.loads(jtext)[0]
                     elif thisType == np.ndarray:
                         self.data[ix] = np.array(
-                            json.loads("[" + unicode(new_text) + "]")[0])
+                            json.loads("[" + str(new_text) + "]")[0])
                     else:
                         self.data[ix] = new_text
                         msg = ("Unknown type in handleLineEditChange: "
@@ -208,7 +211,7 @@ class Dlg(QtWidgets.QDialog):
                            "type={1}, value={2}")
                     logging.debug(msg.format(label, thisType, self.data[ix]))
                 except Exception as e:
-                    self.data[ix] = unicode(new_text)
+                    self.data[ix] = str(new_text)
                     msg = ('Error in handleLineEditChange: inputFieldName='
                            '{0}, type={1}, value={2}, error={3}')
                     logging.error(msg.format(label, thisType, self.data[ix],
@@ -219,11 +222,11 @@ class Dlg(QtWidgets.QDialog):
             inputBox = QtWidgets.QComboBox(parent=self)
             choices = list(choices)
             for i, option in enumerate(choices):
-                inputBox.addItem(unicode(option))
+                inputBox.addItem(str(option))
                 # inputBox.addItems([unicode(option) for option in choices])
                 inputBox.setItemData(i, (option,))
 
-            if (isinstance(initial, (int, long)) and
+            if (isinstance(initial, (int, int)) and
                     len(choices) > initial >= 0):
                 pass
             elif initial in choices:
@@ -328,6 +331,25 @@ class DlgFromDict(Dlg):
     """Creates a dialogue box that represents a dictionary of values.
     Any values changed by the user are change (in-place) by this
     dialogue box.
+
+    Parameters
+    ----------
+
+    sort_keys : bool
+        Whether the dictionary keys should be ordered alphabetically
+        for displaying.
+
+    copy_dict : bool
+        If False, modify ``dictionary`` in-place. If True, a copy of
+        the dictionary is created, and the altered version (after
+        user interaction) can be retrieved from
+        :attr:~`psychopy.gui.DlgFromDict.dictionary`.
+
+    show : bool
+        Whether to immediately display the dialog upon instantiation.
+         If False, it can be displayed at a later time by calling
+         its `show()` method.
+
     e.g.:
 
     ::
@@ -352,21 +374,38 @@ class DlgFromDict(Dlg):
     See GUI.py for a usage demo, including order and tip (tooltip).
     """
 
-    def __init__(self, dictionary, title='', fixed=(), order=(),
-                 tip=None, screen=-1):
+    def __init__(self, dictionary, title='', fixed=None, order=None,
+                 tip=None, screen=-1, sort_keys=True, copy_dict=False,
+                 show=True):
+        # We don't explicitly check for None identity
+        #  for backward-compatibility reasons.
+        if not fixed:
+            fixed = []
+        if not order:
+            order = []
         if not tip:
-            tip = {}
+            tip = dict()
+
         Dlg.__init__(self, title, screen=screen)
-        self.dictionary = dictionary
-        keys = self.dictionary.keys()
-        keys.sort()
-        if len(order):
-            keys = order + list(set(keys).difference(set(order)))
-        types = dict([])
-        for field in keys:
+
+        if copy_dict:
+            self.dictionary = dictionary.copy()
+        else:
+            self.dictionary = dictionary
+
+        self._keys = list(self.dictionary.keys())
+
+        if sort_keys:
+            self._keys.sort()
+        if order:
+            self._keys = list(order) + list(set(self._keys).difference(set(order)))
+
+        types = dict()
+
+        for field in self._keys:
             types[field] = type(self.dictionary[field])
             tooltip = ''
-            if field in tip.keys():
+            if field in tip:
                 tooltip = tip[field]
             if field in fixed:
                 self.addFixedField(field, self.dictionary[field], tip=tooltip)
@@ -376,9 +415,15 @@ class DlgFromDict(Dlg):
             else:
                 self.addField(field, self.dictionary[field], tip=tooltip)
 
+        if show:
+            self.show()
+
+    def show(self):
+        """Display the dialog.
+        """
         ok_data = self.exec_()
         if ok_data:
-            for n, thisKey in enumerate(keys):
+            for n, thisKey in enumerate(self._keys):
                 self.dictionary[thisKey] = ok_data[n]
 
 
@@ -419,7 +464,7 @@ def fileSaveDlg(initFilePath="", initFileName="",
     fdir = os.path.join(initFilePath, initFileName)
     r = QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=prompt,
                                               directory=fdir, filter=allowed)
-    return unicode(r) or None
+    return str(r) or None
 
 
 def fileOpenDlg(tryFilePath="",
@@ -468,7 +513,7 @@ def fileOpenDlg(tryFilePath="",
     if type(filesToOpen) == tuple:  # some versions(?) of PyQt return (files, filter)
         filesToOpen = filesToOpen[0]
 
-    filesToOpen = [unicode(fpath) for fpath in filesToOpen
+    filesToOpen = [str(fpath) for fpath in filesToOpen
                    if os.path.exists(fpath)]
     if len(filesToOpen) == 0:
         return None
@@ -571,7 +616,7 @@ if __name__ == '__main__':
                       choices=['R1', 'R2', 'R3'],
                       tip="This field is readonly.")
     ok_data = dlg.show()
-    print("Dlg ok_data:", ok_data)
+    print(("Dlg ok_data:", ok_data))
 
     # Test Dict Dialog
 
@@ -587,10 +632,10 @@ if __name__ == '__main__':
     # Test File Dialogs
 
     fileToSave = fileSaveDlg(initFileName='__init__.pyc')
-    print("fileToSave: [", fileToSave, "]", type(fileToSave))
+    print(("fileToSave: [", fileToSave, "]", type(fileToSave)))
 
     fileToOpen = fileOpenDlg()
-    print("fileToOpen:", fileToOpen)
+    print(("fileToOpen:", fileToOpen))
 
     # Test Alert Dialogs
 

@@ -1,6 +1,9 @@
 
 from __future__ import absolute_import, print_function
 
+from past.builtins import basestring
+from builtins import str
+from builtins import object
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
@@ -35,6 +38,8 @@ _localized = {
     'audioDriver': _translate("audio driver"),
     'flac': _translate('flac audio compression'),
     'parallelPorts': _translate("parallel ports"),
+    'shutdownKey': _translate("shutdown key"),
+    'shutdownKeyModifiers': _translate("shutdown key modifier keys"),
     'showStartupTips': _translate("show start-up tips"),
     'largeIcons': _translate("large icons"),
     'defaultView': _translate("default view"),
@@ -209,7 +214,7 @@ class PreferencesDlg(wx.Dialog):
         currentPane = self.nb.GetPageText(self.nb.GetSelection())
         # what the url should be called in psychopy.app.urls
         urlName = "prefs.%s" % currentPane
-        if urlName in self.app.urls.keys():
+        if urlName in self.app.urls:
             url = self.app.urls[urlName]
         else:
             # couldn't find that section - use default prefs
@@ -233,7 +238,7 @@ class PreferencesDlg(wx.Dialog):
             parent, -1, size=(dlgSize[0] - 100, dlgSize[1] - 200))
         vertBox = wx.BoxSizer(wx.VERTICAL)
         # add each pref for this section
-        for prefName in specSection.keys():
+        for prefName in specSection:
             if prefName in ['version']:  # any other prefs not to show?
                 continue
             # allowModuleImports pref is handled by generateSpec.py
@@ -289,8 +294,8 @@ class PreferencesDlg(wx.Dialog):
         # b) case-insensitive match for Cmd+ at start of string
         # c) reverse-map locale display names to canonical names (ja_JP)
         re_cmd2ctrl = re.compile('^Cmd\+', re.I)
-        for sectionName in self.prefsCfg.keys():
-            for prefName in self.prefsSpec[sectionName].keys():
+        for sectionName in self.prefsCfg:
+            for prefName in self.prefsSpec[sectionName]:
                 if prefName in ['version']:  # any other prefs not to show?
                     continue
                 ctrlName = sectionName + '.' + prefName
@@ -390,13 +395,16 @@ class PrefCtrls(object):
                     labels.append(opt)
             self.valueCtrl = wx.Choice(self.parent, choices=labels)
             self.valueCtrl._choices = copy.copy(options)  # internal values
-            self.valueCtrl.SetSelection(options.index(value))
+            try:
+                self.valueCtrl.SetSelection(options.index(value))
+            except:
+                pass
         elif spec.startswith('list'):  # list
             valuestring = self.listToString(value)
             self.valueCtrl = wx.TextCtrl(self.parent, -1, valuestring,
                                          size=(valueWidth, -1))
         else:  # just use a string
-            self.valueCtrl = wx.TextCtrl(self.parent, -1, unicode(value),
+            self.valueCtrl = wx.TextCtrl(self.parent, -1, str(value),
                                          size=(valueWidth, -1))
 
     def _getCtrlValue(self, ctrl):
@@ -442,17 +450,13 @@ class PrefCtrls(object):
             l = '['
             for e in seq:
                 # if element is a sequence, call listToString recursively.
-                if hasattr(e, '__iter__'):
-                    en = listToString(e, depth - 1) + ','
+                if isinstance(e, basestring):
+                    en = "{!r}, ".format(e)  # using !r adds '' or u'' as needed
+                elif hasattr(e, '__iter__'):  # just tuples and lists (but in Py3 str has __iter__)
+                    en = self.listToString(e, depth - 1) + ','
                 else:
-                    e = e.replace('\\', '\\\\').replace("'", "\\'")
-                    # try str() first because we don't want to append "u" if
-                    # unnecessary.
-                    try:
-                        en = "'" + str(e) + "',"
-                    except Exception:  # unicode
-                        # "u" is necessary if string is unicode.
-                        en = "u'" + unicode(e) + "',"
+                    e = e.replace('\\', '\\\\').replace("'", "\\'")  # in path names?
+                    en = "{!r}, ".format(e)
                 l += en
             # remove unnecessary comma
             if l[-1] == ',':

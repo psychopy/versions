@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
 """
 ioHub
 .. file: ioHub/client.py
@@ -10,6 +9,14 @@ Distributed under the terms of the GNU General Public License (GPL version 3 or 
 .. moduleauthor:: Sol Simpson <sol@isolver-software.com> + contributors, please see credits section of documentation.
 .. fileauthor:: Sol Simpson <sol@isolver-software.com>
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import next
+from builtins import range
+from past.builtins import basestring
+from builtins import object
 
 import os,sys
 import time
@@ -34,7 +41,6 @@ from .. import _DATA_STORE_AVAILABLE
 currentSec= Computer.currentSec
 
 _currentSessionInfo=None
-
 
 
 #
@@ -340,15 +346,15 @@ class ioHubConnection(object):
         optional as_type property to the method. Valid values for
         as_type are the following str values:
 
-		* 'list': Each event is sent from the ioHub Process as a list of ordered attributes. This is the most efficient for data transmission, but not for human readability or usability. However, if you do want events to be kept in list form, set as_type = 'list'.
-		* 'astuple': Each event is converted to a namedtuple object. Event attributes are accessed using natural naming style (dot name style), or by the index of the event attribute for the event type. The namedtuple class definition is created once for each Event type at the start of the experiment, so memory overhead is almost the same as the event value list, and conversion from the event list to the namedtuple is very fast. This is the default, and normally most useful, event representation type.
-		* 'dict': Each event converted to a dict object, keys equaling the event attribute names, values being, well the attribute values for the event.
-		* 'object': Each event is converted into an instance of the ioHub DeviceEvent subclass based on the event's type. This conversion process can take a bit of time if the number of events returned is large, and currently there is no real benefit converting events into DeviceEvent Class instances vs. the default namedtuple object type. Therefore this option should be used rarely.
+        * 'list': Each event is sent from the ioHub Process as a list of ordered attributes. This is the most efficient for data transmission, but not for human readability or usability. However, if you do want events to be kept in list form, set as_type = 'list'.
+        * 'astuple': Each event is converted to a namedtuple object. Event attributes are accessed using natural naming style (dot name style), or by the index of the event attribute for the event type. The namedtuple class definition is created once for each Event type at the start of the experiment, so memory overhead is almost the same as the event value list, and conversion from the event list to the namedtuple is very fast. This is the default, and normally most useful, event representation type.
+        * 'dict': Each event converted to a dict object, keys equaling the event attribute names, values being, well the attribute values for the event.
+        * 'object': Each event is converted into an instance of the ioHub DeviceEvent subclass based on the event's type. This conversion process can take a bit of time if the number of events returned is large, and currently there is no real benefit converting events into DeviceEvent Class instances vs. the default namedtuple object type. Therefore this option should be used rarely.
 
         Args:
             device_label (str): Indicates what device to retrieve events for. If None ( the default ) returns device events from all devices.
 
-			as_type (str): Indicates how events should be represented when they are returned to the user. Default: 'namedtuple'.
+            as_type (str): Indicates how events should be represented when they are returned to the user. Default: 'namedtuple'.
 
         Returns:
             tuple: A tuple of event objects, where the event object type is defined by the 'as_type' parameter.
@@ -505,8 +511,8 @@ class ioHubConnection(object):
 
         This is done for two reasons:
 
-		* The ioHub Process and ioHub Device buffers do not reach their specified limits and start descarding old events when new events arrive.
-		* So that a very large build up of events does not occur on the ioHub Process, resulting in a very large number of events being returned if getEvents() is called after a long wait period. If a large number of events needs to be returned by the ioHub, that will result in multiple UDP packets being sent to the PsychoPy Process to return all the events. This would slow event retrieval down for that request unnecessarily.
+        * The ioHub Process and ioHub Device buffers do not reach their specified limits and start descarding old events when new events arrive.
+        * So that a very large build up of events does not occur on the ioHub Process, resulting in a very large number of events being returned if getEvents() is called after a long wait period. If a large number of events needs to be returned by the ioHub, that will result in multiple UDP packets being sent to the PsychoPy Process to return all the events. This would slow event retrieval down for that request unnecessarily.
 
         Calling clearEvents('all') after any long delays between calls to getEvents()
         or clearEvents() will clear events from the ioHub Process as well. If you know
@@ -517,7 +523,7 @@ class ioHubConnection(object):
         Args:
             delay (float/double): The sec.msec period that the PsychoPy Process should wait before returning from the function call.
 
-			check_hub_interval (float/double): The sec.msec interval after which a call to getEvents() will be made by the wait() function. Any returned events are stored in a local buffer. This is repeated every check_hub_interval sec.msec until the delay time has passed. Default is every 0.02 sec ( 20.0 msec ).
+            check_hub_interval (float/double): The sec.msec interval after which a call to getEvents() will be made by the wait() function. Any returned events are stored in a local buffer. This is repeated every check_hub_interval sec.msec until the delay time has passed. Default is every 0.02 sec ( 20.0 msec ).
 
         Returns:
             float/double: The actual duration of the delay in sec.msec format.
@@ -595,12 +601,12 @@ class ioHubConnection(object):
         """
         trial=trials.trialList[0]
         numpy_trial_condition_types=[]
-        for cond_name,cond_val in trial.iteritems():
+        for cond_name,cond_val in trial.items():
             if isinstance(cond_val,basestring):
                 numpy_dtype=(cond_name,'S',256)
             elif isinstance(cond_val,int):
                 numpy_dtype=(cond_name,'i4')
-            elif isinstance(cond_val,long):
+            elif isinstance(cond_val,int):
                 numpy_dtype=(cond_name,'i8')
             elif isinstance(cond_val,float):
                 numpy_dtype=(cond_name,'f8')
@@ -608,7 +614,7 @@ class ioHubConnection(object):
                 numpy_dtype=(cond_name,'S',256)
             numpy_trial_condition_types.append(numpy_dtype)
 
-            class ConditionVariableDescription:
+            class ConditionVariableDescription(object):
                 _numpyConditionVariableDescriptor=numpy_trial_condition_types
 
         self.initializeConditionVariableTable(ConditionVariableDescription)
@@ -658,7 +664,7 @@ class ioHubConnection(object):
             None
         """
         for i,d in enumerate(data):
-            if isinstance(d,unicode):
+            if isinstance(d,str):
                 data[i]=d.encode('utf-8')
         r=self._sendToHubServer(('RPC','addRowToConditionVariableTable',(self.experimentID,self.experimentSessionID,data)))
         return r[2]
@@ -812,7 +818,7 @@ class ioHubConnection(object):
             None
         """
         r=self._sendToHubServer(('RPC','flushIODataStoreFile'))
-        print "flushIODataStoreFile: ",r[2]
+        print("flushIODataStoreFile: ",r[2])
         return r[2]
 
     def shutdown(self):
@@ -869,7 +875,6 @@ class ioHubConnection(object):
             ioHubConfig=load(file(ioHubConfigAbsPath,u'r'), Loader=Loader)
         else:
             return "ERROR: Both a ioHubConfig dict object AND a path to an ioHubConfig file can not be provided."
-
         if ioHubConfig:
             updateDict(ioHubConfig,hub_defaults_config)
 
@@ -878,7 +883,7 @@ class ioHubConnection(object):
                     #short hand device spec is being used. Convert dict of
                     #devices in a list of device dicts.
                     devs=ioHubConfig.get('monitor_devices')
-                    devsList=[{dname:dc} for dname,dc in devs.iteritems()]
+                    devsList=[{dname:dc} for dname,dc in devs.items()]
                     ioHubConfig['monitor_devices']=devsList
 
                 import tempfile
@@ -898,8 +903,7 @@ class ioHubConnection(object):
                            run_script,
                            "%.6f"%Computer.global_clock.getLastResetTime(),
                            rootScriptPath, ioHubConfigAbsPath,
-                           str(Computer.current_process.pid)]
-
+                           "{}".format(Computer.current_process.pid)]
         # check for existing ioHub Process based on process if saved to file
         iopFileName=os.path.join(rootScriptPath ,'.iohpid')
         if os.path.exists(iopFileName):
@@ -916,16 +920,18 @@ class ioHubConnection(object):
                         old_iohub_process.kill()
                 except psutil.NoSuchProcess:
                     pass
-            except Exception, e:
-                print "Warning: Exception while checking for existing iohub process:"
+            except Exception as e:
+                print("Warning: Exception while checking for existing iohub process:")
                 import traceback
                 traceback.print_exc()
 
         if sys.platform == 'darwin':
             self._osxKillAndFreePort()
 
-        # start subprocess, get pid, and get psutil process object for affinity and process priority setting
-        self._server_process = subprocess.Popen(subprocessArgList,stdout=subprocess.PIPE)
+        # start subprocess, get pid, and get psutil process object for
+        # affinity and process priority setting
+        self._server_process = subprocess.Popen(subprocessArgList,
+                                                stdout=subprocess.PIPE)
         Computer.iohub_process_id = self._server_process.pid
         Computer.iohub_process = psutil.Process(self._server_process.pid)
 
@@ -933,16 +939,16 @@ class ioHubConnection(object):
         stdout_read_data=""
         if Computer.system == 'win32':
             #print 'IOSERVER STARTING UP....'
-            # wait for server to send back 'IOHUB_READY' text over stdout, indicating it is running
-            # and ready to receive network packets
+            # wait for server to send back 'IOHUB_READY' text over stdout,
+            # indicating it is runningand ready to receive network packets
             server_output='hi there'
             ctime = Computer.global_clock.getTime
-
-            timeout_time=ctime()+ioHubConfig.get('start_process_timeout',30.0)# timeout if ioServer does not reply in 10 seconds
+            # timeout if ioServer does not reply in 30 seconds
+            timeout_time=ctime()+ioHubConfig.get('start_process_timeout', 30.0)
             while server_output and ctime()<timeout_time:
                 isDataAvail=self._serverStdOutHasData()
                 if isDataAvail is True:
-                    server_output=self._readServerStdOutLine().next()
+                    server_output=next(self._readServerStdOutLine())
                     if server_output.rstrip() == 'IOHUB_READY':
                         hubonline=True
                         #print "Ending Serving connection attempt due to timeout...."
@@ -986,17 +992,16 @@ class ioHubConnection(object):
                 whs.append(w()._hw_handle)
             #print 'ioclient registering existing windows:',whs
             self.registerPygletWindowHandles(*whs)
-
         iopFile= open(iopFileName,'w')
-        iopFile.write("ioHub PID: "+str(Computer.iohub_process_id))
+        iopFile.write("ioHub PID: {}".format(Computer.iohub_process_id))
         iopFile.flush()
         iopFile.close()
 
         if experiment_info:
-            #print 'Sending experiment_info: {0}'.format(experiment_info)
+            # print 'Sending experiment_info: {0}'.format(experiment_info)
             self._sendExperimentInfo(experiment_info)
         if session_info:
-            #print 'Sending session_info: {0}'.format(session_info)
+            # print 'Sending session_info: {0}'.format(session_info)
             self._sendSessionInfo(session_info)
 
         # create a local 'thin' representation of the registered ioHub devices,
@@ -1011,7 +1016,7 @@ class ioHubConnection(object):
         try:
             self._createDeviceList(ioHubConfig['monitor_devices'])
         except Exception as e:
-            return "Error in _createDeviceList: ",str(e)
+            return "Error in _createDeviceList: {}".format(e)
         #print 'Created Experiment Process Device List'
         return "OK"
 
@@ -1069,7 +1074,7 @@ class ioHubConnection(object):
         """
         # get the list of devices registered with the ioHub
         for device_config_dict in monitor_devices_config:
-            device_class_name, device_config = device_config_dict.keys()[0], device_config_dict.values()[0]
+            device_class_name, device_config = list(device_config_dict.keys())[0], list(device_config_dict.values())[0]
             if device_config.get('enable',True) is True:
                 try:
                     self._addDeviceView(device_class_name,device_config)
@@ -1081,7 +1086,7 @@ class ioHubConnection(object):
     def _addDeviceView(self, device_class_name, device_config):
         try:
             name = device_config.get('name',device_class_name.lower())
-            device_class_name=str(device_class_name)
+            device_class_name="{}".format(device_class_name)
             class_name_start=device_class_name.rfind('.')
             device_module_path='psychopy.iohub.devices.'
             if class_name_start>0:
@@ -1095,7 +1100,7 @@ class ioHubConnection(object):
             DeviceConstants.addClassMapping(device_class)
 
             device_event_ids=[]
-            for ev in event_classes.values():
+            for ev in list(event_classes.values()):
                 if ev.EVENT_TYPE_ID:
                     device_event_ids.append(ev.EVENT_TYPE_ID)
             EventConstants.addClassMappings(device_class,device_event_ids,event_classes)
@@ -1155,7 +1160,7 @@ class ioHubConnection(object):
         try:
             # send request to host, return is # bytes sent.
             bytes_sent = self.udp_client.sendTo(ioHubMessage)
-        except Exception, e:
+        except Exception as e:
             import traceback
             traceback.print_exc()
             self.shutdown()
@@ -1166,7 +1171,7 @@ class ioHubConnection(object):
             result = self.udp_client.receive()
             if result:
                 result, address = result
-        except Exception, e:
+        except Exception as e:
             import traceback
             traceback.print_exc()
             self.shutdown()
@@ -1309,12 +1314,12 @@ class ioHubConnection(object):
                 self.udp_client.close()
                 if Computer.iohub_process:
                     r=Computer.iohub_process.wait(timeout=5)
-                    print 'ioHub Server Process Completed With Code: ',r
+                    print('ioHub Server Process Completed With Code: ',r)
             except TimeoutError:
-                print "Warning: TimeoutExpired, Killing ioHub Server process."
+                print("Warning: TimeoutExpired, Killing ioHub Server process.")
                 Computer.iohub_process.kill()
             except Exception:
-                print "Warning: Unhandled Exception. Killing ioHub Server process."
+                print("Warning: Unhandled Exception. Killing ioHub Server process.")
                 if Computer.iohub_process:
                     Computer.iohub_process.kill()
                 printExceptionDetailsToStdErr()
@@ -1333,7 +1338,7 @@ class ioHubConnection(object):
             if isIterable(data[0]):
                 return False
             else:
-                if (type(data[0]) in (str, unicode)) and data[0].find('ERROR') >= 0:
+                if (isinstance(data[0], basestring)) and data[0].find('ERROR') >= 0:
                     return data
                 return False
         else:
@@ -1347,7 +1352,7 @@ class ioHubConnection(object):
                 PID, userID = line.split()[1:3]
                 # could verify same userID as current user, probably not needed
                 os.kill(int(PID), signal.SIGKILL)
-                print 'Called  os.kill(int(PID), signal.SIGKILL): ', PID, userID
+                print('Called  os.kill(int(PID), signal.SIGKILL): ', PID, userID)
     def __del__(self):
         try:
             self._shutDownServer()
@@ -1439,7 +1444,7 @@ def launchHubServer(**kwargs):
             return "%s.%s"%(func.__module__, func.__name__)
 
         def configfuncs2str(config):
-            for k, v in config.items():
+            for k, v in list(config.items()):
                 if isinstance(v,dict):
                     configfuncs2str(v)
                 if isFunction(v):
@@ -1480,7 +1485,7 @@ def launchHubServer(**kwargs):
             del device_dict['Mouse']
 
         # Add remaining defined devices to the device list.
-        for class_name,device_config in device_dict.iteritems():
+        for class_name,device_config in device_dict.items():
             device_list.append({class_name:device_config})
 
         # Create an ioHub configuration dictionary.
@@ -1785,7 +1790,7 @@ class ioHubExperimentRuntime(object):
         print(repr(traceback.extract_tb(exc_traceback)))
         print("*** format_tb:")
         print(repr(traceback.format_tb(exc_traceback)))
-        print("*** tb_lineno:", exc_traceback.tb_lineno)
+        print(("*** tb_lineno:", exc_traceback.tb_lineno))
 
     @staticmethod
     def mergeConfigurationFiles(base_config_file_path,update_from_config_file_path,merged_save_to_path):
@@ -1799,7 +1804,7 @@ class ioHubExperimentRuntime(object):
 
         def merge(update, base):
             if isinstance(update,dict) and isinstance(base,dict):
-                for k,v in base.iteritems():
+                for k,v in base.items():
                     if k not in update:
                         update[k] = v
                     else:
@@ -1837,7 +1842,7 @@ class ioHubExperimentRuntime(object):
             # or Cancel to end the experiment session if the wrong experiment was started.
             exitExperiment=self._displayExperimentSettingsDialog()
             if exitExperiment:
-                print "User Cancelled Experiment Launch."
+                print("User Cancelled Experiment Launch.")
                 self._close()
                 sys.exit(1)
 
@@ -1846,12 +1851,12 @@ class ioHubExperimentRuntime(object):
         ioHubInfo = self.configuration.get('ioHub', {})
 
         if ioHubInfo is None:
-            print 'ioHub section of configuration file could not be found. Exiting.....'
+            print('ioHub section of configuration file could not be found. Exiting.....')
             self._close()
             sys.exit(1)
         else:
-            ioHubConfigFileName = unicode(ioHubInfo.get('config', 'iohub_config.yaml'))
-            ioHubConfigAbsPath = os.path.join(self.configFilePath, unicode(ioHubConfigFileName))
+            ioHubConfigFileName = str(ioHubInfo.get('config', 'iohub_config.yaml'))
+            ioHubConfigAbsPath = os.path.join(self.configFilePath, str(ioHubConfigFileName))
             self.hub = ioHubConnection(None, ioHubConfigAbsPath)
 
             #print 'ioHubExperimentRuntime.hub: {0}'.format(self.hub)
@@ -1886,7 +1891,7 @@ class ioHubExperimentRuntime(object):
 
                     tempdict = self._displayExperimentSessionSettingsDialog(allSessionDialogVariables,sessionVariableOrder)
                     if tempdict is None:
-                        print "User Cancelled Experiment Launch."
+                        print("User Cancelled Experiment Launch.")
                         self._close()
                         sys.exit(1)
 
@@ -1910,7 +1915,7 @@ class ioHubExperimentRuntime(object):
                 tempdict=allSessionDialogVariables
                 tempdict['user_variables']=self.sessionUserVariables
 
-            for key,value in allSessionDialogVariables.iteritems():
+            for key,value in allSessionDialogVariables.items():
                 if key in self.experimentSessionDefaults:
                     self.experimentSessionDefaults[key]=value#(u''+value).encode('utf-8')
                 elif  key in self.sessionUserVariables:
@@ -1930,7 +1935,7 @@ class ioHubExperimentRuntime(object):
 
     def _setInitialProcessAffinities(self,ioHubInfo):
             # set process affinities based on config file settings
-            cpus=range(Computer.processing_unit_count)
+            cpus=list(range(Computer.processing_unit_count))
             experiment_process_affinity=cpus
             other_process_affinity=cpus
             iohub_process_affinity=cpus
@@ -2077,4 +2082,4 @@ class ioEvent(object):
                                                self.type,
                                                self.id)
 
-import keyboard
+from . import keyboard

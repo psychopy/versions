@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
@@ -8,14 +8,20 @@
 """
 Module containing validators for various parameters.
 """
+from __future__ import print_function
 
+from past.builtins import basestring
 import wx
 from ..localization import _translate
 from . import experiment
 from .localizedStrings import _localized
 
+if wx.version()<"4":
+    _ValidatorBase = wx.PyValidator
+else:
+    _ValidatorBase = wx.Validator
 
-class BaseValidator(wx.PyValidator):
+class BaseValidator(_ValidatorBase):
     """
     Component name validator for _BaseParamsDlg class. It depends on access
     to an experiment namespace.
@@ -80,8 +86,7 @@ class NameValidator(BaseValidator):
             used = namespace.exists(newName)
             sameAsOldName = bool(newName == parent.params['name'].val)
             if used and not sameAsOldName:
-                msg = _translate(
-                    "That name is in use (by %s). Try another name.")
+                msg = _translate("That name is in use (by %s). Try another name.")
                 return msg % used, False
             elif not namespace.isValid(newName):  # valid as a var name
                 msg = _translate("Name must be alpha-numeric or _, no spaces")
@@ -90,8 +95,7 @@ class NameValidator(BaseValidator):
             elif namespace.isPossiblyDerivable(newName):
                 msg = _translate(namespace.isPossiblyDerivable(newName))
                 return msg, True
-            else:
-                return "", True
+            return "", True
 
     def setMessage(self, parent, message):
         parent.nameOKlabel.SetLabel(message)
@@ -177,7 +181,6 @@ class CodeSnippetValidator(BaseValidator):
         Reset clsWarnings to {} when setting up the dialog.
         """
         self.clsWarnings[self.fieldName] = message
-        warnings = [w for w in self.clsWarnings.values() if w] or ['']
+        warnings = [w for w in list(self.clsWarnings.values()) if w] or ['']
         if parent.nameOKlabel:
             parent.nameOKlabel.SetLabel(warnings[0])
-

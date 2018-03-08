@@ -10,7 +10,9 @@ Distributed under the terms of the GNU General Public License (GPL version 3 or 
 
 ------------------------------------------------------------------------------------------------------------------------
 """
+from __future__ import absolute_import
 
+from builtins import object
 import os
 import wx
 import wx.lib.agw.genericmessagedialog as GMD     
@@ -140,7 +142,7 @@ class MessageDialog(ioHubDialog):
                                        title,
                                        showButtons | dialogType)#, wrap=int(w/4))
         #TODO Change to own image         
-        import images        
+        from . import images        
         self.dialog.SetIcon(images.Mondrian.GetIcon())
 
         self.set_frame_display()        
@@ -172,7 +174,7 @@ class FileDialog(ioHubDialog):
         dstyle=0
         
         if openFile is True:
-            dstyle=dstyle | wx.OPEN
+            dstyle=dstyle | wx.FD_OPEN
         if allowMultipleSelections is True:
             dstyle=dstyle | wx.MULTIPLE
         if allowChangingDirectories is True:

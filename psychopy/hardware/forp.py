@@ -13,6 +13,7 @@ E.g., use a Keyboard component, and typically listen for Allowed keys
 
 # Jeremy Gray and Dan Grupe developed the asKeys and baud parameters
 
+from builtins import object
 from psychopy import logging, event
 import sys
 from collections import defaultdict
@@ -83,7 +84,7 @@ class ButtonBox(object):
         """ Resets the pressed statuses, so getEvents will return pressed
         buttons, even if they were already pressed in the last call.
         """
-        for k in self.buttonStatus.keys():
+        for k in self.buttonStatus:
             self.buttonStatus[k] = False
 
     def getEvents(self, returnRaw=False, asKeys=False, allowRepeats=False):
@@ -124,7 +125,7 @@ class ButtonBox(object):
             self.pressEvents += decodedEvents
             if asKeys:
                 for code in decodedEvents:
-                    event._onPygletKey(symbol=code, modifiers=None)
+                    event._onPygletKey(symbol=code, modifiers=0)
                     # better as: emulated='fORP_bbox_asKey', but need to
                     # adjust event._onPygletKey and the symbol conversion
                     # pyglet.window.key.symbol_string(symbol).lower()

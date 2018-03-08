@@ -6,7 +6,11 @@
 """Collection of functions and classes to fix various encoding problems on
 multiple platforms with python.
 """
+from __future__ import print_function
 
+from builtins import str
+from builtins import range
+from builtins import object
 import codecs
 import locale
 import os
@@ -23,8 +27,8 @@ def complain(message):
   to our wrapper. So be paranoid about catching errors and reporting them
   to sys.__stderr__, so that the user has a higher chance to see them.
   """
-  print >> sys.__stderr__, (
-      isinstance(message, str) and message or repr(message))
+  print((
+      isinstance(message, str) and message or repr(message)), file=sys.__stderr__)
 
 
 def fix_default_encoding():
@@ -106,7 +110,7 @@ def fix_win_sys_argv(encoding):
   argv_unicode = CommandLineToArgvW(GetCommandLineW(), byref(argc))
   argv = [
       argv_unicode[i].encode(encoding, 'replace')
-      for i in xrange(0, argc.value)]
+      for i in range(0, argc.value)]
 
   if not hasattr(sys, 'frozen'):
     # If this is an executable produced by py2exe or bbfreeze, then it
@@ -181,7 +185,7 @@ class WinUnicodeOutputBase(object):
     try:
       for line in lines:
         self.write(line)
-    except Exception, e:
+    except Exception as e:
       complain('%s.writelines: %r' % (self.name, e))
       raise
 
@@ -219,7 +223,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
 
   def write(self, text):
     try:
-      if not isinstance(text, unicode):
+      if not isinstance(text, str):
         # Convert to unicode.
         text = str(text).decode(self.encoding, 'replace')
       remaining = len(text)
@@ -240,7 +244,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
         if not remaining:
           break
         text = text[n.value:]
-    except Exception, e:
+    except Exception as e:
       complain('%s.write: %r' % (self.name, e))
       raise
 
@@ -263,17 +267,17 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
   def flush(self):
     try:
       self._stream.flush()
-    except Exception, e:
+    except Exception as e:
       complain('%s.flush: %r from %r' % (self.name, e, self._stream))
       raise
 
   def write(self, text):
     try:
-      if isinstance(text, unicode):
+      if isinstance(text, str):
         # Replace characters that cannot be printed instead of failing.
         text = text.encode(self.encoding, 'replace')
       self._stream.write(text)
-    except Exception, e:
+    except Exception as e:
       complain('%s.write: %r' % (self.name, e))
       raise
 
@@ -358,7 +362,7 @@ def fix_win_console(encoding):
     # TODO(maruel): Do sys.stdin with ReadConsoleW(). Albeit the limitation is
     # "It doesn't appear to be possible to read Unicode characters in UTF-8
     # mode" and this appears to be a limitation of cmd.exe.
-  except Exception, e:
+  except Exception as e:
     complain('exception %r while fixing up sys.stdout and sys.stderr' % e)
   return True
 

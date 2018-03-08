@@ -9,6 +9,9 @@
 #
 #
 
+from __future__ import division
+from builtins import str
+from past.utils import old_div
 from ...... import print2err, printExceptionDetailsToStdErr, to_numeric
 from ......constants import EyeTrackerConstants
 from ..... import Computer
@@ -145,7 +148,7 @@ class EyeTracker(EyeTrackerDevice):
                     self._rx_buffer=''
                     return None
 
-            except socket.error, e:
+            except socket.error as e:
                 err = e.args[0]
                 if err == errno.EAGAIN or err == errno.EWOULDBLOCK or err == 'timed out':
                     # non blocking socket found no data; it happens.
@@ -281,7 +284,7 @@ class EyeTracker(EyeTrackerDevice):
             self.setRecordingState(enabled)
             enabled=EyeTrackerDevice.enableEventReporting(self,enabled)
             return enabled
-        except Exception, e:
+        except Exception as e:
             print2err("Exception in EyeTracker.enableEventReporting: ", str(e))
             printExceptionDetailsToStdErr()
 
@@ -526,7 +529,7 @@ class EyeTracker(EyeTrackerDevice):
         left,top,right,bottom=self._display_device.getCoordBounds()
         w,h=right-left,top-bottom 
     
-        return (left-display_x)/w,(top-display_y)/h
+        return old_div((left-display_x),w),old_div((top-display_y),h)
 
     def _close(self):
         if self._gp3:

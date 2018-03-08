@@ -10,7 +10,10 @@ the context in which an experiment was run.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
 
+from builtins import str
 import sys
 import os
 import platform
@@ -271,7 +274,7 @@ class RunTimeInfo(dict):
         # when last rebooted?
         try:
             lastboot = shellCall("who -b").split()
-            self['systemRebooted'] = ' '.join(lastboot[2:])
+            self['systemRebooted'] = b' '.join(lastboot[2:])
         except Exception:  # windows
             sysInfo = shellCall('systeminfo').splitlines()
             lastboot = [line for line in sysInfo if line.startswith(
@@ -329,7 +332,7 @@ class RunTimeInfo(dict):
                 # requires pyo svn r1024 or higher:
                 inp, out = pyo.pa_get_devices_infos()
                 for devList in [inp, out]:
-                    for key in devList.keys():
+                    for key in devList:
                         if isinstance(devList[key]['name'], str):
                             devList[key]['name'] = devList[
                                 key]['name'].decode(osEncoding)
@@ -471,7 +474,7 @@ class RunTimeInfo(dict):
                        'monitor', 'pos', 'screen', 'rgb', 'size']
         winAttrListVerbose = ['allowGUI', 'useNativeGamma',
                               'recordFrameIntervals', 'waitBlanking',
-                              '_haveShaders', '_refreshThreshold']
+                              '_haveShaders', 'refreshThreshold']
         if verbose:
             winAttrList += winAttrListVerbose
 
@@ -564,8 +567,8 @@ class RunTimeInfo(dict):
                     'System', 'Window', 'Python', 'OpenGL']
         for sect in sections:
             info += '  #[[ %s ]] #---------\n' % (sect)
-            sectKeys = [k for k in self.keys(
-            ) if k.lower().find(sect.lower()) == 0]
+            sectKeys = [k for k in list(self.keys(
+            )) if k.lower().find(sect.lower()) == 0]
             # get keys for items matching this section label;
             #  use reverse-alpha order if easier to read:
             revSet = ('PsychoPy', 'Window', 'Python', 'OpenGL')
@@ -629,9 +632,9 @@ def _getHashGitHead(gdir='.'):
         return None  # no git
     git_branches = subprocess.check_output('git branch', cwd=gdir, shell=True)
     git_branch = [line.split()[1] for line in git_branches.splitlines()
-                  if line.startswith('*')]
+                  if line.startswith(b'*')]
     if len(git_branch):
-        return git_branch[0] + ' ' + git_hash.strip()
+        return "{} {}".format(git_branch[0], git_hash.strip())
     else:
         return '(unknown branch)'
 

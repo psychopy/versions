@@ -1,13 +1,18 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """This function can be run as a script or imported and run as a function.
 The advantage of running as a script is that this won't interact with your
 existing namespace (e.g. avbin can load because scipy won't already have
 been loaded).
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 
+from past.utils import old_div
 from psychopy import logging
-from calibTools import DACrange
+from .calibTools import DACrange
 import numpy
 import time
 
@@ -64,7 +69,7 @@ def getLumSeries(lumLevels=8,
         havePhotom = True
 
     if gamma == 1:
-        initRGB = 0.5**(1 / 2.0) * 2 - 1
+        initRGB = 0.5**(old_div(1, 2.0)) * 2 - 1
     else:
         initRGB = 0.8
     # setup screen and "stimuli"
@@ -81,8 +86,8 @@ def getLumSeries(lumLevels=8,
     noise = numpy.random.rand(512, 512).round() * 2 - 1
     backPatch = psychopy.visual.PatchStim(myWin, tex=noise, size=2,
                                           units='norm',
-                                          sf=[winSize[0] / 512.0,
-                                              winSize[1] / 512.0])
+                                          sf=[old_div(winSize[0], 512.0),
+                                              old_div(winSize[1], 512.0)])
     testPatch = psychopy.visual.PatchStim(myWin,
                                           tex='sqr',
                                           size=stimSize,
@@ -129,7 +134,7 @@ def getLumSeries(lumLevels=8,
     # for each gun, for each value run test
     for gun in guns:
         for valN, DACval in enumerate(toTest):
-            lum = DACval / 127.5 - 1  # get into range -1:1
+            lum = old_div(DACval, 127.5) - 1  # get into range -1:1
             # only do luminanc=-1 once
             if lum == -1 and gun > 0:
                 continue

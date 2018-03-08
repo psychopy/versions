@@ -1,3 +1,8 @@
+from __future__ import print_function
+from __future__ import division
+from past.builtins import basestring
+from past.utils import old_div
+from builtins import object
 __author__ = 'Sol'
 import numpy as np
 from collections import deque
@@ -37,7 +42,7 @@ class DeviceEventFilter(object):
         self._input_events = []
         self._output_events = []
 
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             setattr(self, key, value)
 
         self._enabled = False
@@ -250,7 +255,7 @@ class WeightedAverageFilter(MovingWindowFilter):
         kwargs['length'] = length
         MovingWindowFilter.__init__(self, **kwargs)
         weights = np.asanyarray(weights)
-        self._weights = weights / np.sum(weights)
+        self._weights = old_div(weights, np.sum(weights))
 
     def filteredValue(self):
         return np.convolve(self._filtering_buffer.getElements(), self._weights, 'valid')
@@ -290,7 +295,7 @@ class StampFilter(MovingWindowFilter):
 
         e1, e2, e3 = self._filtering_buffer[0:3]
         if not(e1 < e2 and e2 < e3) or not (e3 < e2 and e2 < e1):
-            return (e1+e3)/2.0
+            return old_div((e1+e3),2.0)
         return e2
 
     def add(self, event):
@@ -463,7 +468,7 @@ if __name__ == '__main__':
     my_filter = WeightedAverageFilter(weights=[17.0,33.0,50.0,33.0,17.0], event_type=None, event_field_name=None, knot_pos='center', inplace = True)
 
 
-    print "FIRST SOURCE EVENT ID:",events[0]['event_id']
+    print("FIRST SOURCE EVENT ID:",events[0]['event_id'])
     for e in events:
         r = mx_filter.add(e['x_position'])
         filtered_x=None
@@ -475,4 +480,4 @@ if __name__ == '__main__':
         if r:
             _junk, filtered_y=r
 
-        print "filtered values: ", filtered_x, filtered_y
+        print("filtered values: ", filtered_x, filtered_y)

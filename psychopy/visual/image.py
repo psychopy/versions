@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 '''Display an image on `psycopy.visual.Window`'''
 
@@ -10,6 +11,7 @@
 # other calls to pyglet or pyglet submodules, otherwise it may not get picked
 # up by the pyglet GL engine and have no effect.
 # Shaders will work but require OpenGL2.0 drivers AND PyOpenGL3.0+
+from builtins import str
 import pyglet
 pyglet.options['debug_gl'] = False
 import ctypes
@@ -124,17 +126,17 @@ class ImageStim(BaseVisualStim, ContainerMixin, ColorMixin, TextureMixin):
             _prog = self.win._progSignedTexMask
             GL.glUseProgram(_prog)
             # set the texture to be texture unit 0
-            GL.glUniform1i(GL.glGetUniformLocation(_prog, "texture"), 0)
+            GL.glUniform1i(GL.glGetUniformLocation(_prog, b"texture"), 0)
             # mask is texture unit 1
-            GL.glUniform1i(GL.glGetUniformLocation(_prog, "mask"), 1)
+            GL.glUniform1i(GL.glGetUniformLocation(_prog, b"mask"), 1)
         else:
             # for an rgb image there is no recoloring
             _prog = self.win._progImageStim
             GL.glUseProgram(_prog)
             # set the texture to be texture unit 0
-            GL.glUniform1i(GL.glGetUniformLocation(_prog, "texture"), 0)
+            GL.glUniform1i(GL.glGetUniformLocation(_prog, b"texture"), 0)
             # mask is texture unit 1
-            GL.glUniform1i(GL.glGetUniformLocation(_prog, "mask"), 1)
+            GL.glUniform1i(GL.glGetUniformLocation(_prog, b"mask"), 1)
 
         # mask
         GL.glActiveTexture(GL.GL_TEXTURE1)
@@ -236,6 +238,10 @@ class ImageStim(BaseVisualStim, ContainerMixin, ColorMixin, TextureMixin):
     def draw(self, win=None):
         """Draw.
         """
+        if (type(self.image) != numpy.ndarray and \
+                        self.image in (None, "None", "none")):
+            return
+
         if win is None:
             win = self.win
         self._selectWindow(win)
@@ -264,16 +270,19 @@ class ImageStim(BaseVisualStim, ContainerMixin, ColorMixin, TextureMixin):
         self.__dict__['image'] = self._imName = value
 
         wasLumImage = self.isLumImage
-        if value is None:
+        if type(value) != numpy.ndarray and value == "color":
             datatype = GL.GL_FLOAT
         else:
             datatype = GL.GL_UNSIGNED_BYTE
-        self.isLumImage = self._createTexture(value, id=self._texID,
-                                              stim=self,
-                                              pixFormat=GL.GL_RGB,
-                                              dataType=datatype,
-                                              maskParams=self.maskParams,
-                                              forcePOW2=False)
+        if type(value) != numpy.ndarray and value in (None, "None", "none"):
+            self.isLumImage = True
+        else:
+            self.isLumImage = self._createTexture(value, id=self._texID,
+                                                  stim=self,
+                                                  pixFormat=GL.GL_RGB,
+                                                  dataType=datatype,
+                                                  maskParams=self.maskParams,
+                                                  forcePOW2=False)
         # if user requested size=None then update the size for new stim here
         if hasattr(self, '_requestedSize') and self._requestedSize is None:
             self.size = None  # set size to default

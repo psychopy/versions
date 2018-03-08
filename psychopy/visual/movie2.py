@@ -1,4 +1,6 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 A stimulus class for playing movies (mpeg, avi, etc...) in PsychoPy.
 Demo using the experimental movie2 stim to play a video file. Path of video
@@ -54,6 +56,9 @@ What does work so far:
 
 Testing has only been done on Windows and Linux so far.
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -65,6 +70,8 @@ Testing has only been done on Windows and Linux so far.
 
 # If True then, on each flip a new movie frame is displayed, the frame index,
 # flip time, and time since last movie frame flip will be printed
+from builtins import str
+from past.utils import old_div
 reportNDroppedFrames = 10
 
 import os
@@ -101,9 +108,9 @@ if hasattr(cv2, 'cv'):
     cv2.CAP_PROP_POS_AVI_RATIO = cv2.cv.CV_CAP_PROP_POS_AVI_RATIO
 
 try:
-    import vlc
+    from . import vlc
 except Exception as err:
-    if sys.maxint == 9223372036854775807:
+    if sys.maxsize == 9223372036854775807:
         bits = 64
     else:
         bits = 32
@@ -130,14 +137,14 @@ def _audioTimeCallback(event, movieInstanceRef, streamPlayer):
     cv2.
     """
     if movieInstanceRef():
-        tm = -event.u.new_time / 1000.
+        tm = old_div(-event.u.new_time, 1000.)
         movieInstanceRef()._audio_stream_clock.reset(tm)
 
 
 def _setPluginPathEnviron():
     """Plugins aren't in the same path as the libvlc.dylib
     """
-    if 'VLC_PLUGIN_PATH' in os.environ.keys():
+    if 'VLC_PLUGIN_PATH' in os.environ:
         return
     dllPath = vlc.dll._name
     from os.path import split, join
@@ -243,15 +250,15 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
         self.setVolume(volume)
         self.nDroppedFrames = 0
 
-        self.aspectRatio = self._video_width / float(self._video_height)
+        self.aspectRatio = old_div(self._video_width, float(self._video_height))
         # size
         if size is None:
             self.size = numpy.array([self._video_width, self._video_height],
                                     float)
-        elif isinstance(size, (int, float, long)):
+        elif isinstance(size, (int, float, int)):
             # treat size as desired width, and calc a height
             # that maintains the aspect ratio of the video.
-            self.size = numpy.array([size, size / self.aspectRatio], float)
+            self.size = numpy.array([size, old_div(size, self.aspectRatio)], float)
         else:
             self.size = val2array(size)
         self.ori = ori
@@ -259,7 +266,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
         # set autoLog (now that params have been initialised)
         self.autoLog = autoLog
         if autoLog:
-            logging.exp("Created %s = %s" % (self.name, str(self)))
+            logging.exp("Created {} = {}".format(self.name, self))
 
     def _reset(self):
         self.duration = None
@@ -329,10 +336,10 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
 
         self._total_frame_count = self._video_stream.get(
             cv2.CAP_PROP_FRAME_COUNT)
-        self._video_width = self._video_stream.get(
-            cv2.CAP_PROP_FRAME_WIDTH)
-        self._video_height = self._video_stream.get(
-            cv2.CAP_PROP_FRAME_HEIGHT)
+        self._video_width = int(self._video_stream.get(
+            cv2.CAP_PROP_FRAME_WIDTH))
+        self._video_height = int(self._video_stream.get(
+            cv2.CAP_PROP_FRAME_HEIGHT))
         self._format = self._video_stream.get(
             cv2.CAP_PROP_FORMAT)
         # TODO: Read depth from video source
@@ -342,7 +349,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
 
         self._video_frame_rate = cv_fps
 
-        self._inter_frame_interval = 1.0 / self._video_frame_rate
+        self._inter_frame_interval = old_div(1.0, self._video_frame_rate)
 
         # Create a numpy array that can hold one video frame, as returned by
         # cv2.
@@ -423,7 +430,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
                 if self._audio_stream_player:
                     self._audio_stream_player.pause()
                     self._audio_stream_clock.reset(
-                        -self._audio_stream_player.get_time() / 1000.0)
+                        old_div(-self._audio_stream_player.get_time(), 1000.0))
                 if self._next_frame_sec:
                     self._video_track_clock.reset(-self._next_frame_sec)
             else:
@@ -488,7 +495,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
                 self._video_stream.set(MSEC, timestamp * 1000.0)
                 self._video_track_clock.reset(-timestamp)
                 self._next_frame_index = self._video_stream.get(FRAMES)
-                self._next_frame_sec = self._video_stream.get(MSEC) / 1000.0
+                self._next_frame_sec = old_div(self._video_stream.get(MSEC), 1000.0)
             else:
                 self.stop()
                 self.loadMovie(self.filename)
@@ -519,7 +526,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
         between 0 and 100.
         """
         if self._audio_stream_player:
-            if 0.0 <= v <= 1.0 and isinstance(v, (float,)):
+            if 0.0 <= v <= 1.0 and isinstance(v, float):
                 v = int(v * 100)
             else:
                 v = int(v)
@@ -548,7 +555,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
         """
         try:
             _tm = self._video_track_clock.getTime()
-            return self._next_frame_sec - 1.0 / self._retracerate - _tm
+            return self._next_frame_sec - old_div(1.0, self._retracerate) - _tm
         except Exception:
             logging.warning("MovieStim2.getTimeToNextFrameDraw failed.")
             return 0.0
@@ -596,12 +603,12 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
                 self._prev_frame_sec = self._next_frame_sec
                 self._next_frame_index = self._video_stream.get(
                     cv2.CAP_PROP_POS_FRAMES)
-                self._next_frame_sec = self._video_stream.get(
-                    cv2.CAP_PROP_POS_MSEC) / 1000.0
+                self._next_frame_sec = old_div(self._video_stream.get(
+                    cv2.CAP_PROP_POS_MSEC), 1000.0)
                 self._video_perc_done = self._video_stream.get(
                     cv2.CAP_PROP_POS_AVI_RATIO)
                 self._next_frame_displayed = False
-                halfInterval = self._inter_frame_interval / 2.0
+                halfInterval = old_div(self._inter_frame_interval, 2.0)
                 if self.getTimeToNextFrameDraw() > -halfInterval:
                     return self._next_frame_sec
                 else:
@@ -764,7 +771,7 @@ class MovieStim2(BaseVisualStim, ContainerMixin):
             self._audio_stream_started = True
             self._audio_stream_player.play()
             _tm = -self._audio_stream_player.get_time()
-            self._audio_stream_clock.reset(_tm / 1000.0)
+            self._audio_stream_clock.reset(old_div(_tm, 1000.0))
 
     def _getAudioStreamTime(self):
         return self._audio_stream_clock.getTime()

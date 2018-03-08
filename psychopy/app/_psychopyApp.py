@@ -1,11 +1,16 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
 
+from builtins import str
+from builtins import object
 import sys
 import psychopy
 
@@ -22,6 +27,20 @@ try:
     from agw import advancedsplash as AS
 except ImportError:  # if it's not there locally, try the wxPython lib.
     import wx.lib.agw.advancedsplash as AS
+
+""" Aug 2017: for now we want to turn off warning for AddSimpleTool
+The warning says we should use this in wx4.0:
+    item = tb.AddTool(
+        wx.ID_ANY, bitmap=newBmp,
+        labe=key.replace('Ctrl+', ctrlKey),
+        shortHelp=_translate("Create new python file"))
+BUT in 3.0.2 that raises an error so it's too early to switch.
+"""
+import warnings
+warnings.filterwarnings(message='.*AddTool.*', action='ignore')
+warnings.filterwarnings(message='.*SetToolTip.*', action='ignore')
+
+
 from .localization import _translate
 # NB keep imports to a minimum here because splash screen has not yet shown
 # e.g. coder and builder are imported during app.__init__ because they
@@ -31,6 +50,7 @@ from .localization import _translate
 from psychopy import preferences, logging, __version__
 from . import connections
 from . import projects
+from .utils import FileDropTarget
 import os
 import threading
 import weakref
@@ -56,32 +76,33 @@ class MenuFrame(wx.Frame):
         self.app.IDs.openBuilderView = self.viewMenu.Append(wx.ID_ANY,
                              mtxt % self.app.keys['switchToBuilder'],
                              _translate("Open a new Builder view")).GetId()
-        wx.EVT_MENU(self, self.app.IDs.openBuilderView, self.app.showBuilder)
+        self.Bind(wx.EVT_MENU, self.app.showBuilder,
+                  id=self.app.IDs.openBuilderView)
         mtxt = _translate("&Open Coder view\t%s")
         self.app.IDs.openCoderView = self.viewMenu.Append(wx.ID_ANY,
                              mtxt % self.app.keys['switchToCoder'],
                              _translate("Open a new Coder view")).GetId()
-        wx.EVT_MENU(self, self.app.IDs.openCoderView, self.app.showCoder)
+        self.Bind(wx.EVT_MENU, self.app.showCoder,
+                  id=self.app.IDs.openCoderView)
         mtxt = _translate("&Quit\t%s")
         item = self.viewMenu.Append(wx.ID_EXIT, mtxt % self.app.keys['quit'],
                                     _translate("Terminate the program"))
-        self.Bind(wx.EVT_MENU, self.app.quit, item)
-
+        self.Bind(wx.EVT_MENU, self.app.quit, id=item.GetId())
         self.SetMenuBar(self.menuBar)
         self.Show()
 
-        
+
 class IDStore(dict):
     """A simpe class that works like a dict but you can access attributes
-    like standard python attrs. Useful to replace the previous pre-made 
+    like standard python attrs. Useful to replace the previous pre-made
     app.IDs (wx.NewID() is no longer recommended or safe)
     """
     def __getattr__(self, attr):
         return self[attr]
     def __setattr__(self, attr, value):
         self[attr] = value
-        
-        
+
+
 class _Showgui_Hack(object):
     """Class with side-effect of restoring wx window switching under wx-3.0
 
@@ -174,7 +195,7 @@ class PsychoPyApp(wx.App):
         if '--firstrun' in sys.argv:
             del sys.argv[sys.argv.index('--firstrun')]
             self.firstRun = True
-        if 'lastVersion' not in self.prefs.appData.keys():
+        if 'lastVersion' not in self.prefs.appData:
             # must be before 1.74.00
             last = self.prefs.appData['lastVersion'] = '1.73.04'
             self.firstRun = True
@@ -204,7 +225,7 @@ class PsychoPyApp(wx.App):
             scripts = self.prefs.appData['coder']['prevFiles']
         else:
             scripts = []
-        appKeys = self.prefs.appData['builder'].keys()
+        appKeys = list(self.prefs.appData['builder'].keys())
         if self.prefs.builder['reloadPrevExp'] and ('prevFiles' in appKeys):
             exps = self.prefs.appData['builder']['prevFiles']
         else:
@@ -243,15 +264,18 @@ class PsychoPyApp(wx.App):
             # wx.SYS_DEFAULT_GUI_FONT is default GUI font in Win32
             self._mainFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         else:
-            self._mainFont = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
-        if hasattr(self._mainFont, 'Larger'):
-            # Font.Larger is available since wyPython version 2.9.1
-            # PsychoPy still supports 2.8 (see ensureMinimal above)
-            self._mainFont = self._mainFont.Larger()
-        self._codeFont = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
+            self._mainFont = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
+        self._codeFont = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
         self._codeFont.SetFaceName(self.prefs.coder['codeFont'])
-        self._codeFont.SetPointSize(
-            self._mainFont.GetPointSize())  # unify font size
+
+        # removed Aug 2017: on newer versions of wx (at least on mac)
+        # this looks too big
+        # if hasattr(self._mainFont, 'Larger'):
+        #     # Font.Larger is available since wyPython version 2.9.1
+        #     # PsychoPy still supports 2.8 (see ensureMinimal above)
+        #     self._mainFont = self._mainFont.Larger()
+        #     self._codeFont.SetPointSize(
+        #         self._mainFont.GetPointSize())  # unify font size
 
         # create both frame for coder/builder as necess
         if splash:
@@ -409,7 +433,7 @@ class PsychoPyApp(wx.App):
         keyCodesDict[self.keys['quit']] = wx.ID_EXIT
         # parse the key strings and convert to accelerator entries
         entries = []
-        for keyStr, code in keyCodesDict.items():
+        for keyStr, code in list(keyCodesDict.items()):
             mods, key = parseStr(keyStr)
             entry = wx.AcceleratorEntry(mods, key, code)
             entries.append(entry)
@@ -431,9 +455,9 @@ class PsychoPyApp(wx.App):
 
     def newBuilderFrame(self, event=None, fileName=None):
         # have to reimport because it is ony local to __init__ so far
-        from psychopy.app import builder
+        from psychopy.app.builder.builder import BuilderFrame
         title = "PsychoPy2 Experiment Builder (v%s)"
-        thisFrame = builder.BuilderFrame(None, -1,
+        thisFrame = BuilderFrame(None, -1,
                                          title=title % self.version,
                                          fileName=fileName, app=self)
         thisFrame.Show(True)
@@ -465,6 +489,18 @@ class PsychoPyApp(wx.App):
     #    self.shell.Raise()
     #    self.SetTopWindow(self.shell)
     #    self.shell.SetFocus()
+
+    def OnDrop(self, x, y, files):
+        """Not clear this method ever gets called!"""
+        logging.info("Got Files")
+
+    def MacOpenFile(self, files):
+        """Not clear this method ever gets called!"""
+        logging.info("Got Files")
+
+    def MacReopenApp(self):
+        """Called when the doc icon is clicked, and ???"""
+        self.GetTopWindow().Raise()
 
     def openIPythonNotebook(self, event=None):
         """Note that right now this is bad because it ceases all activity in
@@ -603,7 +639,7 @@ class PsychoPyApp(wx.App):
                 self.prefs.saveAppData()
             except Exception:
                 pass  # we don't care if this fails - we're quitting anyway
-        self.Exit()
+        sys.exit()
 
     def showPrefs(self, event):
         from psychopy.app.preferencesDlg import PreferencesDlg
@@ -620,7 +656,12 @@ class PsychoPyApp(wx.App):
             "For stimulus generation and experimental control in python.\n"
             "PsychoPy depends on your feedback. If something doesn't work\n"
             "then let us know at psychopy-users@googlegroups.com")
-        info = wx.AboutDialogInfo()
+        if wx.version() >= '4.':
+            info = wx.adv.AboutDialogInfo()
+            showAbout = wx.adv.AboutBox
+        else:
+            info = wx.AboutDialogInfo()
+            showAbout = wx.AboutBox
         if wx.version() >= '3.':
             icon = os.path.join(self.prefs.paths['resources'], 'psychopy.png')
             info.SetIcon(wx.Icon(icon, wx.BITMAP_TYPE_PNG, 128, 128))
@@ -644,7 +685,7 @@ class PsychoPyApp(wx.App):
         info.AddDocWriter('Rebecca Sharman')
         info.AddTranslator('Hiroyuki Sogo')
         if not self.testMode:
-            wx.AboutBox(info)
+            showAbout(info)
 
     def followLink(self, event=None, url=None):
         """Follow either an event id (= a key to an url defined in urls.py)

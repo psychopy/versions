@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
@@ -9,6 +9,7 @@
 """
 
 from __future__ import (absolute_import, print_function, division)
+from builtins import object
 
 import sys
 import wx
@@ -20,16 +21,16 @@ class FileDropTarget(wx.FileDropTarget):
     Need this too.
     """
 
-    def __init__(self, builder):
+    def __init__(self, targetFrame):
         wx.FileDropTarget.__init__(self)
-        self.builder = builder
+        self.target = targetFrame
 
     def OnDropFiles(self, x, y, filenames):
         logging.debug(
             'PsychoPyBuilder: received dropped files: %s' % filenames)
         for fname in filenames:
             if fname.endswith('.psyexp') or fname.lower().endswith('.py'):
-                self.builder.fileOpen(filename=fname)
+                self.target.fileOpen(filename=fname)
             else:
                 logging.warning(
                     'dropped file ignored: did not end in .psyexp or .py')

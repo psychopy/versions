@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
@@ -10,19 +10,24 @@
 
 from __future__ import absolute_import, print_function, division
 
-import sys
+from builtins import str
 import re
-import numpy
+import sys
 
+import numpy
 import wx
-from wx.lib import platebtn
 import wx.aui
 import wx.stc
+from wx.lib import platebtn
+try:
+    from wx.adv import PseudoDC
+except ImportError:
+    from wx import PseudoDC
 
-from .. import dialogs
 from psychopy import logging, data
-from .utils import FileDropTarget
+from psychopy.app.utils import FileDropTarget
 from .dialogs import DlgLoopProperties
+from .. import dialogs
 from ..localization import _translate
 
 
@@ -71,7 +76,9 @@ class FlowPanel(wx.ScrolledWindow):
         self.SetScrollRate(self.dpi / 4, self.dpi / 4)
 
         # create a PseudoDC to record our drawing
-        self.pdc = wx.PseudoDC()
+        self.pdc = PseudoDC()
+        if wx.version()<"4":
+            self.pdc.DrawRoundedRectangle = self.pdc.DrawRoundedRectangleRect
         self.pen_cache = {}
         self.brush_cache = {}
         # vars for handling mouse clicks
@@ -79,6 +86,7 @@ class FlowPanel(wx.ScrolledWindow):
         self.dragid = -1
         self.entryPointPosList = []
         self.entryPointIDlist = []
+        self.gapsExcluded = []
         # mode can also be 'loopPoint1','loopPoint2','routinePoint'
         self.mode = 'normal'
         self.insertingRoutine = ""
@@ -100,17 +108,15 @@ class FlowPanel(wx.ScrolledWindow):
         # self.btnInsertRoutine = wx.Button(self,-1,
         #                                  'Insert Routine', pos=(10,10))
         # self.btnInsertLoop = wx.Button(self,-1,'Insert Loop', pos=(10,30))
-        # Localized labels on PlateButton may be corrupted in Ubuntu.
-        if sys.platform.startswith('linux'):
-            labelRoutine = 'Insert Routine '
-            labelLoop = 'Insert Loop     '
-        else:
-            labelRoutine = _translate('Insert Routine ')
-            labelLoop = _translate('Insert Loop     ')
+        labelRoutine = _translate('Insert Routine ')
+        labelLoop = _translate('Insert Loop     ')
         self.btnInsertRoutine = platebtn.PlateButton(
             self, -1, labelRoutine, pos=(10, 10))
         self.btnInsertLoop = platebtn.PlateButton(
             self, -1, labelLoop, pos=(10, 30))  # spaces give size for CANCEL
+
+        self.btnInsertRoutine.SetBackgroundColour(canvasColor)
+        self.btnInsertLoop.SetBackgroundColour(canvasColor)
 
         self.labelTextRed = {'normal': wx.Colour(
             250, 10, 10, 250), 'hlight': wx.Colour(250, 10, 10, 250)}
@@ -128,7 +134,6 @@ class FlowPanel(wx.ScrolledWindow):
         self.Bind(wx.EVT_BUTTON, self.onInsertRoutine, self.btnInsertRoutine)
         self.Bind(wx.EVT_BUTTON, self.setLoopPoint1, self.btnInsertLoop)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.SetDropTarget(FileDropTarget(builder=self.frame))
 
         idClear = wx.NewId()
         self.Bind(wx.EVT_MENU, self.clearMode, id=idClear)
@@ -150,13 +155,8 @@ class FlowPanel(wx.ScrolledWindow):
         self.gapsExcluded = []
         self.draw()
         self.frame.SetStatusText("")
-        # Localized labels on PlateButton may be corrupted in Ubuntu.
-        if sys.platform.startswith('linux'):
-            self.btnInsertRoutine.SetLabel('Insert Routine')
-            self.btnInsertLoop.SetLabel('Insert Loop')
-        else:
-            self.btnInsertRoutine.SetLabel(_translate('Insert Routine'))
-            self.btnInsertLoop.SetLabel(_translate('Insert Loop'))
+        self.btnInsertRoutine.SetLabel(_translate('Insert Routine'))
+        self.btnInsertLoop.SetLabel(_translate('Insert Loop'))
         self.btnInsertRoutine.SetLabelColor(**self.labelTextBlack)
         self.btnInsertLoop.SetLabelColor(**self.labelTextBlack)
 
@@ -172,7 +172,7 @@ class FlowPanel(wx.ScrolledWindow):
         """
         xView, yView = self.GetViewStart()
         xDelta, yDelta = self.GetScrollPixelsPerUnit()
-        r.OffsetXY(-(xView * xDelta), -(yView * yDelta))
+        r.Offset((-(xView * xDelta), -(yView * yDelta)))
 
     def onInsertRoutine(self, evt):
         """For when the insert Routine button is pressed - bring up
@@ -192,12 +192,12 @@ class FlowPanel(wx.ScrolledWindow):
         id = wx.NewId()
         menu.Append(id, '(new)')
         self.routinesFromID[id] = '(new)'
-        wx.EVT_MENU(menu, id, self.insertNewRoutine)
+        menu.Bind(wx.EVT_MENU, self.insertNewRoutine, id=id)
         for routine in self.frame.exp.routines:
             id = wx.NewId()
             menu.Append(id, routine)
             self.routinesFromID[id] = routine
-            wx.EVT_MENU(menu, id, self.onInsertRoutineSelect)
+            menu.Bind(wx.EVT_MENU, self.onInsertRoutineSelect, id=id)
         btnPos = self.btnInsertRoutine.GetRect()
         menuPos = (btnPos[0], btnPos[1] + btnPos[3])
         self.PopupMenu(menu, menuPos)
@@ -221,11 +221,7 @@ class FlowPanel(wx.ScrolledWindow):
         see self.insertRoutine() for further info
         """
         self.mode = 'routine'
-        # Localized labels on PlateButton may be corrupted in Ubuntu.
-        if sys.platform.startswith('linux'):
-            self.btnInsertRoutine.SetLabel('CANCEL Insert')
-        else:
-            self.btnInsertRoutine.SetLabel(_translate('CANCEL Insert'))
+        self.btnInsertRoutine.SetLabel(_translate('CANCEL Insert'))
         self.btnInsertRoutine.SetLabelColor(**self.labelTextRed)
         self.frame.SetStatusText(_translate(
             'Click where you want to insert the Routine, or CANCEL insert.'))
@@ -257,11 +253,7 @@ class FlowPanel(wx.ScrolledWindow):
         elif self.mode.startswith('loopPoint'):
             self.clearMode()
             return
-        # Localized labels on PlateButton may be corrupted in Ubuntu.
-        if sys.platform.startswith('linux'):
-            self.btnInsertLoop.SetLabel('CANCEL insert')
-        else:
-            self.btnInsertLoop.SetLabel(_translate('CANCEL insert'))
+        self.btnInsertLoop.SetLabel(_translate('CANCEL insert'))
         self.btnInsertLoop.SetLabelColor(**self.labelTextRed)
         self.mode = 'loopPoint1'
         self.frame.SetStatusText(_translate(
@@ -318,7 +310,7 @@ class FlowPanel(wx.ScrolledWindow):
         # add routine points to the timeline
         self.setDrawPoints('loops')
         self.draw()
-        if 'conditions' in loop.params.keys():
+        if 'conditions' in loop.params:
             condOrig = loop.params['conditions'].val
             condFileOrig = loop.params['conditionsFile'].val
         title = loop.params['name'].val + ' Properties'
@@ -349,7 +341,7 @@ class FlowPanel(wx.ScrolledWindow):
                 flow.addLoop(loop, startII, endII)
             self.frame.addToUndoStack("EDIT Loop `%s`" %
                                       (loop.params['name'].val))
-        elif 'conditions' in loop.params.keys():
+        elif 'conditions' in loop.params:
             loop.params['conditions'].val = condOrig
             loop.params['conditionsFile'].val = condFileOrig
         # remove the points from the timeline
@@ -450,20 +442,20 @@ class FlowPanel(wx.ScrolledWindow):
         component = flow[compID]
         compType = component.getType()
         if compType == 'Routine':
-            for item in (self.contextMenuItems):
+            for item in self.contextMenuItems:
                 id = self.contextIDFromItem[item]
                 menu.Append(id, self.contextMenuLabels[item])
-                wx.EVT_MENU(menu, id, self.onContextSelect)
+                menu.Bind(wx.EVT_MENU, self.onContextSelect, id=id)
             self.frame.PopupMenu(menu, xy)
             # destroy to avoid mem leak:
             menu.Destroy()
         else:
-            for item in (self.contextMenuItems):
+            for item in self.contextMenuItems:
                 if item == 'rename':
                     continue
                 id = self.contextIDFromItem[item]
                 menu.Append(id, self.contextMenuLabels[item])
-                wx.EVT_MENU(menu, id, self.onContextSelect)
+                menu.Bind(wx.EVT_MENU, self.onContextSelect, id=id)
             self.frame.PopupMenu(menu, xy)
             # destroy to avoid mem leak:
             menu.Destroy()
@@ -520,7 +512,7 @@ class FlowPanel(wx.ScrolledWindow):
                     return  # have done the removal in final successful call
         # remove name from namespace only if it's a loop;
         # loops exist only in the flow
-        elif 'conditionsFile' in component.params.keys():
+        elif 'conditionsFile' in component.params:
             conditionsFile = component.params['conditionsFile'].val
             if conditionsFile and conditionsFile not in ['None', '']:
                 try:
@@ -578,7 +570,6 @@ class FlowPanel(wx.ScrolledWindow):
 
         pdc.Clear()  # clear the screen
         pdc.RemoveAll()  # clear all objects (icon buttons)
-        pdc.BeginDrawing()
 
         font = self.GetFont()
 
@@ -670,7 +661,6 @@ class FlowPanel(wx.ScrolledWindow):
         self.drawLineStart(pdc, (self.linePos[0] - gap, self.linePos[1]))
         self.drawLineEnd(pdc, (currX, self.linePos[1]))
 
-        pdc.EndDrawing()
         # refresh the visible window after drawing (using OnPaint)
         self.Refresh()
 
@@ -814,7 +804,7 @@ class FlowPanel(wx.ScrolledWindow):
             dc.SetPen(wx.Pen(wx.Colour(rgbEdge[0], rgbEdge[1],
                                        rgbEdge[2], wx.ALPHA_OPAQUE)))
             dc.SetBrush(wx.Brush(rgbFill))
-            dc.DrawRoundedRectangleRect(
+            dc.DrawRoundedRectangle(
                 rect, (4, 6, 8)[self.appData['flowSize']])
             # draw text
             dc.SetTextForeground(rgbEdge)
@@ -852,7 +842,7 @@ class FlowPanel(wx.ScrolledWindow):
                        endX - startX, max(yy) - min(yy))
         dc.SetBrush(wx.Brush(wx.Colour(0, 0, 0, 0), style=wx.TRANSPARENT))
         # draws outline:
-        dc.DrawRoundedRectangleRect(area, curve)
+        dc.DrawRoundedRectangle(area, curve)
         dc.SetIdBounds(tmpId, area)
 
         flowsize = self.appData['flowSize']  # 0, 1, or 2
@@ -861,7 +851,7 @@ class FlowPanel(wx.ScrolledWindow):
         name = loop.params['name'].val
         _show = self.appData['showLoopInfoInFlow']
         if _show and flowsize:
-            _cond = 'conditions' in loop.params.keys()
+            _cond = 'conditions' in list(loop.params)
             if _cond and loop.params['conditions'].val:
                 xnumTrials = 'x' + str(len(loop.params['conditions'].val))
             else:
@@ -912,7 +902,7 @@ class FlowPanel(wx.ScrolledWindow):
         # try to make the loop fill brighter than the background canvas:
         dc.SetBrush(wx.Brush(wx.Colour(235, 235, 235, 250)))
 
-        dc.DrawRoundedRectangleRect(rect, (4, 6, 8)[flowsize])
+        dc.DrawRoundedRectangle(rect, (4, 6, 8)[flowsize])
         # draw text
         dc.SetTextForeground([r, g, b])
         dc.DrawText(name, x + pad / 2, y + pad / 2)

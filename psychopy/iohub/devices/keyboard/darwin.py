@@ -9,8 +9,11 @@ Distributed under the terms of the GNU General Public License (GPL version 3 or 
 .. moduleauthor:: Sol Simpson <sol@isolver-software.com> + contributors, please see credits section of documentation.
 .. fileauthor:: Sol Simpson <sol@isolver-software.com>
 """
+from __future__ import absolute_import
 
         
+from builtins import chr
+from builtins import range
 from copy import copy
 import Quartz as Qz
 from AppKit import NSEvent #NSKeyUp, NSSystemDefined, NSEvent
@@ -27,13 +30,13 @@ import CoreFoundation
 import objc
 
 try:
-    unichr
+    chr
 except NameError:
-    unichr = chr
+    chr = chr
 
 import unicodedata
 
-from darwinkey import code2label
+from .darwinkey import code2label
 
 #print2err("code2label: ",code2label)
 carbon_path = ctypes.util.find_library('Carbon')
@@ -201,7 +204,7 @@ class Keyboard(ioHubKeyboardDevice):
                                        4,
                                        ctypes.byref(length),
                                        chars)
-        s = u''.join(unichr(chars[i]) for i in range(length.value))
+        s = u''.join(chr(chars[i]) for i in range(length.value))
         CoreFoundation.CFRelease(keyboard)
         return s
 

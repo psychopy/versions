@@ -1,9 +1,12 @@
+from __future__ import print_function
 # We deliberately delay importing the inpout32 module until we try
 # to use it - this allows us to import the class on machines
 # which don't have it and then worry about dealing with
 # using the right one later
 
 
+from past.builtins import basestring
+from builtins import object
 class PParallelInpOut32(object):
     """This class provides read/write access to the parallel port on a PC
     using inpout32 (for instance for Windows 7 64-bit)

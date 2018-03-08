@@ -9,6 +9,9 @@ Distributed under the terms of the GNU General Public License (GPL version 3 or 
 .. moduleauthor:: Sol Simpson <sol@isolver-software.com> + contributors, please see credits section of documentation.
 .. fileauthor:: Sol Simpson <sol@isolver-software.com>
 """
+from builtins import chr
+from builtins import str
+from builtins import range
 from psychopy.iohub import OrderedDict, print2err, printExceptionDetailsToStdErr, Computer, EXP_SCRIPT_DIRECTORY
 import serial
 from .. import Device, DeviceEvent
@@ -463,7 +466,7 @@ class Serial(Device):
                 read_time = logged_time
             self._last_poll_time = read_time
             return True
-        except Exception, e:
+        except Exception as e:
             print2err("--------------------------------")
             print2err("ERROR in Serial._poll: ",e)
             printExceptionDetailsToStdErr()

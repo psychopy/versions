@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-# coding=utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -13,8 +13,14 @@
 #    This code was written by Jon Peirce
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
 
 
+from builtins import bytes
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import sys
 try:
     import serial
@@ -340,11 +346,11 @@ def _minolta2float(inVal):
     # handle single vals
     if arr.shape == ():
         if inVal < 50000:
-            return inVal / 10000.0
+            return old_div(inVal, 10000.0)
         else:
-            return (-inVal + 50000.0) / 10000.0
+            return old_div((-inVal + 50000.0), 10000.0)
     # handle arrays
     negs = (arr > 50000)  # find negative values
-    out = arr / 10000.0  # these are the positive values
-    out[negs] = (-arr[negs] + 50000.0) / 10000.0
+    out = old_div(arr, 10000.0)  # these are the positive values
+    out[negs] = old_div((-arr[negs] + 50000.0), 10000.0)
     return out

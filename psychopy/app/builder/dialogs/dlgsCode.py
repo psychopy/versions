@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
@@ -9,12 +9,17 @@
 """
 
 from __future__ import (absolute_import, print_function, division)
+from builtins import str
 
 import keyword
 import re
 import wx
-from wx.lib import flatnotebook
+try:
+    from wx.lib.agw import flatnotebook
+except ImportError:  # was here wx<4.0:
+    from wx.lib import flatnotebook
 
+from .... import constants
 from .. import validators
 from ...localization import _translate
 
@@ -23,11 +28,11 @@ _unescapedDollarSign_re = re.compile(r"^\$|[^\\]\$")
 
 class DlgCodeComponentProperties(wx.Dialog):
     _style = (wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-              | wx.THICK_FRAME | wx.DIALOG_NO_PARENT)
+              | wx.DIALOG_NO_PARENT)
 
     def __init__(self, frame, title, params, order,
                  helpUrl=None, suppressTitles=True, size=wx.DefaultSize,
-                 style=_style, editing=False):
+                 style=_style, editing=False, depends=[]):
 
         # translate title
         localizedTitle = title.replace(' Properties',
@@ -43,7 +48,7 @@ class DlgCodeComponentProperties(wx.Dialog):
         # keep localized title to update dialog's properties later.
         self.localizedTitle = localizedTitle
         self.codeGuiElements = {}
-        if not editing and 'name' in self.params.keys():
+        if not editing and 'name' in self.params:
             # then we're adding a new component so ensure a valid name:
             makeValid = self.frame.exp.namespace.makeValid
             self.params['name'].val = makeValid(params['name'].val)
@@ -65,7 +70,7 @@ class DlgCodeComponentProperties(wx.Dialog):
                 self.nameLabel = wx.StaticText(self, wx.ID_ANY, param.label)
                 _style = wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB
                 self.componentName = wx.TextCtrl(self, wx.ID_ANY,
-                                                 unicode(param.val),
+                                                 str(param.val),
                                                  style=_style)
                 self.componentName.SetToolTipString(param.hint)
                 self.componentName.SetValidator(validators.NameValidator())
@@ -84,7 +89,7 @@ class DlgCodeComponentProperties(wx.Dialog):
                                                      style=0,
                                                      prefs=self.app.prefs))
                 if len(param.val):
-                    _codeBox.AddText(unicode(param.val))
+                    _codeBox.AddText(str(param.val))
                 if len(param.val.strip()) and not openToPage:
                     # index of first non-blank page
                     openToPage = idx
@@ -147,19 +152,19 @@ class DlgCodeComponentProperties(wx.Dialog):
         nameSizer = wx.BoxSizer(wx.HORIZONTAL)
         nameSizer.Add(self.nameLabel, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 10)
         nameSizer.Add(self.componentName,
-                      flag=wx.EXPAND | wx.BOTTOM | wx.TOP | wx.ALIGN_CENTER_VERTICAL,
+                      flag=wx.EXPAND | wx.ALL | wx.ALIGN_CENTER_VERTICAL,
                       border=10, proportion=1)
         nameSizer.Add(self.nameOKlabel, 0, wx.ALL, 10)
 
-        sizer1 = wx.BoxSizer(wx.VERTICAL)
-        sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer1.Add(nameSizer, flag=wx.EXPAND, proportion=1)
-        sizer1.Add(self.codeSections, 1, wx.EXPAND | wx.ALL, 10)
-        sizer2.Add(self.helpButton, 0, wx.RIGHT, 10)
-        sizer2.Add(self.okButton, 0, wx.LEFT, 10)
-        sizer2.Add(self.cancelButton, 0, 0, 0)
-        sizer1.Add(sizer2, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
-        self.SetSizer(sizer1)
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        mainSizer.Add(nameSizer)
+        mainSizer.Add(self.codeSections, 1, wx.EXPAND | wx.ALL, 10)
+        buttonSizer.Add(self.helpButton, 0, wx.RIGHT, 10)
+        buttonSizer.Add(self.okButton, 0, wx.LEFT, 10)
+        buttonSizer.Add(self.cancelButton, 0, 0, 0)
+        mainSizer.Add(buttonSizer, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+        self.SetSizer(mainSizer)
         self.Layout()
         self.Center()
 
@@ -171,7 +176,7 @@ class DlgCodeComponentProperties(wx.Dialog):
         used in __init__ and are also returned from this method.
         """
         # get data from input fields
-        for fieldName in self.params.keys():
+        for fieldName in self.params:
             param = self.params[fieldName]
             if fieldName == 'name':
                 param.val = self.componentName.GetValue()
@@ -231,7 +236,6 @@ class CodeBox(wx.stc.StyledTextCtrl):
         self.SetBufferedDraw(False)
         self.SetViewEOL(False)
         self.SetEOLMode(wx.stc.STC_EOL_LF)
-        self.SetUseAntiAliasing(True)
         # self.SetUseHorizontalScrollBar(True)
         # self.SetUseVerticalScrollBar(True)
 
@@ -390,11 +394,12 @@ class CodeBox(wx.stc.StyledTextCtrl):
         clip.Close()
         if success:
             txt = dataObj.GetText()
-            try:
-                # if we can decode/encode to utf-8 then all is good
-                txt.decode('utf-8')
-            except:
-                # if not then wx conversion broek so get raw data instead
-                txt = dataObj.GetDataHere()
+            if not constants.PY3:
+                try:
+                    # if we can decode/encode to utf-8 then all is good
+                    txt.decode('utf-8')
+                except:
+                    # if not then wx conversion broke so get raw data instead
+                    txt = dataObj.GetDataHere()
             self.ReplaceSelection(txt)
 

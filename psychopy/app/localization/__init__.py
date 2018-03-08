@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """Language localization for PsychoPy.
@@ -15,11 +15,15 @@ translation _translate():
 # Author: Jeremy Gray, July 2014
 
 
+from builtins import str
+from builtins import map
+from builtins import range
 import gettext
 import os
 import glob
 import codecs
 from psychopy import logging, prefs
+import psychopy.constants
 
 import wx
 
@@ -71,7 +75,7 @@ for line in codecs.open(mappings, 'rU', 'utf8').readlines():
 # what are the available translations? available languages on the OS?
 expr = os.path.join(os.path.dirname(__file__), '..', 'locale', '*')
 available = sorted(map(os.path.basename, glob.glob(expr)))
-sysAvail = [str(l) for l in codeFromWxId.values()  # installed language packs
+sysAvail = [str(l) for l in list(codeFromWxId.values())  # installed language packs
             if l and locale.IsAvailable(wxIdFromCode[l])]
 
 
@@ -124,7 +128,12 @@ try:
 except IOError:
     logging.debug("Locale for '%s' not found. Using default." % lang)
     trans = gettext.NullTranslations()
-trans.install(unicode=True)
+
+# gettext.install() needs unicode=True to get unicode output in Python2.
+if psychopy.constants.PY3:
+    trans.install()
+else:
+    trans.install(unicode=True)
 
 # PsychoPy app uses a nonstandard name _translate (instead of _)
 # A dependency overwrites _ somewhere, clobbering use of _ as global:

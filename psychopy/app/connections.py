@@ -3,7 +3,9 @@
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import
+from __future__ import division
 
+from builtins import object
 import sys
 import re
 import glob
@@ -23,8 +25,11 @@ from . import dialogs
 from .localization import _translate
 from psychopy import logging
 from psychopy import web
-py3 = web.py3
-io = web.io  # fixed for py2 or py3
+from psychopy.constants import PY3
+if PY3:
+    import io
+else:
+    import StringIO as io
 urllib = web.urllib
 
 versionURL = "http://www.psychopy.org/version.txt"
@@ -63,6 +68,8 @@ def getLatestVersionInfo():
     for line in page.readlines():
         # in some odd circumstances (wifi hotspots) you can fetch a
         # page that is not the correct URL but a redirect
+        if PY3:
+            line = line.decode()  # convert from a byte to a str
         if line.find(':') == -1:
             return -1
             # this will succeed if every line has a key
@@ -119,7 +126,11 @@ class Updater(object):
         if self.latest == -1:
             return -1  # failed to find out about updates
         # have found 'latest'. Is it newer than running version?
-        newer = self.latest['version'] > self.runningVersion
+        try:
+            newer = self.latest['version'] > self.runningVersion
+        except KeyError as err:
+            print(self.latest)
+            raise(err)
         skip = self.app.prefs.appData['skipVersion'] == self.latest['version']
         if newer and not skip:
             if self.latest['lastUpdatable'] <= self.runningVersion:
@@ -419,8 +430,8 @@ class InstallUpdateDialog(wx.Dialog):
             self.progressBar.SetValue(read)
             txt = _translate(
                 "Fetched %(done)i of %(total)i kb of PsychoPy-%(version)s.zip")
-            msg = txt % {'done': read / 1000,
-                         'total': fileSize / 1000, 'version': v}
+            msg = txt % {'done': read // 1000,
+                         'total': fileSize // 1000, 'version': v}
             self.statusMessage.SetLabel(msg)
             self.Update()
         info += _translate('Successfully downloaded PsychoPy-%s.zip') % v
@@ -434,7 +445,7 @@ class InstallUpdateDialog(wx.Dialog):
         otherwise try and retrieve a version number from zip file name
         """
         info = ""  # return this at the end
-        if py3:
+        if PY3:
             zfileIsName = type(zfile) == str
         else:
             zfileIsName = type(zfile) in (str, unicode)

@@ -1,12 +1,15 @@
-# Part of the PsychoPy library
-# Copyright (C) 2015 Jonathan Peirce
-# Distributed under the terms of the GNU General Public License (GPL).
+"""
+Part of the PsychoPy library
+Copyright (C) 2015 Jonathan Peirce
+Distributed under the terms of the GNU General Public License (GPL).
+"""
 
 from __future__ import absolute_import
-
+from builtins import str, object
+from past.builtins import basestring
+from psychopy.constants import FOREVER
 from ..experiment import Param, CodeGenerationException
 from ..components import getInitVals
-from psychopy.constants import FOREVER
 from ...localization import _translate
 
 # only use _localized values for label values, nothing functional
@@ -47,6 +50,14 @@ class BaseComponent(object):
         self.parentName = parentName  # to access the routine too if needed
 
         self.params = {}
+        self.depends = []  # allows params to turn each other off/on
+        """{
+         "dependsOn": "shape",
+         "condition": "=='n vertices",
+         "param": "n vertices",
+         "true": "enable",  # what to do with param if condition is True
+         "false": "disable",  # permited: hide, show, enable, disable
+         }"""
 
         msg = _translate(
             "Name of this component (alpha-numeric or _, no spaces)")
@@ -108,6 +119,7 @@ class BaseComponent(object):
         pass
 
     def writeInitCode(self, buff):
+        """Doesn't seem to do much of anything"""
         pass
 
     def writeFrameCode(self, buff):
@@ -122,6 +134,8 @@ class BaseComponent(object):
         self.writeParamUpdates(buff, 'set every repeat')
 
     def writeRoutineStartCodeJS(self, buff):
+        """Same as writeRoutineStartCode, but for JS
+        """
         self.writeParamUpdatesJS(buff, 'set every repeat')
 
     def writeRoutineEndCode(self, buff):
@@ -131,6 +145,9 @@ class BaseComponent(object):
         pass
 
     def writeRoutineEndCodeJS(self, buff):
+        """Write the code that will be called at the end of
+        a routine (e.g. to save data)
+        """
         pass
 
     def writeExperimentEndCode(self, buff):
@@ -146,7 +163,7 @@ class BaseComponent(object):
         """
         # unused internally; deprecated March 2016 v1.83.x, will remove 1.85
         logging.warning('Deprecation warning: writeTimeTestCode() is not supported;\n'
-              'will be removed. Please use writeStartTestCode() instead')
+                        'will be removed. Please use writeStartTestCode() instead')
         if self.params['duration'].val == '':
             code = "if %(startTime)s <= t:\n"
         else:
@@ -219,7 +236,7 @@ class BaseComponent(object):
                     "if %(name)s.status == STARTED and t >= frameRemains:\n")
         # duration in time (s)
         elif (self.params['stopType'].val == 'duration (s)' and
-                self.params['startType'].val == 'time (s)'):
+              self.params['startType'].val == 'time (s)'):
             code = ("frameRemains = %(startVal)s + %(stopVal)s"
                     "- win.monitorFramePeriod * 0.75"
                     "  # most of one frame period left\n"
@@ -254,7 +271,7 @@ class BaseComponent(object):
                     "&& t >= frameRemains) {\n")
         # duration in time (s)
         elif (self.params['stopType'].val == 'duration (s)' and
-                self.params['startType'].val == 'time (s)'):
+              self.params['startType'].val == 'time (s)'):
             code = ("frameRemains = %(startVal)s + %(stopVal)s"
                     " - frameDur * 0.75;"
                     "  // most of one frame period left\n"
@@ -287,7 +304,7 @@ class BaseComponent(object):
         updateType can be 'experiment', 'routine' or 'frame'
         """
         if paramNames is None:
-            paramNames = self.params.keys()
+            paramNames = list(self.params.keys())
         for thisParamName in paramNames:
             if thisParamName == 'advancedParams':
                 continue  # advancedParams is not really a parameter itself
@@ -299,7 +316,8 @@ class BaseComponent(object):
                     target=target)
 
     def writeParamUpdatesJS(self, buff, updateType, paramNames=None):
-        # pass this to the standard writeParamUpdates but with new 'target'
+        """Pass this to the standard writeParamUpdates but with new 'target'
+        """
         self.writeParamUpdates(buff, updateType, paramNames,
                                target="PsychoJS")
 
@@ -336,7 +354,7 @@ class BaseComponent(object):
                 val = val.replace("(", "[", 1)
                 val = val[::-1].replace(")", "]", 1)[::-1]  # replace from right
             # filenames (e.g. for image) need to be loaded from resources
-            if paramName in ["image", "mask","sound"]:
+            if paramName in ["image", "mask", "sound"]:
                 val = ("psychoJS.resourceManager.getResource({})"
                        .format(val))
         else:
@@ -371,7 +389,7 @@ class BaseComponent(object):
             True/False = checkNeedToUpdate(self, updateType)
 
         """
-        for thisParamName in self.params.keys():
+        for thisParamName in self.params:
             if thisParamName == 'advancedParams':
                 continue
             thisParam = self.params[thisParamName]
@@ -432,9 +450,11 @@ class BaseComponent(object):
         return routine.index(self)
 
     def getType(self):
+        """Returns the name of the current object class"""
         return self.__class__.__name__
 
     def getShortType(self):
+        """Replaces word component with empty string"""
         return self.getType().replace('Component', '')
 
 

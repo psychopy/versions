@@ -9,6 +9,9 @@ Distributed under the terms of the GNU General Public License (GPL version 3 or 
 .. moduleauthor:: Sol Simpson <sol@isolver-software.com> + contributors, please see credits section of documentation.
 .. fileauthor:: Sol Simpson <sol@isolver-software.com>
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import zip
 from .. import Computer, Device
 from ... import printExceptionDetailsToStdErr,print2err
 from ...constants import EventConstants, DeviceConstants, MouseConstants,KeyboardConstants
@@ -215,7 +218,7 @@ class MouseDevice(Device):
                 return (cpos, (change_x,change_y), self._display_index)       
             return cpos, (change_x,change_y)
 
-        except Exception, e:
+        except Exception as e:
             print2err(">>ERROR getPositionAndDelta: "+str(e))
             printExceptionDetailsToStdErr()
             if return_display_index is True:        
@@ -251,7 +254,7 @@ class MouseDevice(Device):
         Returns:
             int: current vertical scroll value.
         """
-        if isinstance(s, (int, long, float, complex)):
+        if isinstance(s, (int, int, float, complex)):
             self._scrollPositionY=s
         return self._scrollPositionY
 
@@ -272,7 +275,7 @@ class MouseDevice(Device):
             tuple: new (x,y) position of mouse in Display coordinate space.
 
         """
-        if isinstance(pos[0], (int, long, float, complex)) and isinstance(pos[1], (int, long, float, complex)):
+        if isinstance(pos[0], (int, int, float, complex)) and isinstance(pos[1], (int, int, float, complex)):
             display=self._display_device
             current_display_index=display.getIndex()
 
@@ -355,13 +358,13 @@ class MouseDevice(Device):
         return native_clip_rect
         
 if Computer.system == 'win32':
-    from win32 import Mouse
+    from .win32 import Mouse
             
 elif Computer.system == 'linux2':
-    from linux2 import Mouse
+    from .linux2 import Mouse
 
 elif Computer.system == 'darwin':
-    from darwin import Mouse
+    from .darwin import Mouse
    
 ############# OS Independent Mouse Event Classes ####################
 
@@ -456,7 +459,7 @@ class MouseInputEvent(DeviceEvent):
     @classmethod
     def createEventAsDict(cls,values):
         cls._convertFields(values)
-        return dict(zip(cls.CLASS_ATTRIBUTE_NAMES,values))
+        return dict(list(zip(cls.CLASS_ATTRIBUTE_NAMES,values)))
 
     #noinspection PyUnresolvedReferences
     @classmethod

@@ -1,8 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """Stimulus object for drawing arbitrary bitmaps that can repeat (cycle)
 in either dimension. One of the main stimuli for PsychoPy.
 """
+from __future__ import division
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -12,6 +14,7 @@ in either dimension. One of the main stimuli for PsychoPy.
 # other calls to pyglet or pyglet submodules, otherwise it may not get picked
 # up by the pyglet GL engine and have no effect.
 # Shaders will work but require OpenGL2.0 drivers AND PyOpenGL3.0+
+
 import pyglet
 pyglet.options['debug_gl'] = False
 import ctypes
@@ -41,8 +44,8 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
 
     **Examples**::
 
-        myGrat = GratingStim(win, tex='sin', mask='circle')  # gives a circular patch of grating
-        myGabor = GratingStim(win, tex='sin', mask='gauss')  # gives a 'Gabor'
+        myGrat = GratingStim(tex='sin', mask='circle')  # circular grating
+        myGabor = GratingStim(tex='sin', mask='gauss')  # gives a 'Gabor'
 
     A GratingStim can be rotated scaled and shifted in position,
     its texture can be drifted in X and/or Y and it can have a spatial
@@ -84,6 +87,7 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
                  depth=0,
                  rgbPedestal=(0.0, 0.0, 0.0),
                  interpolate=False,
+                 blendmode='avg',
                  name=None,
                  autoLog=None,
                  autoDraw=False,
@@ -154,6 +158,7 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         self.opacity = float(opacity)
         self.autoLog = autoLog
         self.autoDraw = autoDraw
+        self.blendmode=blendmode
 
         # fix scaling to window coords
         self._calcCyclesPerStim()
@@ -176,7 +181,7 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         wantLog = autoLog is None and self.win.autoLog
         self.__dict__['autoLog'] = autoLog or wantLog
         if self.autoLog:
-            logging.exp("Created %s = %s" % (self.name, str(self)))
+            logging.exp("Created {} = {}".format(self.name, self))
 
     @attributeSetter
     def sf(self, value):
@@ -248,6 +253,19 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         self.__dict__['tex'] = value
         self._needTextureUpdate = False
 
+    @attributeSetter
+    def blendmode(self, value):
+        """The OpenGL mode in which the stimulus is draw
+
+        Can the 'avg' or 'add'. Average (avg) places the new stimulus over the old one
+        with a transparency given by its opacity. Opaque stimuli will hide other stimuli
+        transparent stimuli wont. Add performs the aritmetic sum of the new stimulus and the ones
+        already present.
+
+        """
+        self.__dict__['blendmode'] = value
+        self._needUpdate = True
+
     def setSF(self, value, operation='', log=None):
         """DEPRECATED. Use 'stim.parameter = value' syntax instead
         """
@@ -263,14 +281,22 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         """
         self.tex = value
 
+    def setBlendmode(self, value, log=None):
+        """DEPRECATED. Use 'stim.parameter = value' syntax instead
+        """
+        self._set('blendmode', value, log=log)
+
     def draw(self, win=None):
         """Draw the stimulus in its relevant window. You must call
         this method after every MyWin.flip() if you want the
         stimulus to appear on that frame and then update the screen
         again.
         """
+
         if win is None:
             win = self.win
+        saveBlendMode=win.blendMode
+        win.setBlendMode(self.blendmode, log=False)
         self._selectWindow(win)
 
         # do scaling
@@ -291,6 +317,7 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
 
         # return the view to previous state
         GL.glPopMatrix()
+        win.setBlendMode(saveBlendMode, log=False)
 
     def _updateListShaders(self):
         """The user shouldn't need this method since it gets called
@@ -305,9 +332,9 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         _prog = self.win._progSignedTexMask
         GL.glUseProgram(_prog)
         # set the texture to be texture unit 0
-        GL.glUniform1i(GL.glGetUniformLocation(_prog, "texture"), 0)
+        GL.glUniform1i(GL.glGetUniformLocation(_prog, b"texture"), 0)
         # mask is texture unit 1
-        GL.glUniform1i(GL.glGetUniformLocation(_prog, "mask"), 1)
+        GL.glUniform1i(GL.glGetUniformLocation(_prog, b"mask"), 1)
         # mask
         GL.glActiveTexture(GL.GL_TEXTURE1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._maskID)
@@ -318,10 +345,10 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._texID)
         GL.glEnable(GL.GL_TEXTURE_2D)
 
-        Ltex = -self._cycles[0] / 2 - self.phase[0] + 0.5
-        Rtex = +self._cycles[0] / 2 - self.phase[0] + 0.5
-        Ttex = +self._cycles[1] / 2 - self.phase[1] + 0.5
-        Btex = -self._cycles[1] / 2 - self.phase[1] + 0.5
+        Ltex = (-self._cycles[0] / 2) - self.phase[0] + 0.5
+        Rtex = (+self._cycles[0] / 2) - self.phase[0] + 0.5
+        Ttex = (+self._cycles[1] / 2) - self.phase[1] + 0.5
+        Btex = (-self._cycles[1] / 2) - self.phase[1] + 0.5
         Lmask = Bmask = 0.0
         Tmask = Rmask = 1.0  # mask
 
@@ -383,10 +410,10 @@ class GratingStim(BaseVisualStim, TextureMixin, ColorMixin, ContainerMixin):
         GL.glBindTexture(GL.GL_TEXTURE_2D, self._texID)
 
         # depth = self.depth
-        Ltex = -self._cycles[0] / 2 - self.phase[0] + 0.5
-        Rtex = +self._cycles[0] / 2 - self.phase[0] + 0.5
-        Ttex = +self._cycles[1] / 2 - self.phase[1] + 0.5
-        Btex = -self._cycles[1] / 2 - self.phase[1] + 0.5
+        Ltex = (-self._cycles[0] / 2) - self.phase[0] + 0.5
+        Rtex = (+self._cycles[0] / 2) - self.phase[0] + 0.5
+        Ttex = (+self._cycles[1] / 2) - self.phase[1] + 0.5
+        Btex = (-self._cycles[1] / 2) - self.phase[1] + 0.5
         Lmask = Bmask = 0.0
         Tmask = Rmask = 1.0  # mask
 

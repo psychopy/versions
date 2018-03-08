@@ -1,7 +1,10 @@
+from __future__ import print_function
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
+from builtins import str
+from past.builtins import basestring
 from os import path
 from ..keyboard import KeyboardComponent, Param, _translate
 from ...experiment import CodeGenerationException, _valid_var_re
@@ -115,7 +118,8 @@ class cedrusButtonBoxComponent(KeyboardComponent):
         if (self.params['store'].val != 'nothing' or
                 self.params['storeCorrect'].val):
             code = ("%(name)s.keys = []  # to store response values\n"
-                    "%(name)s.rt = []\n")
+                    "%(name)s.rt = []\n"
+                    "%(name)s.status = None\n")
             buff.writeIndentedLines(code % self.params)
 
     def writeFrameCode(self, buff):
@@ -259,7 +263,7 @@ class cedrusButtonBoxComponent(KeyboardComponent):
                     "%(name)s.rt.extend(theseRTs)\n")
             buff.writeIndentedLines(code % self.params)
         else:
-            print(store, type(store), str(store))
+            print((store, type(store), str(store)))
         if storeCorr:
             code = ("# was this 'correct'?\n"
                     "if (%(name)s.keys == str(%(correctAns)s)) or "

@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Copyright (C) 2014 Allen Institute for Brain Science
@@ -12,7 +13,12 @@ See the GNU General Public License Version 3 for more details.
 You should have received a copy of the GNU General Public License along
 with this program. If not, see http://www.gnu.org/licenses/
 """
+from __future__ import print_function
+from __future__ import division
 
+from builtins import map
+from builtins import range
+from builtins import object
 import numpy as np
 from psychopy import logging
 from OpenGL.arrays import ArrayDatatype as ADT
@@ -116,7 +122,7 @@ class Warper(object):
         #   get the eye distance from the monitor object,
         #   but the pixel dimensions from the actual window object
         w, h = win.size
-        self.aspect = float(w) / h
+        self.aspect = w/h
         self.dist_cm = win.monitor.getDistance()
         if self.dist_cm is None:
             # create a fake monitor if one isn't defined
@@ -260,8 +266,8 @@ class Warper(object):
             tx = self.dist_cm * np.sin(azimuth)
             ty = self.dist_cm * np.sin(altitude)
         else:
-            tx = self.dist_cm * (1 + x / r) - self.dist_cm
-            ty = self.dist_cm * (1 + y / r) - self.dist_cm
+            tx = self.dist_cm * (1 + x/r) - self.dist_cm
+            ty = self.dist_cm * (1 + y/r) - self.dist_cm
 
         # prevent div0
         azimuth[azimuth == 0] = np.finfo(np.float32).eps
@@ -289,8 +295,8 @@ class Warper(object):
 
         # loop to create quads
         vdex = 0
-        for y in xrange(0, self.ygrid - 1):
-            for x in xrange(0, self.xgrid - 1):
+        for y in range(0, self.ygrid - 1):
+            for x in range(0, self.xgrid - 1):
                 index = y * (self.xgrid) + x
 
                 vertices[vdex + 0, 0] = x_coords[y, x]
@@ -323,7 +329,7 @@ class Warper(object):
             lines = fh.readlines()
             fh.close()
             filetype = int(lines[0])
-            rc = map(int, lines[1].split())
+            rc = list(map(int, lines[1].split()))
             cols, rows = rc[0], rc[1]
             warpdata = np.loadtxt(self.warpfile, skiprows=2)
         except Exception:
@@ -356,8 +362,8 @@ class Warper(object):
 
         # loop to create quads
         vdex = 0
-        for y in xrange(0, self.ygrid - 1):
-            for x in xrange(0, self.xgrid - 1):
+        for y in range(0, self.ygrid - 1):
+            for x in range(0, self.xgrid - 1):
                 index = y * (self.xgrid) + x
 
                 vertices[vdex + 0, 0] = warpdata[index, 0]  # x_coords[y,x]

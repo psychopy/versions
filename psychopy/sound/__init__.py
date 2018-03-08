@@ -45,6 +45,7 @@ preferable.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import division
+from builtins import str
 import sys
 import os
 from psychopy import logging, prefs, exceptions
@@ -68,6 +69,7 @@ for thisLibName in prefs.general['audioLib']:
         if thisLibName == 'pyo':
             from . import backend_pyo as backend
             Sound = backend.SoundPyo
+            pyoSndServer = backend.pyoSndServer
         elif thisLibName == 'sounddevice':
             from . import backend_sounddevice as backend
             Sound = backend.SoundDeviceSound
@@ -138,7 +140,7 @@ if hasattr(backend, 'defaultOutput'):
     if dev=='default' or travisCI:
         pass  # do nothing
     elif dev not in backend.getDevices(kind='output'):
-        devNames = backend.getDevices(kind='output').keys()
+        devNames = sorted(backend.getDevices(kind='output').keys())
         logging.error(u"Requested audio device '{}' that is not available on "
                         "this hardware. The 'audioDevice' preference should be one of "
                         "{}".format(dev, devNames))

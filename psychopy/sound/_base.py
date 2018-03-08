@@ -3,6 +3,9 @@
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import division
+from builtins import range
+from past.builtins import basestring
+from builtins import object
 import numpy
 import copy
 from os import path
@@ -174,7 +177,7 @@ class _SoundBase(object):
                         break
                 if self.fileName is None:
                     msg = "setSound: could not find a sound file named "
-                    raise ValueError, msg + value
+                    raise ValueError(msg + value)
                 else:
                     self._setSndFromFile(p)
         elif type(value) in [list, numpy.ndarray]:

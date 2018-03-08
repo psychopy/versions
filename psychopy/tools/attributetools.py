@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -6,7 +7,11 @@
 
 """Functions and classes related to attribute handling
 """
+from __future__ import division
 
+from past.builtins import basestring
+from past.utils import old_div
+from builtins import object
 import numpy
 
 from psychopy import logging

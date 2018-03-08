@@ -1,3 +1,5 @@
+from builtins import str
+from builtins import object
 import os
 import wx
 from .._base import BaseComponent, Param, _translate
@@ -57,7 +59,7 @@ thisFolder = os.path.split(__file__)[0]
 class ProjIDParam(Param):
     @property
     def allowedVals(self):
-        allowed = projectCatalog.keys()
+        allowed = list(projectCatalog.keys())
         # always allow the current val!
         if self.val not in allowed:
             allowed.append(self.val)
@@ -267,7 +269,7 @@ class SettingsComponent(object):
     def writeInitCode(self, buff, version, localDateTime):
 
         buff.write(
-            '#!/usr/bin/env python2\n'
+            '#!/usr/bin/env python\n'
             '# -*- coding: utf-8 -*-\n'
             '"""\nThis experiment was created using PsychoPy2 Experiment '
             'Builder (v%s),\n'
@@ -540,7 +542,7 @@ class SettingsComponent(object):
         allowGUI = (not bool(fullScr)) or bool(self.params['Show mouse'].val)
         allowStencil = False
         # NB routines is a dict:
-        for thisRoutine in self.exp.routines.values():
+        for thisRoutine in list(self.exp.routines.values()):
             # a single routine is a list of components:
             for thisComp in thisRoutine:
                 if thisComp.type == 'Aperture':

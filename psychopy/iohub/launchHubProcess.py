@@ -4,6 +4,7 @@ Created on Wed May 01 06:30:07 2013
 
 @author: Sol
 """
+from builtins import str
 import gevent
 import json
 import os,sys
@@ -33,7 +34,7 @@ def run(rootScriptPathDir,configFilePath):
     updateDict(ioHubConfig,hub_defaults_config)
     try:
         s = ioServer(rootScriptPathDir, ioHubConfig)
-    except Exception,e:
+    except Exception as e:
         printExceptionDetailsToStdErr()
         sys.stdout.flush()
         

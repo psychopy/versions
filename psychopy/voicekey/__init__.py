@@ -1,5 +1,5 @@
-#!/usr/bin/env python2
-# encoding: utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """voicekey: A toolkit for programming virtual voice-keys.
 
@@ -12,7 +12,10 @@ method. See SimpleThresholdVoiceKey or OnsetVoiceKey for examples.
 """
 
 from __future__ import division
+from __future__ import print_function
 
+from builtins import range
+from builtins import object
 __version__ = 0.5
 
 import sys

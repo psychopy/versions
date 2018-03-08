@@ -3,12 +3,18 @@
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import
+from __future__ import print_function
+from past.builtins import basestring
 
 import os
 import time
 import glob
 import wx
 import wx.lib.scrolledpanel as scrlpanel
+try:
+    import wx.adv as wxhl  # in wx 4
+except ImportError:
+    wxhl = wx  # in wx 3.0.2
 
 from psychopy import logging, web, prefs
 from psychopy.app import dialogs
@@ -40,7 +46,7 @@ class ProjectCatalog(dict):
         self.refresh()
 
     def projFromId(self, id):
-        for key, item in self.items():
+        for key, item in list(self.items()):
             if item.project_id == id:
                 return key, item
         return (None, None)  # got here without finding anything
@@ -86,7 +92,7 @@ projectCatalog = ProjectCatalog()
 idBase = wx.NewId()
 projHistory = wx.FileHistory(maxFiles=16, idBase=idBase)
 projHistory.idBase = idBase
-for key in projectCatalog.keys():
+for key in projectCatalog:
     projHistory.AddFileToHistory(key)
 
 
@@ -111,7 +117,7 @@ class ProjectsMenu(wx.Menu):
         self.userList = usersList
 
         item = self.Append(wx.ID_ANY, _translate("Tell me more..."))
-        wx.EVT_MENU(parent, item.GetId(),  self.onAbout)
+        parent.Bind(wx.EVT_MENU, self.onAbout, id=item.GetId())
         if not havePyosf:
             self.Append(wx.ID_ANY,
                         _translate("Requires pyosf (not installed)"))
@@ -128,7 +134,7 @@ class ProjectsMenu(wx.Menu):
         item = self.projsSubMenu.Append(wx.ID_ANY,
                                  _translate("From file...\t{}")
                                  .format(keys['projectsOpen']))
-        wx.EVT_MENU(parent, item.GetId(),  self.onOpenFile)
+        parent.Bind(wx.EVT_MENU,  self.onOpenFile, id=item.GetId())
         self.projsSubMenu.AppendSeparator()
         self.projHistory.UseMenu(self.projsSubMenu)
         try:
@@ -152,27 +158,27 @@ class ProjectsMenu(wx.Menu):
         item = self.userMenu.Append(wx.ID_ANY,
                              _translate("Log in...\t{}")
                              .format(keys['projectsLogIn']))
-        wx.EVT_MENU(parent, item.GetId(),  self.onLogIn)
+        parent.Bind(wx.EVT_MENU, self.onLogIn, id=item.GetId())
         self.AppendSubMenu(self.userMenu, _translate("User"))
 
         # search
         item = self.Append(wx.ID_ANY,
                     _translate("Search OSF\t{}")
                     .format(keys['projectsFind']))
-        wx.EVT_MENU(parent, item.GetId(),  self.onSearch)
+        parent.Bind(wx.EVT_MENU, self.onSearch, id=item.GetId())
 
         # new
         item = self.Append(wx.ID_ANY,
                     _translate("New...\t{}").format(keys['projectsNew']))
-        wx.EVT_MENU(parent, item.GetId(),  self.onNew)
+        parent.Bind(wx.EVT_MENU, self.onNew, id=item.GetId())
 
         # self.Append(wxIDs.projsSync, "Sync\t{}".format(keys['projectsSync']))
-        # wx.EVT_MENU(parent, wxIDs.projsSync,  self.onSync)
+        # parent.Bind(wx.EVT_MENU, self.onSync, id=wxIDs.projsSync)
 
     def addToSubMenu(self, name, menu, function):
         thisId = wx.NewId()
         menu.Append(thisId, name)
-        wx.EVT_MENU(self.parent, thisId, function)
+        self.parent.Bind(wx.EVT_MENU, function, id=thisId)
 
     def addFileToHistory(self, filename):
         key = projectCatalog.addFile(filename)
@@ -203,6 +209,9 @@ class ProjectsMenu(wx.Menu):
             print("failed to authenticate - probably need 2FA")
         except requests.exceptions.ConnectionError:
             logging.warn("Connection error trying to connect to pyosf")
+        except requests.exceptions.ReadTimeout:
+            logging.warn("Timed out while trying to connect to pyosf")
+
         ProjectsMenu.appData['user'] = user
         if self.searchDlg:
             self.searchDlg.updateUserProjs()
@@ -217,7 +226,7 @@ class ProjectsMenu(wx.Menu):
 
     def onLogIn(self, event):
         # check knownusers list
-        users = ProjectsMenu.knownUsers.keys()
+        users = list(ProjectsMenu.knownUsers.keys())
         dlg = LogInDlg(app=self.app)
         dlg.Show()
         if self.app.osf_session.authenticated:
@@ -297,12 +306,13 @@ class LogInDlg(wx.Dialog):
                              flag=wx.ALIGN_CENTER, border=10)
 
         # user info
-        self.fieldsSizer.Add(wx.StaticText(self,
-                                           label=_translate("OSF Username (email)")),
+        self.fieldsSizer.Add(wx.StaticText(
+            self,
+            label=_translate("OSF Username (email)")),
                              pos=(1, 0), flag=wx.ALIGN_RIGHT)
         self.username = wx.TextCtrl(self)
-        self.username.SetToolTipString(_translate("Your username on OSF "
-                                       "(the email address you used)"))
+        self.username.SetToolTip(_translate("Your username on OSF "
+                                            "(the email address you used)"))
         self.fieldsSizer.Add(self.username,
                              pos=(1, 1), flag=wx.ALIGN_LEFT)
         # pass info
@@ -310,16 +320,18 @@ class LogInDlg(wx.Dialog):
                              pos=(2, 0), flag=wx.ALIGN_RIGHT)
         self.password = wx.TextCtrl(self,
                                     style=wx.TE_PASSWORD | wx.TE_PROCESS_ENTER)
-        self.password.SetToolTipString(_translate("Your password on OSF "
-                                       "(will be checked securely with https)"))
+        self.password.SetToolTip(
+            _translate("Your password on OSF "
+                       "(will be checked securely with https)"))
         self.fieldsSizer.Add(self.password,
                              pos=(2, 1), flag=wx.ALIGN_LEFT)
         # remember me
-        self.fieldsSizer.Add(wx.StaticText(self, label=_translate("Remember me")),
-                             pos=(3, 0), flag=wx.ALIGN_RIGHT)
+        self.fieldsSizer.Add(wx.StaticText(
+            self, label=_translate("Remember me")),
+            pos=(3, 0), flag=wx.ALIGN_RIGHT)
         self.rememberMe = wx.CheckBox(self, True)
-        self.rememberMe.SetToolTipString(_translate("We won't store your password - "
-                                         "just an authorisation token"))
+        self.rememberMe.SetToolTip(_translate("We won't store your password - "
+                                              "just an authorisation token"))
         self.fieldsSizer.Add(self.rememberMe,
                              pos=(3, 1), flag=wx.ALIGN_LEFT)
 
@@ -394,13 +406,13 @@ class BaseFrame(wx.Frame):
         fileMenu.Append(wx.ID_CLOSE,
                         _translate("&Close View\t%s") % keyCodes['close'],
                         _translate("Close current window"))
-        wx.EVT_MENU(self, wx.ID_CLOSE, self.closeFrame)
+        self.Bind(wx.EVT_MENU, self.closeFrame, id=wx.ID_CLOSE)
         # -------------quit
         fileMenu.AppendSeparator()
         fileMenu.Append(wx.ID_EXIT,
                         _translate("&Quit\t%s") % keyCodes['quit'],
                         _translate("Terminate the program"))
-        wx.EVT_MENU(self, wx.ID_EXIT, app.quit)
+        self.Bind(wx.EVT_MENU, app.quit, id=wx.ID_EXIT)
         return fileMenu
 
     def closeFrame(self, event=None, checkSave=True):
@@ -542,7 +554,7 @@ class ProjectListPanel(scrlpanel.ScrolledPanel):
     def setContents(self, projects):
         self.DestroyChildren()  # start with a clean slate
 
-        if type(projects) in [str, unicode]:
+        if isinstance(projects, basestring):
             # just text for a window so display
             self.mainSizer.Add(
                 wx.StaticText(self, -1, projects),
@@ -598,10 +610,10 @@ class DetailsPanel(scrlpanel.ScrolledPanel):
                                        label="", style=wx.ALIGN_CENTER)
             font = wx.Font(18, wx.DECORATIVE, wx.NORMAL, wx.BOLD)
             self.title.SetFont(font)
-        self.url = wx.HyperlinkCtrl(parent=self, id=-1,
+        self.url = wxhl.HyperlinkCtrl(parent=self, id=-1,
                                     label="https://osf.io",
                                     url="https://osf.io",
-                                    style=wx.HL_ALIGN_LEFT,
+                                    style=wxhl.HL_ALIGN_LEFT,
                                     )
         self.description = wx.StaticText(parent=self, id=-1,
                                          label=_translate(

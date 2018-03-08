@@ -7,6 +7,8 @@ See http://www.konicaminolta.com/instruments
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
+from builtins import range
+from builtins import object
 from psychopy import logging
 import struct
 import sys
@@ -150,7 +152,7 @@ class LS100(object):
                     if reply[0:2] == 'OK':
                         self.OK = True
                         break
-                    elif reply not in self.codes.keys():
+                    elif reply not in self.codes:
                         self.OK = False
                         break  # wasn't valid
                     else:

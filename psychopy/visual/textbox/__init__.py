@@ -5,6 +5,10 @@ Created on Thu Mar 21 18:38:35 2013
 @author: Sol
 """
 from __future__ import division, print_function
+from __future__ import absolute_import
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 import os
 import inspect
 import numbers
@@ -28,8 +32,8 @@ from pyglet.gl import (glCallList, glFinish, glGenLists, glNewList, glViewport,
                        GL_SMOOTH_LINE_WIDTH_RANGE, GL_SMOOTH_LINE_WIDTH_GRANULARITY,
                        GL_POLYGON_SMOOTH)
 
-from fontmanager import FontManager
-from textgrid import TextGrid
+from .fontmanager import FontManager
+from .textgrid import TextGrid
 
 
 def getTime():
@@ -1158,7 +1162,7 @@ class TextBox(object):
             raise ValueError(
                 "TextBox: String color value could not be translated: %s" % (str(color)))
 
-        if isinstance(color, (float, int, long)) or (is_sequence(color) and len(color) == 3):
+        if isinstance(color, (float, int, int)) or (is_sequence(color) and len(color) == 3):
             color = arraytools.val2array(color, length=3)
             if color_space == 'dkl' and valid_opacity:
                 dkl_rgb = None
@@ -1269,7 +1273,7 @@ class TextBox(object):
         return te_x, te_y
 
     def __del__(self):
-        if hasattr(self, '_textbox_instance') and self.getName() in self._textbox_instance.keys():
+        if hasattr(self, '_textbox_instance') and self.getName() in self._textbox_instance:
             del self._textbox_instances[self.getName()]
         del self._current_glfont
         del self._text_grid

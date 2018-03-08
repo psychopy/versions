@@ -5,7 +5,10 @@
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import
+from __future__ import print_function
 
+from builtins import str
+from past.builtins import basestring
 import os
 import glob
 import copy
@@ -29,14 +32,18 @@ for filename in pycFiles:
 
 def pilToBitmap(pil, scaleFactor=1.0):
     import wx
-    image = wx.EmptyImage(pil.size[0], pil.size[1])
+    if wx.version()<"4":
+        image = wx.EmptyImage(pil.size[0], pil.size[1])
+    else:
+        image = wx.Image(pil.size[0], pil.size[1])
 
-    try:  # For PIL.
+    # set the RGB values
+    if hasattr(pil, 'tobytes'):
+        image.SetData(pil.convert("RGB").tobytes())
+        image.SetAlphaBuffer(pil.convert("RGBA").tobytes()[3::4])
+    else:
         image.SetData(pil.convert("RGB").tostring())
         image.SetAlphaData(pil.convert("RGBA").tostring()[3::4])
-    except Exception:  # For Pillow.
-        image.SetData(pil.convert("RGB").tobytes())
-        image.SetAlphaData(pil.convert("RGBA").tobytes()[3::4])
 
     image.Rescale(image.Width * scaleFactor, image.Height * scaleFactor)
     return image.ConvertToBitmap()  # wx.Image and wx.Bitmap are different
@@ -136,7 +143,7 @@ def getComponents(folder=None, fetchIcons=True):
 
     components = {}
     # setup a default icon
-    if fetchIcons and 'default' not in icons.keys():
+    if fetchIcons and 'default' not in icons:
         icons['default'] = getIcons(filename=None)
 
     # go through components in directory
@@ -200,11 +207,11 @@ def getAllComponents(folderList=(), fetchIcons=True):
     User-defined components will override built-ins with the same name.
     """
     if isinstance(folderList, basestring):
-        raise TypeError, 'folderList should be iterable, not a string'
+        raise TypeError('folderList should be iterable, not a string')
     components = getComponents(fetchIcons=fetchIcons)  # get the built-ins
     for folder in folderList:
         userComps = getComponents(folder)
-        for thisKey in userComps.keys():
+        for thisKey in userComps:
             components[thisKey] = userComps[thisKey]
     return components
 
@@ -212,7 +219,7 @@ def getAllComponents(folderList=(), fetchIcons=True):
 def getAllCategories(folderList=()):
     allComps = getAllComponents(folderList)
     allCats = ['Stimuli', 'Responses', 'Custom']
-    for name, thisComp in allComps.items():
+    for name, thisComp in list(allComps.items()):
         for thisCat in thisComp.categories:
             if thisCat not in allCats:
                 allCats.append(thisCat)
@@ -224,17 +231,17 @@ def getInitVals(params, target="PsychoPy"):
     __init__ of a stimulus object, avoiding using a variable name if possible
     """
     inits = copy.deepcopy(params)
-    for name in params.keys():
+    for name in params:
 
         if target == "PsychoJS":
             # convert (0,0.5) to [0,0.5] but don't convert "rand()" to "rand[]"
-            valStr = unicode(inits[name].val).strip()
+            valStr = str(inits[name].val).strip()
             if valStr.startswith("(") and valStr.endswith(")"):
                 inits[name].val = inits[name].val.replace("(", "[", 1)
                 inits[name].val = inits[name].val[::-1].replace(")", "]", 1)[::-1]  # replace from right
             # filenames (e.g. for image) need to be loaded from resources
             if name in ["image", "mask", "sound"]:
-                val = unicode(inits[name].val)
+                val = str(inits[name].val)
                 if val != "None":
                     inits[name].val = ("psychoJS.resourceManager.getResource({})"
                                        .format(inits[name]))
@@ -262,7 +269,10 @@ def getInitVals(params, target="PsychoPy"):
                       'volume',  # sounds
                       'coherence', 'nDots', 'fieldSize', 'dotSize', 'dotLife',
                       'dir', 'speed',
-                      'contrast', 'moddepth', 'envori', 'envphase', 'envsf']:
+                      'contrast', 'moddepth', 'envori', 'envphase', 'envsf',
+                      'noiseClip', 'noiseBWO', 'noiseFilterUpper', 'noiseFilterLower',
+                      'noiseBaseSf', 'noiseBW', 'noiseElementSize', 'noiseFilterOrder',
+                      'noiseFractalPower']:
             inits[name].val = "1.0"
             inits[name].valType = 'code'
         elif name in ['image', 'mask', 'envelope', 'carrier']:
@@ -294,6 +304,12 @@ def getInitVals(params, target="PsychoPy"):
             inits[name].valType = 'str'
         elif name == 'beat':
             inits[name].val = "False"
+            inits[name].valType = 'str'
+        elif name == 'noiseImage':
+            inits[name].val = "None"
+            inits[name].valType = 'str'
+        elif name == 'noiseType':
+            inits[name].val = 'Binary'
             inits[name].valType = 'str'
         else:
             print("I don't know the appropriate default value for a '%s' "

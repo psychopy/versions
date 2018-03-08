@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """A stimulus class for playing movies (mpeg, avi, etc...) in PsychoPy.
 """
@@ -7,6 +8,8 @@
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
+from builtins import next
+from builtins import str
 import sys
 import os
 
@@ -212,7 +215,7 @@ class MovieStim(BaseVisualStim, ContainerMixin):
         self._player.queue(self._movie)
         self.duration = self._movie.duration
         while self._player.source != self._movie:
-            self._player.next()
+            next(self._player)
         self.status = NOT_STARTED
         self._player.pause()  # start 'playing' on the next draw command
         self.filename = filename
@@ -374,6 +377,6 @@ class MovieStim(BaseVisualStim, ContainerMixin):
 
     def __del__(self):
         try:
-            self._player.next()
+            next(self._player)
         except Exception:
             pass

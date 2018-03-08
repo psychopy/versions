@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -6,12 +7,18 @@
 
 """Functions and classes related to file and directory handling
 """
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
 import os
 import shutil
-import cPickle
+import pickle
 import sys
 import codecs
+import numpy as np
+import json_tricks
+
 from psychopy import logging
 from psychopy.tools.fileerrortools import handleFileCollision
 
@@ -21,23 +28,37 @@ def toFile(filename, data):
 
     simple wrapper of the cPickle module in core python
     """
-    f = open(filename, 'w')
-    cPickle.dump(data, f)
+    f = open(filename, 'wb')
+    pickle.dump(data, f)
     f.close()
 
 
 def fromFile(filename):
-    """Load data (of any sort) from a pickle file.
-
-    Simple wrapper of the cPickle module in core python
+    """Load data from a pickle or JSON file.
     """
-    f = open(filename)
-    contents = cPickle.load(f)
-    f.close()
-    # if loading an experiment file make sure we don't save further copies
-    # using __del__
-    if hasattr(contents, 'abort'):
-        contents.abort()
+
+    with open(filename) as f:
+        if filename.endswith('.psydat'):
+            contents = pickle.load(f)
+            # if loading an experiment file make sure we don't save further
+            # copies using __del__
+            if hasattr(contents, 'abort'):
+                contents.abort()
+        elif filename.endswith('json'):
+            contents = json_tricks.np.load(f)
+
+            # Restore RNG if we load a TrialHandler2 object.
+            # We also need to remove the 'temporary' ._rng_state attribute that
+            # was saved with it.
+            from psychopy.data import TrialHandler2
+            if isinstance(contents, TrialHandler2):
+                contents._rng = np.random.RandomState(seed=contents.seed)
+                contents._rng.set_state(contents._rng_state)
+                del contents._rng_state
+        else:
+            msg = "Don't know how to handle this file type, aborting."
+            raise ValueError(msg)
+
     return contents
 
 
@@ -111,7 +132,8 @@ def openOutputFile(fileName, append=False, delim=None,
         genDelimiter(fileName)
 
     if not fileName.endswith(('.dlm', '.DLM', '.tsv', '.TSV', '.txt',
-                              '.TXT', '.csv', '.CSV', '.psydat', '.npy')):
+                              '.TXT', '.csv', '.CSV', '.psydat', '.npy',
+                              '.json')):
         if delim == ',':
             fileName += '.csv'
         elif delim == '\t':
@@ -163,6 +185,8 @@ def genDelimiter(fileName):
     """
     if fileName.endswith(('.csv', '.CSV')):
         delim = ','
+    elif fileName.endswith('.json'):
+        delim = ''
     else:
         delim = '\t'
 

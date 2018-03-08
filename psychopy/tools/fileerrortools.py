@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -7,6 +8,7 @@
 """Functions and classes related to file and directory error handling
 """
 
+from builtins import str
 import os
 import glob
 

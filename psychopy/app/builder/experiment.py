@@ -15,21 +15,27 @@ The code that writes out a *_lastrun.py experiment file is (in order):
 
 from __future__ import absolute_import, print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 import re
 import os
 import xml.etree.ElementTree as xml
 from xml.dom import minidom
-import StringIO
+import io
 import codecs
 import keyword
 
 from .components import getInitVals, getComponents, getAllComponents
 import psychopy
 from psychopy import data, __version__, logging, constants
-from psychopy.constants import FOREVER
+from psychopy.constants import FOREVER, PY3
 
 from ..localization import _translate
 import locale
+import sys
 
 # predefine some regex's; deepcopy complains if do in NameSpace.__init__()
 _unescapedDollarSign_re = re.compile(r"^\$|[^\\]\$")  # detect "code wanted"
@@ -74,16 +80,16 @@ class CodeGenerationException(Exception):
     def __init__(self, source, message=""):
         super(CodeGenerationException, self).__init__()
         self.source = source
-        self.message = str(message)
+        self.message = message
 
     def __str__(self):
-        return str(self.source) + ": " + self.message
+        return "{}: ".format(self.source, self.message)
 
 
-class IndentingBuffer(StringIO.StringIO):
+class IndentingBuffer(io.StringIO):
 
     def __init__(self, *args, **kwargs):
-        StringIO.StringIO.__init__(self, *args, **kwargs)
+        io.StringIO.__init__(self, *args, **kwargs)
         self.oneIndent = "    "
         self.indentLevel = 0
 
@@ -113,6 +119,24 @@ class IndentingBuffer(StringIO.StringIO):
             self.indentLevel += newLevel
         else:
             self.indentLevel = newLevel
+
+    def write(self, text):
+        if PY3:
+            io.StringIO.write(self, "{}".format(text))
+        else:
+            io.StringIO.write(self, u"{}".format(text))
+
+
+def _findParam(name, node):
+    """Searches an XML node in search of a particular param name
+
+    :param name: str indicating the name of the attribute
+    :param node: xml element/node to be searched
+    :return: None, or a parameter child node
+    """
+    for attr in node:
+        if attr.get('name') == name:
+            return attr
 
 
 class Experiment(object):
@@ -237,8 +261,7 @@ class Experiment(object):
                     "  // to track the time since experiment started\n"
                     "routineTimer = new psychoJS.core.CountdownTimer();"
                     "  // to track time remaining of each (non-slip) routine\n"
-                    "\nreturn psychoJS.NEXT;"
-                    )
+                    "\nreturn psychoJS.NEXT;")
             script.writeIndentedLines(code)
             script.setIndentLevel(-1, relative=True)
             script.writeIndentedLines("}")
@@ -247,7 +270,7 @@ class Experiment(object):
             # Routines once (whether or not they get used) because we're using
             # functions that may or may not get called later.
             # Do the Routines of the experiment first
-            for thisRoutine in self.routines.values():
+            for thisRoutine in list(self.routines.values()):
                 self._currentRoutine = thisRoutine
                 thisRoutine.writeRoutineBeginCodeJS(script)
                 thisRoutine.writeEachFrameCodeJS(script)
@@ -267,13 +290,13 @@ class Experiment(object):
         self.xmlRoot.set('encoding', 'utf-8')
         # store settings
         settingsNode = xml.SubElement(self.xmlRoot, 'Settings')
-        for name, setting in self.settings.params.iteritems():
+        for name, setting in self.settings.params.items():
             settingNode = self._setXMLparam(
                 parent=settingsNode, param=setting, name=name)
         # store routines
         routinesNode = xml.SubElement(self.xmlRoot, 'Routines')
         # routines is a dict of routines
-        for routineName, routine in self.routines.iteritems():
+        for routineName, routine in self.routines.items():
             routineNode = self._setXMLparam(
                 parent=routinesNode, param=routine, name=routineName)
             # a routine is based on a list of components
@@ -281,7 +304,7 @@ class Experiment(object):
                 componentNode = self._setXMLparam(
                     parent=routineNode, param=component,
                     name=component.params['name'].val)
-                for name, param in component.params.iteritems():
+                for name, param in component.params.items():
                     paramNode = self._setXMLparam(
                         parent=componentNode, param=param, name=name)
         # implement flow
@@ -294,7 +317,7 @@ class Experiment(object):
                 name = loop.params['name'].val
                 elementNode.set('loopType', loop.getType())
                 elementNode.set('name', name)
-                for paramName, param in loop.params.iteritems():
+                for paramName, param in loop.params.items():
                     paramNode = self._setXMLparam(
                         parent=elementNode, param=param, name=paramName)
                     # override val with repr(val)
@@ -333,14 +356,14 @@ class Experiment(object):
         thisChild = xml.SubElement(parent, thisType)
         thisChild.set('name', name)
         if hasattr(param, 'val'):
-            thisChild.set('val', unicode(param.val).replace("\n", "&#10;"))
+            thisChild.set('val', "{}".format(param.val).replace("\n", "&#10;"))
         if hasattr(param, 'valType'):
             thisChild.set('valType', param.valType)
         if hasattr(param, 'updates'):
-            thisChild.set('updates', unicode(param.updates))
+            thisChild.set('updates', "{}".format(param.updates))
         return thisChild
 
-    def _getXMLparam(self, params, paramNode):
+    def _getXMLparam(self, params, paramNode, componentNode=None):
         """params is the dict of params of the builder component
         (e.g. stimulus) into which the parameters will be inserted
         (so the object to store the params should be created first)
@@ -349,13 +372,28 @@ class Experiment(object):
         name = paramNode.get('name')
         valType = paramNode.get('valType')
         val = paramNode.get('val')
+        # many components need web char newline replacement
         if not name == 'advancedParams':
             val = val.replace("&#10;", "\n")
+
+        # custom settings (to be used when
         if name == 'storeResponseTime':
             return  # deprecated in v1.70.00 because it was redundant
+        elif name == 'nVertices':  # up to 1.85 there was no shape param
+            # if no shape param then use "n vertices" only
+            if _findParam('shape', componentNode) is None:
+                if val == '2':
+                    params['shape'].val = "line"
+                elif val == '3':
+                    params['shape'].val = "triangle"
+                elif val == '4':
+                    params['shape'].val = "rectangle"
+                else:
+                    params['shape'].val = "regular polygon..."
+            params['nVertices'].val = val
         elif name == 'startTime':  # deprecated in v1.70.00
-            params['startType'].val = unicode('time (s)')
-            params['startVal'].val = unicode(val)
+            params['startType'].val = "{}".format('time (s)')
+            params['startVal'].val = "{}".format(val)
             return  # times doesn't need to update its type or 'updates' rule
         elif name == 'forceEndTrial':  # deprecated in v1.70.00
             params['forceEndRoutine'].val = bool(val)
@@ -363,15 +401,22 @@ class Experiment(object):
         elif name == 'forceEndTrialOnPress':  # deprecated in v1.70.00
             params['forceEndRoutineOnPress'].val = bool(val)
             return  # forceEndTrial doesn't need to update  type or 'updates'
+        elif name == 'forceEndRoutineOnPress':
+            if val is True:
+                val = "any click"
+            elif val is False:
+                val = "never"
+            params['forceEndRoutineOnPress'].val = val
+            return
         elif name == 'trialList':  # deprecated in v1.70.00
             params['conditions'].val = eval(val)
             return  # forceEndTrial doesn't need to update  type or 'updates'
         elif name == 'trialListFile':  # deprecated in v1.70.00
-            params['conditionsFile'].val = unicode(val)
+            params['conditionsFile'].val = "{}".format(val)
             return  # forceEndTrial doesn't need to update  type or 'updates'
         elif name == 'duration':  # deprecated in v1.70.00
             params['stopType'].val = u'duration (s)'
-            params['stopVal'].val = unicode(val)
+            params['stopVal'].val = "{}".format(val)
             return  # times doesn't need to update its type or 'updates' rule
         elif name == 'allowedKeys' and valType == 'str':  # changed v1.70.00
             # ynq used to be allowed, now should be 'y','n','q' or
@@ -402,10 +447,10 @@ class Experiment(object):
             params[name].val = val
         elif name == 'times':  # deprecated in v1.60.00
             times = eval('%s' % val)
-            params['startType'].val = unicode('time (s)')
-            params['startVal'].val = unicode(times[0])
-            params['stopType'].val = unicode('time (s)')
-            params['stopVal'].val = unicode(times[1])
+            params['startType'].val = "{}".format('time (s)')
+            params['startVal'].val = "{}".format(times[0])
+            params['stopType'].val = "{}".format('time (s)')
+            params['stopVal'].val = "{}".format(times[1])
             return  # times doesn't need to update its type or 'updates' rule
         elif name in ('Begin Experiment', 'Begin Routine', 'Each Frame',
                       'End Routine', 'End Experiment'):
@@ -420,7 +465,7 @@ class Experiment(object):
                                 " and log files (blank defaults to the "
                                 "builder pref)"),
                 categ='Data')
-        elif 'val' in paramNode.keys():
+        elif 'val' in list(paramNode.keys()):
             if val == 'window units':  # changed this value in 1.70.00
                 params[name].val = 'from exp settings'
             # in v1.80.00, some RatingScale API and Param fields were changed
@@ -453,23 +498,22 @@ class Experiment(object):
                     params[name] = Param(
                         val, valType=paramNode.get('valType'),
                         allowedTypes=[],
-                        hint=_translate(
-                            "This parameter is not known by this version "
-                            "of PsychoPy. It might be worth upgrading"))
+                        hint=_translate("This parameter is not known by this version "
+                                        "of PsychoPy. It might be worth upgrading"))
                     params[name].allowedTypes = paramNode.get('allowedTypes')
                     if params[name].allowedTypes is None:
                         params[name].allowedTypes = []
                     params[name].readOnly = True
-                    msg = _translate(
-                        "Parameter %r is not known to this version of "
-                        "PsychoPy but has come from your experiment file "
-                        "(saved by a future version of PsychoPy?). This "
-                        "experiment may not run correctly in the current "
-                        "version.")
+                    msg = _translate("Parameter %r is not known to this version of "
+                                     "PsychoPy but has come from your experiment file "
+                                     "(saved by a future version of PsychoPy?). This "
+                                     "experiment may not run correctly in the current "
+                                     "version.")
                     logging.warn(msg % name)
                     logging.flush()
+
         # get the value type and update rate
-        if 'valType' in paramNode.keys():
+        if 'valType' in list(paramNode.keys()):
             params[name].valType = paramNode.get('valType')
             # compatibility checks:
             if name in ['allowedKeys'] and paramNode.get('valType') == 'str':
@@ -481,7 +525,7 @@ class Experiment(object):
             # conversions based on valType
             if params[name].valType == 'bool':
                 params[name].val = eval("%s" % params[name].val)
-        if 'updates' in paramNode.keys():
+        if 'updates' in list(paramNode.keys()):
             params[name].updates = paramNode.get('updates')
 
     def loadFromXML(self, filename):
@@ -516,7 +560,8 @@ class Experiment(object):
         # fetch exp settings
         settingsNode = root.find('Settings')
         for child in settingsNode:
-            self._getXMLparam(params=self.settings.params, paramNode=child)
+            self._getXMLparam(params=self.settings.params, paramNode=child,
+                              componentNode=settingsNode)
         # name should be saved as a settings parameter (only from 1.74.00)
         if self.settings.params['expName'].val in ['', None, 'None']:
             shortName = os.path.splitext(filenameBase)[0]
@@ -565,7 +610,8 @@ class Experiment(object):
                 # populate the component with its various params
                 for paramNode in componentNode:
                     self._getXMLparam(params=component.params,
-                                      paramNode=paramNode)
+                                      paramNode=paramNode,
+                                      componentNode=componentNode)
                 compGoodName = self.namespace.makeValid(
                     componentNode.get('name'))
                 if compGoodName != componentNode.get('name'):
@@ -575,7 +621,7 @@ class Experiment(object):
                 routine.append(component)
         # for each component that uses a Static for updates, we need to set
         # that
-        for thisRoutine in self.routines.values():
+        for thisRoutine in list(self.routines.values()):
             for thisComp in thisRoutine:
                 for thisParamName in thisComp.params:
                     thisParam = thisComp.params[thisParamName]
@@ -640,9 +686,8 @@ class Experiment(object):
                     self.flow.append(self.routines[elementNode.get('name')])
                 else:
                     logging.error("A Routine called '{}' was on the Flow but "
-                                 "could not be found (failed rename?). You "
-                                 "may need to re-insert it"
-                                 .format(elementNode.get('name')))
+                                  "could not be found (failed rename?). You "
+                                  "may need to re-insert it".format(elementNode.get('name')))
                     logging.flush()
 
         if modifiedNames:
@@ -675,8 +720,8 @@ class Experiment(object):
             :param filePath: str to a potential file path (rel or abs)
             :return: dict of 'asb' and 'rel' paths or None
             """
-            thisFile={}
-            if len(filePath)>2 and (filePath[0] == "/" or filePath[1]==":"):
+            thisFile = {}
+            if len(filePath) > 2 and (filePath[0] == "/" or filePath[1] == ":"):
                 thisFile['abs'] = filePath
                 thisFile['rel'] = os.path.relpath(filePath, srcRoot)
             else:
@@ -704,11 +749,11 @@ class Experiment(object):
             if not thisFile:
                 return paths
             # this file itself is valid so add to resources if not already
-            if thisFile not in (paths):
+            if thisFile not in paths:
                 paths.append(thisFile)
             conds = data.importConditions(thisFile['abs'])  # load the abs path
             for thisCond in conds:  # thisCond is a dict
-                for param, val in thisCond.items():
+                for param, val in list(thisCond.items()):
                     if isinstance(val, basestring) and len(val):
                         subFile = getPaths(val)
                     else:
@@ -842,20 +887,20 @@ class Param(object):
         if self.valType == 'num':
             try:
                 # will work if it can be represented as a float
-                return str(float(self.val))
+                return "{}".format(float(self.val))
             except Exception:  # might be an array
                 return "asarray(%s)" % (self.val)
         elif self.valType == 'int':
             try:
                 return "%i" % self.val  # int and float -> str(int)
             except TypeError:
-                return unicode(self.val)  # try array of float instead?
+                return "{}".format(self.val)  # try array of float instead?
         elif self.valType == 'str':
             # at least 1 non-escaped '$' anywhere --> code wanted
             # return str if code wanted
             # return repr if str wanted; this neatly handles "it's" and 'He
             # says "hello"'
-            if type(self.val) in [str, unicode]:
+            if isinstance(self.val, basestring):
                 codeWanted = _unescapedDollarSign_re.search(self.val)
                 if codeWanted:
                     return "%s" % getCodeFromParamStr(self.val)
@@ -887,6 +932,17 @@ class Param(object):
             raise TypeError("Can't represent a Param of type %s" %
                             self.valType)
 
+    def __eq__(self, other):
+        """Test for equivalence is needed for Params because what really
+        typically want to test is whether the val is the same
+        """
+        return self.val == other
+
+    def __ne__(self, other):
+        """Test for (non)equivalence is needed for Params because what really
+        typically want to test is whether the val is the same/different
+        """
+        return self.val != other
 
 class TrialHandler(object):
     """A looping experimental control object
@@ -1019,7 +1075,7 @@ class TrialHandler(object):
         if not self.exp.prefsBuilder['unclutteredNamespace']:
             code = ("# abbreviate parameter names if possible (e.g. rgb = %(name)s.rgb)\n"
                     "if %(name)s != None:\n"
-                    "    for paramName in %(name)s.keys():\n"
+                    "    for paramName in %(name)s:\n"
                     "        exec(paramName + '= %(name)s.' + paramName)\n")
             buff.writeIndentedLines(code % {'name': self.thisName})
 
@@ -1033,7 +1089,7 @@ class TrialHandler(object):
         if not self.exp.prefsBuilder['unclutteredNamespace']:
             code = ("# abbreviate parameter names if possible (e.g. rgb = %(name)s.rgb)\n"
                     "if %(name)s != None:\n"
-                    "    for paramName in %(name)s.keys():\n"
+                    "    for paramName in %(name)s:\n"
                     "        exec(paramName + '= %(name)s.' + paramName)\n")
             buff.writeIndentedLines(code % {'name': self.thisName})
 
@@ -1089,10 +1145,8 @@ class TrialHandler(object):
                     .format(params=self.params, name=thisChild.params['name'])
                     )
         if self.params['isTrials'].val == True:
-            code += (
-                   "      thisScheduler.add(recordLoopIteration({name}));\n"
-                   .format(name=self.params['name'])
-                   )
+            code += ("      thisScheduler.add(recordLoopIteration({name}));\n"
+                     .format(name=self.params['name']))
         buff.writeIndentedLines(code)
         code = ("    }}\n"
                 "  }} catch (exception) {{\n"
@@ -1287,14 +1341,14 @@ class StairHandler(object):
 
     def writeLoopEndCode(self, buff):
         # Just within the loop advance data line if loop is whole trials
-        if self.params['isTrials'].val == True:
+        if self.params['isTrials'].val:
             buff.writeIndentedLines("thisExp.nextEntry()\n\n")
         # end of the loop. dedent
         buff.setIndentLevel(-1, relative=True)
         buff.writeIndented("# staircase completed\n")
         buff.writeIndented("\n")
         # save data
-        if self.params['isTrials'].val == True:
+        if self.params['isTrials'].val:
             if self.exp.settings.params['Save excel file'].val:
                 code = ("%(name)s.saveAsExcel(filename + '.xlsx',"
                         " sheetName='%(name)s')\n")
@@ -1407,20 +1461,20 @@ class MultiStairHandler(object):
         if not self.exp.prefsBuilder['unclutteredNamespace']:
             code = ("# abbreviate parameter names if possible (e.g. "
                     "rgb=condition.rgb)\n"
-                    "for paramName in condition.keys():\n"
+                    "for paramName in condition:\n"
                     "    exec(paramName + '= condition[paramName]')\n")
             buff.writeIndentedLines(code)
 
     def writeLoopEndCode(self, buff):
         # Just within the loop advance data line if loop is whole trials
-        if self.params['isTrials'].val == True:
+        if self.params['isTrials'].val:
             buff.writeIndentedLines("thisExp.nextEntry()\n\n")
         # end of the loop. dedent
         buff.setIndentLevel(-1, relative=True)
         buff.writeIndented("# all staircases completed\n")
         buff.writeIndented("\n")
         # save data
-        if self.params['isTrials'].val == True:
+        if self.params['isTrials'].val:
             if self.exp.settings.params['Save excel file'].val:
                 code = "%(name)s.saveAsExcel(filename + '.xlsx')\n"
                 buff.writeIndented(code % self.params)
@@ -1605,7 +1659,7 @@ class Flow(list):
         # exec(key+'=expInfo[key]')
         expInfo = eval(self.exp.settings.params['Experiment info'].val)
         keywords = self.exp.namespace.nonUserBuilder[:]
-        keywords.extend(['expInfo'] + expInfo.keys())
+        keywords.extend(['expInfo'] + list(expInfo.keys()))
         reserved = set(keywords).difference({'random', 'rand'})
         for key in component.params:
             field = component.params[key]
@@ -1794,8 +1848,7 @@ class Flow(list):
                 "resourceScheduler.add(registerResources);\n"
                 "resourceScheduler.add(downloadResources);\n"
                 "// asynchronous approach: the resource scheduler is run in parallel to the main one\n"
-                "scheduler.add(function() { resourceScheduler.start(win); });\n"
-                )
+                "scheduler.add(function() { resourceScheduler.start(win); });\n")
         script.writeIndentedLines(code)
         code = ("\n// dialog box\n"
                 "scheduler.add(psychoJS.gui.DlgFromDict({dictionary:expInfo, title:expName}));\n"
@@ -1807,8 +1860,7 @@ class Flow(list):
                 "\n"
                 "// flowScheduler gets run if the participants presses OK\n"
                 "flowScheduler.add(updateInfo); // add timeStamp\n"
-                "flowScheduler.add(experimentInit);"
-                )
+                "flowScheduler.add(experimentInit);")
         script.writeIndentedLines(code)
         # add the code for each routine
         loopStack = []
@@ -1884,7 +1936,7 @@ class Routine(list):
         name = component.params['name']
         self.remove(component)
         # check if the component was using any Static Components for updates
-        for thisParamName, thisParam in component.params.items():
+        for thisParamName, thisParam in list(component.params.items()):
             if (hasattr(thisParam, 'updates') and
                     thisParam.updates and
                     'during:' in thisParam.updates):
@@ -2055,8 +2107,7 @@ class Routine(list):
         code = ("//------Prepare to start Routine '{name}'-------\n"
                 "t = 0;\n"
                 "{name}Clock.reset(); // clock\n"
-                "frameN = -1;\n"
-                )
+                "frameN = -1;\n")
         buff.writeIndentedLines(code.format(name=self.name))
         # can we use non-slip timing?
         maxTime, useNonSlip = self.getMaxTime()
@@ -2086,9 +2137,11 @@ class Routine(list):
                 "  }}\n"
                 "}}\n"
                 "\nreturn psychoJS.NEXT;\n"
-                "}}\n"
                 .format(name=self.name))
         buff.writeIndentedLines(code)
+        buff.setIndentLevel(-1, relative=True)
+        buff.writeIndentedLines("}\n")
+
 
     def writeEachFrameCodeJS(self, buff):
         # can we use non-slip timing?
@@ -2103,14 +2156,13 @@ class Routine(list):
                 "\n// get current time\n"
                 "t = {0}Clock.getTime();\n"
                 "frameN = frameN + 1;"
-                "// number of completed frames (so 0 is the first frame)\n"
-                )
+                "// number of completed frames (so 0 is the first frame)\n")
         buff.writeIndentedLines(code.format(self.name))
         # write the code for each component during frame
         buff.writeIndentedLines('// update/draw components on each frame\n')
         # just 'normal' components
         for comp in self:
-            if ("PsychoJS" in comp.targets and comp.type != 'Static'):
+            if "PsychoJS" in comp.targets and comp.type != 'Static':
                 comp.writeFrameCodeJS(buff)
         # update static component code last
         for comp in self.getStatics():
@@ -2385,8 +2437,7 @@ class NameSpace(object):
         vars = self.user + self.builder + self.psychopy
         if numpy_count_only:
             return "%s + [%d numpy]" % (str(vars), len(self.numpy))
-        else:
-            return str(vars + self.numpy)
+        return str(vars + self.numpy)
 
     def getDerived(self, basename):
         """ buggy
@@ -2563,11 +2614,10 @@ class NameSpace(object):
         prefix = 'this'
         irregular = {'stimuli': 'stimulus',
                      'mice': 'mouse', 'people': 'person'}
-        for plural, singular in irregular.items():
+        for plural, singular in list(irregular.items()):
             nn = re.compile(plural, re.IGNORECASE)
             newName = nn.sub(singular, newName)
-        if (newName.endswith('s') and
-                not newName.lower() in irregular.values()):
+        if newName.endswith('s') and newName.lower() not in list(irregular.values()):
             newName = newName[:-1]  # trim last 's'
         else:  # might end in s_2, so delete that s; leave S
             match = re.match(r"^(.*)s(_\d+)$", newName)

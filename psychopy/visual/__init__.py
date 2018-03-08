@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
@@ -57,6 +58,7 @@ from psychopy.visual.shape import BaseShapeStim
 from psychopy.visual.bufferimage import BufferImageStim
 from psychopy.visual.patch import PatchStim
 from psychopy.visual.radial import RadialStim
+from psychopy.visual.noise import NoiseStim
 
 # stimuli derived from BaseShapeStim
 from psychopy.visual.shape import ShapeStim

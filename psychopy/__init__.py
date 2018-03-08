@@ -10,7 +10,7 @@ import os
 import sys
 
 # version info for PsychoPy
-__version__ = '1.85.3'
+__version__ = '1.85.4'
 __license__ = 'GNU GPLv3 (or more recent equivalent)'
 __author__ = 'Jonathan Peirce'
 __author_email__ = 'jon@peirce.org.uk'
@@ -18,7 +18,7 @@ __maintainer_email__ = 'psychopy-dev@googlegroups.com'
 __users_email__ = 'psychopy-users@googlegroups.com'
 __url__ = 'http://www.psychopy.org'
 __downloadUrl__ = 'https://github.com/psychopy/psychopy/releases/'
-__git_sha__ = '2a5280de'
+__git_sha__ = 'e5632523'
 __build_platform__ = 'n/a'
 
 __all__ = ["gui", "misc", "visual", "core",
@@ -39,9 +39,13 @@ if __git_sha__ == 'n/a':
         __git_sha__ = output.strip()  # remove final linefeed
 
 # update preferences and the user paths
-from psychopy.preferences import prefs
-import sys
-for pathName in prefs.general['paths']:
-    sys.path.append(pathName)
+try:
+    from psychopy.preferences import prefs
+    for pathName in prefs.general['paths']:
+        sys.path.append(pathName)
 
-from psychopy.tools.versionchooser import useVersion, ensureMinimal
+    from psychopy.tools.versionchooser import useVersion, ensureMinimal
+except ImportError as e:
+    if not any(x in str(e) for x in ["configobj", "past", "builtins"]):
+        raise
+    pass
