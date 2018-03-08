@@ -1,8 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Part of the PsychoPy library
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
-from __future__ import division
+from __future__ import absolute_import, division, print_function
+
 from builtins import map
 from psychopy import prefs, exceptions
 from sys import platform
@@ -17,6 +21,7 @@ except ImportError as err:
     # convert this import error to our own, pyo probably not installed
     raise exceptions.DependencyError(repr(err))
 
+import atexit
 import sys
 import threading
 pyoSndServer = None
@@ -66,7 +71,10 @@ def getDevices(kind=None):
     devs = {}
     for ii in allDevs:  # in pyo this is a dict but keys are ii ! :-/
         dev = allDevs[ii]
-        devName = dev['name'].decode(osEncoding) # convert to unicode
+        try:  # convert to unicode
+            devName = dev['name'].decode(osEncoding)
+        except UnicodeEncodeError:  # if that fails try the current encoding
+            devName = dev['name']
         devs[devName] = dev
         dev['id'] = ii
     return devs
@@ -187,7 +195,7 @@ def init(rate=44100, stereo=True, buffer=128):
             return -1
 
         # create the instance of the server:
-        if platform in ['darwin', 'linux2']:
+        if platform == 'darwin' or platform.startswith('linux'):
             # for mac/linux we set the backend using the server audio param
             pyoSndServer = Server(sr=rate, nchnls=maxChnls,
                                   buffersize=buffer, audio=audioDriver)
@@ -206,6 +214,10 @@ def init(rate=44100, stereo=True, buffer=128):
         pyoSndServer.boot()
     core.wait(0.5)  # wait for server to boot before starting te sound stream
     pyoSndServer.start()
+    
+    #atexit is filo, will call stop then shutdown upon closing
+    atexit.register(pyoSndServer.shutdown)
+    atexit.register(pyoSndServer.stop)
     try:
         Sound()  # test creation, no play
     except pyo.PyoServerStateException:
@@ -237,9 +249,9 @@ class SoundPyo(_SoundBase):
             * Or by giving an Nx2 numpy array of floats (-1:1) you can
               specify the sound yourself as a waveform
 
-            By default, a Hamming window (5ms duration) will be applied to a
+            By default, a Hanning window (5ms duration) will be applied to a
             generated tone, so that onset and offset are smoother (to avoid
-            clicking). To disable the Hamming window, set `hamming=False`.
+            clicking). To disable the Hanning window, set `hamming=False`.
 
         secs:
             Duration of a tone. Not used for sounds from a file.
@@ -272,7 +284,11 @@ class SoundPyo(_SoundBase):
 
         bits: has no effect for the pyo backend
 
-        hamming: whether to apply a Hamming window (5ms) for generated tones.
+        hamming: boolean (default True) to indicate if the sound should
+            be apodized (i.e., the onset and offset smoothly ramped up from
+            down to zero). The function apodize uses a Hanning window, but
+            arguments named 'hamming' are preserved so that existing code
+            is not broken by the change from Hamming to Hanning internally.
             Not applied to sounds from files.
         """
         global pyoSndServer

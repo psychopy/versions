@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Part of the PsychoPy library
 # Copyright (C) 2009 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 from future import standard_library
 standard_library.install_aliases()
@@ -2508,15 +2510,19 @@ class CoderFrame(wx.Frame):
             command = '"%s" -u "%s"' % (sys.executable, fullPath)
             # self.scriptProcessID = wx.Execute(command, wx.EXEC_ASYNC,
             #    self.scriptProcess)
-            self.scriptProcessID = wx.Execute(
-                command, wx.EXEC_ASYNC | wx.EXEC_NOHIDE, self.scriptProcess)
+            if hasattr(wx, "EXEC_NOHIDE"):
+                _opts = wx.EXEC_ASYNC | wx.EXEC_NOHIDE  # that hid console!
+            else:
+                _opts = wx.EXEC_ASYNC | wx.EXEC_SHOW_CONSOLE
         else:
             fullPath = fullPath.replace(' ', '\ ')
             pythonExec = sys.executable.replace(' ', '\ ')
             # the quotes would break a unix system command
             command = '%s -u %s' % (pythonExec, fullPath)
-            self.scriptProcessID = wx.Execute(
-                command, wx.EXEC_ASYNC, self.scriptProcess)
+            _opts = wx.EXEC_ASYNC | wx.EXEC_MAKE_GROUP_LEADER
+        # launch the command
+        self.scriptProcessID = wx.Execute(command, _opts,
+                                          self.scriptProcess)
         self.toolbar.EnableTool(self.IDs.cdrBtnRun, False)
         self.toolbar.EnableTool(self.IDs.cdrBtnStop, True)
 

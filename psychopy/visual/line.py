@@ -9,6 +9,8 @@
 # Copyright (C) 2015 Jonathan Peirce
 # Distributed under the terms of the GNU General Public License (GPL).
 
+from __future__ import absolute_import, division, print_function
+
 import psychopy  # so we can get the __path__
 from psychopy import logging
 import numpy
@@ -28,9 +30,10 @@ class Line(ShapeStim):
         :class:`~psychopy.visual.ShapeStim` accepts, except
         for vertices, closeShape and fillColor.
 
-        The methods `contains` and `overlaps` are inherited from
-        `~psychopy.visual.ShapeStim`, but always return False
-        (because a line is not a proper (2D) polygon).
+        :Notes:
+
+        The `contains` method always return False because a line is not a
+        proper (2D) polygon.
         """
         # what local vars are defined (these are the init params) for use by
         # __repr__
@@ -79,9 +82,5 @@ class Line(ShapeStim):
         """
         setAttribute(self, 'end', end, log)
 
-    # Not meaningful for a line, thus deleted
-    def contains(self):
-        pass
-
-    def overlaps(self):
-        pass
+    def contains(self, *args, **kwargs):
+        return False
