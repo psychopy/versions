@@ -21,7 +21,7 @@ __maintainer_email__ = 'psychopy-dev@googlegroups.com'
 __users_email__ = 'psychopy-users@googlegroups.com'
 __url__ = 'http://www.psychopy.org'
 __downloadUrl__ = 'https://github.com/psychopy/psychopy/releases/'
-__git_sha__ = 'b'a333b792''
+__git_sha__ = 'a333b792'
 __build_platform__ = 'n/a'
 
 __all__ = ["gui", "misc", "visual", "core",
