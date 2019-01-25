@@ -18,6 +18,9 @@ import wx
 import wx.stc
 import wx.richtext
 from wx.html import HtmlEasyPrinting
+
+import psychopy.app.pavlovia_ui.menu
+
 try:
     from wx import aui
 except Exception:
@@ -26,7 +29,6 @@ except Exception:
 import keyword
 import os
 import sys
-import string
 import glob
 import io
 import threading
@@ -37,11 +39,13 @@ import locale
 
 from . import psychoParser
 from .. import stdOutRich, dialogs
-from .. import projects
+from .. import pavlovia_ui
 from psychopy import logging
 from psychopy.localization import _translate
 from ..utils import FileDropTarget
 from psychopy.constants import PY3
+from psychopy.projects import pavlovia
+from psychopy.app.coder.codeEditorBase import BaseCodeEditor
 
 # advanced prefs (not set in prefs files)
 prefTestSubset = ""
@@ -480,7 +484,6 @@ class UnitTestFrame(wx.Frame):
         # "C:\Program Files\wxPython2.8 Docs and Demos\samples\hangman\hangman.py"
         tmpFilename, tmpLineNumber = evt.GetString().rsplit('", line ', 1)
         filename = tmpFilename.split('File "', 1)[1]
-        lineNumber = int(tmpLineNumber.split()[0])
         try:
             lineNumber = int(tmpLineNumber.split(',')[0])
         except ValueError:
@@ -491,7 +494,7 @@ class UnitTestFrame(wx.Frame):
         self.Destroy()
 
 
-class CodeEditor(wx.stc.StyledTextCtrl):
+class CodeEditor(BaseCodeEditor):
     # this comes mostly from the wxPython demo styledTextCtrl 2
 
     def __init__(self, parent, ID, frame,
@@ -499,70 +502,11 @@ class CodeEditor(wx.stc.StyledTextCtrl):
                  # control
                  pos=wx.DefaultPosition, size=wx.Size(100, 100),
                  style=0, readonly=False):
-        wx.stc.StyledTextCtrl.__init__(self, parent, ID, pos, size, style)
-        # JWP additions
-        self.notebook = parent
+        BaseCodeEditor.__init__(self, parent, ID, pos, size, style)
+
         self.coder = frame
-        self.UNSAVED = False
-        self.filename = ""
-        self.fileModTime = None  # was file modified outside of CodeEditor
-        self.AUTOCOMPLETE = True
-        self.autoCompleteDict = {}
-        # self.analyseScript()  # no - analyse after loading so that window
-        # doesn't pause strangely
-        self.locals = None  # will contain the local environment of the script
-        self.prevWord = None
-        # remove some annoying stc key commands
-        self.CmdKeyClear(ord('['), wx.stc.STC_SCMOD_CTRL)
-        self.CmdKeyClear(ord(']'), wx.stc.STC_SCMOD_CTRL)
-        self.CmdKeyClear(ord('/'), wx.stc.STC_SCMOD_CTRL)
-        self.CmdKeyClear(ord('/'), wx.stc.STC_SCMOD_CTRL |
-                         wx.stc.STC_SCMOD_SHIFT)
-
-        self.SetMargins(0, 0)
-        self.SetUseTabs(False)
-        self.SetTabWidth(4)
-        self.SetIndent(4)
         self.SetViewWhiteSpace(self.coder.appData['showWhitespace'])
-        self.SetBufferedDraw(False)
         self.SetViewEOL(self.coder.appData['showEOLs'])
-        self.SetEOLMode(wx.stc.STC_EOL_LF)
-        # self.SetUseAntiAliasing(True)
-        # self.SetUseHorizontalScrollBar(True)
-        # self.SetUseVerticalScrollBar(True)
-
-        # self.SetEdgeMode(wx.stc.STC_EDGE_BACKGROUND)
-        # self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
-        # self.SetEdgeColumn(78)
-
-        # Setup a margin to hold fold markers
-        self.SetMarginType(2, wx.stc.STC_MARGIN_SYMBOL)
-        self.SetMarginMask(2, wx.stc.STC_MASK_FOLDERS)
-        self.SetMarginSensitive(2, True)
-        self.SetMarginWidth(2, 12)
-
-        # Like a flattened tree control using square headers
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,
-                          wx.stc.STC_MARK_BOXMINUS,
-                          "white", "#808080")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,
-                          wx.stc.STC_MARK_BOXPLUS,
-                          "white", "#808080")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERSUB,
-                          wx.stc.STC_MARK_VLINE,
-                          "white", "#808080")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERTAIL,
-                          wx.stc.STC_MARK_LCORNER,
-                          "white", "#808080")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,
-                          wx.stc.STC_MARK_BOXPLUSCONNECTED,
-                          "white", "#808080")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID,
-                          wx.stc.STC_MARK_BOXMINUSCONNECTED,
-                          "white", "#808080")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL,
-                          wx.stc.STC_MARK_TCORNER,
-                          "white", "#808080")
 
         self.Bind(wx.EVT_DROP_FILES, self.coder.filesDropped)
         self.Bind(wx.stc.EVT_STC_MODIFIED, self.onModified)
@@ -739,8 +683,8 @@ class CodeEditor(wx.stc.StyledTextCtrl):
                             attrs = self.autoCompleteDict[prevWord]['attrs']
                             # does it have known attributes?
                             if type(attrs) == list and len(attrs) >= 1:
-                                subList = [s for s in attrs if string.find(
-                                    s.lower(), currWord.lower()) != -1]
+                                subList = [s for s in attrs if
+                                    currWord.lower() in s.lower()]
                     # for objects show simple completions
                     else:  # there was no preceding '.'
                         # start trying after 2 characters
@@ -764,75 +708,6 @@ class CodeEditor(wx.stc.StyledTextCtrl):
             return  # so that we don't reach the skip line at end
 
         event.Skip()
-
-    def smartIdentThisLine(self):
-        startLineNum = self.LineFromPosition(self.GetSelectionStart())
-        endLineNum = self.LineFromPosition(self.GetSelectionEnd())
-        prevLine = self.GetLine(startLineNum - 1)
-        prevIndent = self.GetLineIndentation(startLineNum - 1)
-
-        # set the indent
-        self.SetLineIndentation(startLineNum, prevIndent)
-        # self.LineEnd()  # move cursor to end of line - is good if user
-        #     is starting a new line but not if they hit shift-tab
-        # self.SetPosition(startLineNum+prevIndent)  # move cursor to the end
-        # of the indented section
-        self.VCHome()
-
-        # check for a colon to signal an indent decrease
-        prevLogical = prevLine.split('#')[0]
-        prevLogical = prevLogical.strip()
-        if len(prevLogical) > 0 and prevLogical[-1] == ':':
-            self.CmdKeyExecute(wx.stc.STC_CMD_TAB)
-
-    def smartIndent(self):
-        # find out about current positions and indentation
-        startLineNum = self.LineFromPosition(self.GetSelectionStart())
-        endLineNum = self.LineFromPosition(self.GetSelectionEnd())
-        prevLine = self.GetLine(startLineNum - 1)
-        prevIndent = self.GetLineIndentation(startLineNum - 1)
-        startLineIndent = self.GetLineIndentation(startLineNum)
-
-        # calculate how much we need to increment/decrement the current lines
-        incr = prevIndent - startLineIndent
-        # check for a colon to signal an indent decrease
-        prevLogical = string.split(prevLine, '#')[0]
-        prevLogical = string.strip(prevLogical)
-        if len(prevLogical) > 0 and prevLogical[-1] == ':':
-            incr = incr + 4
-
-        # set each line to the correct indentation
-        for lineNum in range(startLineNum, endLineNum + 1):
-            thisIndent = self.GetLineIndentation(lineNum)
-            self.SetLineIndentation(lineNum, thisIndent + incr)
-
-    def shouldTrySmartIndent(self):
-        # used when the user presses tab key: decide whether to insert
-        # a tab char or whether to smart indent text
-
-        # if some text has been selected then use indentation
-        if len(self.GetSelectedText()) > 0:
-            return True
-
-        # test whether any text precedes current pos
-        lineText, posOnLine = self.GetCurLine()
-        textBeforeCaret = lineText[:posOnLine]
-        if textBeforeCaret.split() == []:
-            return True
-        else:
-            return False
-
-    def indentSelection(self, howFar=4):
-        # Indent or outdent current selection by 'howFar' spaces
-        # (which could be positive or negative int).
-        startLineNum = self.LineFromPosition(self.GetSelectionStart())
-        endLineNum = self.LineFromPosition(self.GetSelectionEnd())
-        # go through line-by-line
-        for lineN in range(startLineNum, endLineNum + 1):
-            newIndent = self.GetLineIndentation(lineN) + howFar
-            if newIndent < 0:
-                newIndent = 0
-            self.SetLineIndentation(lineN, newIndent)
 
     def MacOpenFile(self, evt):
         logging.debug('PsychoPyCoder: got MacOpenFile event')
@@ -1080,44 +955,6 @@ class CodeEditor(wx.stc.StyledTextCtrl):
             newText = newText + lineText
         self._ReplaceSelectedLines(newText)
 
-    def HashtagCounter(self, text, nTags=0):
-        # Hashtag counter - counts lines beginning with hashtags in selected text
-        for lines in text.splitlines():
-            if lines.startswith('#'):
-                nTags += 1
-        return nTags
-
-    def toggleCommentLines(self):
-        # toggle comment
-        startText, endText = self._GetPositionsBoundingSelectedLines()
-        nLines = len(self._GetSelectedLineNumbers())
-        nHashtags = self.HashtagCounter(self.GetTextRange(startText, endText))
-        passDec = False # pass decision - only pass  if line is blank
-        # Test decision criteria, and catch devision errors
-        # when caret starts at line with no text, or at beginning of line...
-        try:
-            devCrit, decVal = .6, nHashtags / nLines # Decision criteria and value
-        except ZeroDivisionError:
-            if self.LineLength(self.GetCurrentLine()) == 1:
-                self._ReplaceSelectedLines('#')
-                devCrit, decVal, passDec = 1,0, True
-            else:
-                self.CharRightExtend() # Move caret so line is counted
-                devCrit, decVal = .6, nHashtags / len(self._GetSelectedLineNumbers())
-        newText = ''
-        # Add or remove hashtags from selected text, but pass if # added tp blank line
-        if decVal < devCrit and passDec == False:
-            for lineNo in self._GetSelectedLineNumbers():
-                lineText = self.GetLine(lineNo)
-                newText = newText + '#' + lineText
-        elif decVal >= devCrit and passDec == False:
-            for lineNo in self._GetSelectedLineNumbers():
-                lineText = self.GetLine(lineNo)
-                if lineText.startswith('#'):
-                    lineText = lineText[1:]
-                newText = newText + lineText
-        self._ReplaceSelectedLines(newText)
-
     def Paste(self, event=None):
         dataObj = wx.TextDataObject()
         clip = wx.Clipboard().Get()
@@ -1146,43 +983,6 @@ class CodeEditor(wx.stc.StyledTextCtrl):
         else:
             self.SetZoom(self.GetZoom() - 1)
 
-    def _GetSelectedLineNumbers(self):
-        # used for the comment/uncomment machinery from ActiveGrid
-        selStart, selEnd = self._GetPositionsBoundingSelectedLines()
-        start = self.LineFromPosition(selStart)
-        end = self.LineFromPosition(selEnd)
-        if selEnd == self.GetTextLength():
-            end += 1
-        return list(range(start, end))
-
-    def _GetPositionsBoundingSelectedLines(self):
-        # used for the comment/uncomment machinery from ActiveGrid
-        startPos = self.GetCurrentPos()
-        endPos = self.GetAnchor()
-        if startPos > endPos:
-            startPos, endPos = endPos, startPos
-        if endPos == self.PositionFromLine(self.LineFromPosition(endPos)):
-        # If it's at the very beginning of a line, use the line above it
-        # as the ending line
-            endPos = endPos - 1
-        selStart = self.PositionFromLine(self.LineFromPosition(startPos))
-        selEnd = self.PositionFromLine(self.LineFromPosition(endPos) + 1)
-        return selStart, selEnd
-
-    def _ReplaceSelectedLines(self, text):
-        # used for the comment/uncomment machinery from ActiveGrid
-        # If multi line selection - keep lines selected
-        # For single lines, move to next line and select that line
-        if len(text) == 0:
-            return
-        selStart, selEnd = self._GetPositionsBoundingSelectedLines()
-        self.SetSelection(selStart, selEnd)
-        self.ReplaceSelection(text)
-        if len(text.splitlines()) > 1:
-            self.SetSelection(selStart, selStart + len(text))
-        else:
-            self.SetSelection(self.GetCurrentPos(), self.GetLineEndPosition(self.GetCurrentLine()))
-
     # the Source Assistant and introspection functinos were broekn and removed frmo PsychoPy 1.90.0
     def analyseScript(self):
         # analyse the file
@@ -1203,8 +1003,8 @@ class CodeEditor(wx.stc.StyledTextCtrl):
             if self.coder.modulesLoaded:
                 for thisLine in importStatements:
                     # check what file we're importing from
-                    tryImport = ALLOW_MODULE_IMPORTS
-                    words = string.split(thisLine)
+                    tryImport = True
+                    words = thisLine.split()
                     # don't import from files in this folder (user files)
                     for word in words:
                         if os.path.isfile(word + '.py'):
@@ -1364,7 +1164,7 @@ class CodeEditor(wx.stc.StyledTextCtrl):
 class CoderFrame(wx.Frame):
 
     def __init__(self, parent, ID, title, files=(), app=None):
-        self.app = app
+        self.app = app  # type: PsychoPyApp
         self.frameType = 'coder'
         # things the user doesn't set like winsize etc
         self.appData = self.app.prefs.appData['coder']
@@ -1377,6 +1177,7 @@ class CoderFrame(wx.Frame):
         self.fileStatusLastChecked = time.time()
         self.fileStatusCheckInterval = 5 * 60  # sec
         self.showingReloadDialog = False
+        self.btnHandles = {}  # stores toolbar buttons so they can be altered
 
         # we didn't have the key or the win was minimized/invalid
         if self.appData['winH'] == 0 or self.appData['winW'] == 0:
@@ -1494,9 +1295,11 @@ class CoderFrame(wx.Frame):
             self, style=_style,
             font=self.prefs['outputFont'],
             fontSize=self.prefs['outputFontSize'])
-        self.outputWindow.write(_translate('Welcome to PsychoPy2!') + '\n')
+        self.outputWindow.write(_translate('Welcome to PsychoPy3!') + '\n')
         self.outputWindow.write("v%s\n" % self.app.version)
         self.shelf.AddPage(self.outputWindow, _translate('Output'))
+        if self.app._appLoaded:
+            self.setOutputWindow()
 
         if haveCode:
             useDefaultShell = True
@@ -1795,7 +1598,9 @@ class CoderFrame(wx.Frame):
         self.sourceAsstChk.Check(self.prefs['showSourceAsst'])
         self.Bind(wx.EVT_MENU, self.setSourceAsst,
                   id=self.sourceAsstChk.GetId())
+
         menu.AppendSeparator()
+
         key = self.app.keys['switchToBuilder']
         item = menu.Append(wx.ID_ANY,
                            _translate("Go to &Builder view\t%s") % key,
@@ -1810,6 +1615,7 @@ class CoderFrame(wx.Frame):
         #   "Open an IPython notebook (unconnected in a browser)")
         # self.Bind(wx.EVT_MENU, self.app.openIPythonNotebook,
         #    id=self.IDs.openIPythonNotebook)
+
 
         self.demosMenu = wx.Menu()
         self.demos = {}
@@ -1862,8 +1668,8 @@ class CoderFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, self.loadDemo, id=thisID)
 
         # ---_projects---#000000#FFFFFF---------------------------------------
-        self.projectsMenu = projects.ProjectsMenu(parent=self)
-        menuBar.Append(self.projectsMenu, _translate("P&rojects"))
+        self.pavloviaMenu = psychopy.app.pavlovia_ui.menu.PavloviaMenu(parent=self)
+        menuBar.Append(self.pavloviaMenu, _translate("Pavlovia.org"))
 
         # ---_help---#000000#FFFFFF-------------------------------------------
         self.helpMenu = wx.Menu()
@@ -1890,6 +1696,11 @@ class CoderFrame(wx.Frame):
                              _translate("About PsychoPy"))
         self.Bind(wx.EVT_MENU, self.app.showAbout, id=wx.ID_ABOUT)
 
+        item = self.helpMenu.Append(wx.ID_ANY,
+                           _translate("&News..."),
+                           _translate("News"))
+        self.Bind(wx.EVT_MENU, self.app.showNews, id=item.GetId())
+
         self.SetMenuBar(menuBar)
 
     def makeToolbar(self):
@@ -1904,7 +1715,7 @@ class CoderFrame(wx.Frame):
                 toolbarSize = 16
         else:
             # mac: 16 either doesn't work, or looks really bad with wx3
-            toolbarSize = 128
+            toolbarSize = 32
 
         self.toolbar.SetToolBitmapSize((toolbarSize, toolbarSize))
         rc = self.paths['resources']
@@ -1961,7 +1772,7 @@ class CoderFrame(wx.Frame):
                          key.replace('Ctrl+', ctrlKey),
                          _translate("Redo last action")).GetId()
         tb.Bind(wx.EVT_TOOL, self.redo, id=self.IDs.cdrBtRedo)
-        tb.AddSeparator()
+
         tb.AddSeparator()
         item = tb.AddSimpleTool(wx.ID_ANY, preferencesBmp,
                          _translate("Preferences"),
@@ -1975,7 +1786,7 @@ class CoderFrame(wx.Frame):
                          _translate("Color Picker -> clipboard"),
                          _translate("Color Picker -> clipboard"))
         tb.Bind(wx.EVT_TOOL, self.app.colorPicker, id=item.GetId())
-        self.toolbar.AddSeparator()
+
         self.toolbar.AddSeparator()
         key = _translate("Run [%s]") % self.app.keys['runScript']
         self.IDs.cdrBtnRun = self.toolbar.AddSimpleTool(wx.ID_ANY, runBmp,
@@ -1988,6 +1799,12 @@ class CoderFrame(wx.Frame):
                                    _translate("Stop current script")).GetId()
         tb.Bind(wx.EVT_TOOL, self.stopFile, id=self.IDs.cdrBtnStop)
         tb.EnableTool(self.IDs.cdrBtnStop, False)
+
+        self.toolbar.AddSeparator()
+        pavButtons = pavlovia_ui.toolbar.PavloviaButtons(self, toolbar=tb, tbSize=size)
+        pavButtons.addPavloviaTools(buttons=['pavloviaSync', 'pavloviaSearch', 'pavloviaUser', ])
+        self.btnHandles.update(pavButtons.btnHandles)
+
         tb.Realize()
 
     def onIdle(self, event):
@@ -2487,31 +2304,22 @@ class CoderFrame(wx.Frame):
         else:
             wildcard = _translate("Python scripts (*.py)|*.py|Text file "
                                   "(*.txt)|*.txt|Any file (*.*)|*")
-        # open dlg
+
         dlg = wx.FileDialog(
             self, message=_translate("Save file as ..."), defaultDir=initPath,
-            defaultFile=filename, style=wx.FD_SAVE, wildcard=wildcard)
+            defaultFile=filename, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+            wildcard=wildcard)
+
         if dlg.ShowModal() == wx.ID_OK:
             newPath = dlg.GetPath()
-            # if the file already exists, query whether it should be
-            # overwritten (default = yes)
-            msg = _translate("File '%s' already exists.\n    OK to overwrite?")
-            dlg2 = dialogs.MessageDialog(self, message=msg % newPath,
-                                         type='Warning')
-            if not os.path.exists(newPath) or dlg2.ShowModal() == wx.ID_YES:
-                doc.filename = newPath
-                self.fileSave(event=None, filename=newPath, doc=doc)
-                path, shortName = os.path.split(newPath)
-                self.notebook.SetPageText(docId, shortName)
-                self.setFileModified(False)
-                # JRG: 'doc.filename' should = newPath = dlg.getPath()
-                doc.fileModTime = os.path.getmtime(doc.filename)
-                try:
-                    dlg2.destroy()
-                except Exception:
-                    pass
-            else:
-                print("'Save-as' canceled; existing file NOT overwritten.\n")
+            doc.filename = newPath
+            self.fileSave(event=None, filename=newPath, doc=doc)
+            path, shortName = os.path.split(newPath)
+            self.notebook.SetPageText(docId, shortName)
+            self.setFileModified(False)
+            # JRG: 'doc.filename' should = newPath = dlg.getPath()
+            doc.fileModTime = os.path.getmtime(doc.filename)
+
         try:  # this seems correct on PC, but can raise errors on mac
             dlg.destroy()
         except Exception:
@@ -2650,7 +2458,7 @@ class CoderFrame(wx.Frame):
 
         # check syntax by compiling - errors printed (not raised as error)
         try:
-            if type(fullPath) == bytes:
+            if not PY3 or type(fullPath) == bytes:
                 # py_compile.compile doesn't accept Unicode filename.
                 py_compile.compile(fullPath.encode(
                     sys.getfilesystemencoding()), doraise=False)
@@ -2896,10 +2704,23 @@ class CoderFrame(wx.Frame):
         self.gotoLine(filename, lineNumber)
 
     def onUnitTests(self, evt=None):
-        """Show the unit tests frame
-        """
+        """Show the unit tests frame"""
         if self.unitTestFrame:
             self.unitTestFrame.Raise()
         else:
             self.unitTestFrame = UnitTestFrame(app=self.app)
         # UnitTestFrame.Show()
+
+    def onPavloviaSync(self, evt=None):
+        """Push changes to project repo, or create new proj if proj is None"""
+        self.project = pavlovia.getProject(self.currentDoc.filename)
+        self.fileSave(self.currentDoc.filename)  # Must save on sync else changes not pushed
+        pavlovia_ui.syncProject(parent=self, project=self.project)
+
+    def onPavloviaRun(self, evt=None):
+        # TODO: Allow user to run project from coder
+        pass
+
+    def setPavloviaUser(self, user):
+        # TODO: update user icon on button to user avatar
+        pass

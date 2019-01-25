@@ -22,6 +22,7 @@ from psychopy import logging, colors
 # (JWP has no idea why!)
 from psychopy.tools.arraytools import val2array
 from psychopy.tools.attributetools import setAttribute
+from psychopy.tools.filetools import pathToString
 
 import numpy as np
 
@@ -302,6 +303,8 @@ def setColor(obj, color, colorSpace=None, operation='',
         setattr(obj, rgbAttrib, colors.lms2rgb(newColor, lms_rgb))
     elif colorSpace == 'hsv':
         setattr(obj, rgbAttrib, colors.hsv2rgb(np.asarray(newColor)))
+    elif colorSpace is None:
+        pass  # probably using named colors?
     else:
         logging.error('Unknown colorSpace: %s' % colorSpace)
     # store name of colorSpace for future ref and for drawing
@@ -320,6 +323,7 @@ def findImageFile(filename):
     alternatives (e.g. extensions .jpg .tif...)
     """
     # if user supplied correct path then reutnr quickly
+    filename = pathToString(filename)
     isfile = os.path.isfile
     if isfile(filename):
         return filename

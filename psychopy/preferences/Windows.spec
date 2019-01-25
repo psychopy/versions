@@ -38,16 +38,8 @@
     version = string(default='')
     # Add paths here to your custom Python modules
     paths=list(default=list())
-    # choice of audio library
-    audioLib = list(default=list('sounddevice', 'pyo', 'pygame'))
-    # audio driver to use
-    audioDriver = list(default=list('Primary Sound','ASIO','Audigy'))
-    # audio device to use (if audioLib allows control)
-    audioDevice = list(default=list('default'))
     # path to flac (lossless audio compression) on this operating system
     flac = string(default='')
-    # a list of parallel ports
-    parallelPorts = list(default=list('0x0378', '0x03BC'))
     # Shutdown keys, following the pyglet naming scheme.
     shutdownKey = string(default='')
     # Modifier keys for shutdown keys
@@ -102,7 +94,7 @@
     # if False will create scripts with an 'easier' but more cluttered namespace
     unclutteredNamespace = boolean(default=False)
     # folder names for custom components; expects a comma-separated list
-    componentsFolders = list(default=list('/Users/Shared/PsychoPy2/components'))
+    componentsFolders = list(default=list('/Users/Shared/PsychoPy3/components'))
     # a list of components to hide (eg, because you never use them)
     hiddenComponents = list(default=list('PatchComponent'))
     # where the Builder demos are located on this computer (after unpacking)
@@ -115,6 +107,18 @@
     alwaysShowReadme = boolean(default=True)
     # Upper limit on how many components can be in favorites
     maxFavorites = integer(default=10)
+
+[hardware]
+    # choice of audio library
+    audioLib = list(default=list('sounddevice', 'pyo', 'pygame'))
+    # audio driver to use
+    audioDriver = list(default=list('Primary Sound','ASIO','Audigy'))
+    # audio device to use (if audioLib allows control)
+    audioDevice = list(default=list('default'))
+    # a list of parallel ports
+    parallelPorts = list(default=list('0x0378', '0x03BC'))
+    # The name of the Qmix pump configuration to use
+    qmixConfiguration = string(default='qmix_config')
 
 # Settings for connections
 [connections]
@@ -228,12 +232,14 @@
     #show or hide the readme (info) for this experiment if possible
     toggleReadme = string(default='Ctrl+I')
 
-    # Projects: Log in
-    projectsLogIn = string(default='Ctrl+Alt+I')
+    # Projects: Log in to pavlovia
+    pavlovia_logIn = string(default='Ctrl+Alt+I')
+    # Projects: Log in to OSF
+    OSF_logIn = string(default='Ctrl+Alt+Shift+I')
     # Projects: Sync project
     projectsSync = string(default='Ctrl+Alt+Y')
     # Projects: Find projects
-    projectsFind = string(default='Ctrl+Alt+F')
+    projectsFind = string(default='Ctrl+Shift+F')
     # Projects: Open project
     projectsOpen = string(default='Ctrl+Alt+O')
     # Projects: Create new project

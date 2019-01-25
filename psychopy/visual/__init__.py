@@ -46,6 +46,7 @@ from psychopy.visual.aperture import Aperture  # uses BaseShapeStim, ImageStim
 from psychopy.visual.custommouse import CustomMouse
 from psychopy.visual.elementarray import ElementArrayStim
 from psychopy.visual.ratingscale import RatingScale
+from psychopy.visual.slider import Slider
 from psychopy.visual.simpleimage import SimpleImageStim
 
 # stimuli derived from BaseVisualStim
@@ -75,6 +76,9 @@ from psychopy.visual.rect import Rect
 from psychopy.visual.circle import Circle
 
 from psychopy.visual.textbox import TextBox
+
+# rift support 
+from psychopy.visual.rift import Rift
 """
 try:
     from psychopy.contrib.lazy_import import lazy_import

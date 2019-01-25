@@ -279,16 +279,22 @@ _translate("decrease display size of Routines")
 _translate("show or hide the readme (info) for this experiment if possible")
 
 # baseNoArch.spec,[keyBindings],line216
-_translate("Projects: Log in")
+_translate("Projects: Log in to pavlovia")
 
 # baseNoArch.spec,[keyBindings],line218
-_translate("Projects: Sync project")
+_translate("Projects: Log in to OSF")
 
 # baseNoArch.spec,[keyBindings],line220
-_translate("Projects: Find projects")
+_translate("Projects: Sync project")
 
 # baseNoArch.spec,[keyBindings],line222
-_translate("Projects: Open project")
+_translate("Projects: Find projects")
 
 # baseNoArch.spec,[keyBindings],line224
+_translate("Projects: Open project")
+
+# baseNoArch.spec,[keyBindings],line227
 _translate("Projects: Create new project")
+
+# Darwin.spec,[keyBindings],line220
+_translate("Projects: Log in")

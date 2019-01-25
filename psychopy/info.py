@@ -85,7 +85,7 @@ class RunTimeInfo(dict):
                 True = assess without a visual
 
             userProcsDetailed: *False*, True
-                get details about concurrent user's processses
+                get details about concurrent user's processes
                 (command, process-ID)
 
         :Returns:
@@ -570,7 +570,7 @@ class RunTimeInfo(dict):
         """Return a string that is a legal python (dict), and close
         to YAML, .ini, and configObj syntax
         """
-        info = '{\n#[ PsychoPy2 RuntimeInfoStart ]\n'
+        info = '{\n#[ PsychoPy3 RuntimeInfoStart ]\n'
         sections = ['PsychoPy', 'Experiment',
                     'System', 'Window', 'Python', 'OpenGL']
         for sect in sections:
@@ -609,7 +609,7 @@ class RunTimeInfo(dict):
                 # in an archive
                 if k != 'systemUserProcFlaggedPID':
                     info += '    "%s": "%s",\n' % (k, selfk)
-        info += '#[ PsychoPy2 RuntimeInfoEnd ]\n}\n'
+        info += '#[ PsychoPy3 RuntimeInfoEnd ]\n}\n'
         return info
 
     def __str__(self):

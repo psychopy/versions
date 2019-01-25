@@ -132,7 +132,7 @@ class BaseWizard(object):
             warn = True
         if 'EPD' in items['pythonFullVersion']:
             msg += ' Enthought Python Distribution'
-        elif 'PsychoPy2.app' in items['pythonExecutable']:
+        elif 'PsychoPy3.app' in items['pythonExecutable']:
             msg += ' (PsychoPy StandAlone)'
         bits, linkage = platform.architecture()
         # if not bits.startswith('32'):
@@ -454,7 +454,6 @@ class BaseWizard(object):
                 '''<button onClick="toggle('ok', '');">''' + \
                 _translate('Show all information') + '</button></p>'
             htmlDoc += _translate('''<p>Resources:
-                  Contributed <a href="http://upload.psychopy.org/benchmark/report.html">benchmarks</a>
                 | <a href="http://www.psychopy.org/documentation.html">On-line documentation</a>
                 | Download <a href="http://www.psychopy.org/PsychoPyManual.pdf">PDF manual</a>
                 | <a href="http://groups.google.com/group/psychopy-users">Search the user-group archives</a>
@@ -504,7 +503,7 @@ class ConfigWizard(BaseWizard):
         super(ConfigWizard, self).__init__()
         self.firstrun = firstrun
         self.prefs = prefs
-        self.appName = 'PsychoPy2'
+        self.appName = 'PsychoPy3'
         self.name = self.appName + _translate(' Configuration Wizard')
         self.reportPath = os.path.join(
             self.prefs.paths['userPrefsDir'], 'firstrunReport.html')
@@ -516,7 +515,7 @@ class ConfigWizard(BaseWizard):
         dlg = gui.Dlg(title=self.name)
         dlg.addText('')
         if firstrun:
-            dlg.addText(_translate("Welcome to PsychoPy2!"), color='blue')
+            dlg.addText(_translate("Welcome to PsychoPy3!"), color='blue')
             dlg.addText('')
             dlg.addText(_translate("It looks like you are running PsychoPy "
                                    "for the first time."))
@@ -653,7 +652,7 @@ class BenchmarkWizard(BaseWizard):
         super(BenchmarkWizard, self).__init__()
         self.firstrun = False
         self.prefs = prefs
-        self.appName = 'PsychoPy2'
+        self.appName = 'PsychoPy3'
         self.name = self.appName + _translate(' Benchmark Wizard')
 
         dlg = gui.Dlg(title=self.name)
