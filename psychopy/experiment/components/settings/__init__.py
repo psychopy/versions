@@ -94,7 +94,7 @@ class SettingsComponent(object):
                  winSize=(1024, 768), screen=1, monitor='testMonitor',
                  showMouse=False, saveLogFile=True, showExpInfo=True,
                  expInfo="{'participant':'', 'session':'001'}",
-                 units='use prefs', logging='exp',
+                 units='height', logging='exp',
                  color='$[0,0,0]', colorSpace='rgb', enableEscape=True,
                  blendMode='avg',
                  saveXLSXFile=False, saveCSVFile=False,
@@ -532,9 +532,9 @@ class SettingsComponent(object):
         # Write window code
         self.writeWindowCodeJS(buff)
         code = ("\n// store info about the experiment session:\n"
-                "let expName = %(expName)s;  // from the Builder filename that created this script\n"
-                "let expInfo = %(Experiment info)s;\n"
-                "\n" % self.params)
+                "let expName = %s;  // from the Builder filename that created this script\n"
+                "let expInfo = %s;\n"
+                "\n" % (self.params['expName'], self.getInfo()))
         buff.writeIndentedLines(code)
 
     def writeExpSetupCodeJS(self, buff, version):
@@ -723,17 +723,25 @@ class SettingsComponent(object):
         buff.writeIndentedLines(code)
 
     def writeWindowCodeJS(self, buff):
+        """Setup the JS window code.
+        """
+        # Replace instances of 'use prefs'
+        units = self.params['Units'].val
+        if units == 'use prefs':
+            units = 'height'
+
         code = ("// init psychoJS:\n"
-        "var psychoJS = new PsychoJS({{\n"
-        "  debug: true\n"
-        "}});\n\n"
-        "// open window:\n"
-        "psychoJS.openWindow({{\n"
-        "  fullscr: {fullScr},\n"
-        "  color: new util.Color({params[color]}),\n"
-        "  units: {params[Units]}\n"
-        "}});\n").format(fullScr=str(self.params['Full-screen window']).lower(),
-            params=self.params)
+                "var psychoJS = new PsychoJS({{\n"
+                "  debug: true\n"
+                "}});\n\n"
+                "// open window:\n"
+                "psychoJS.openWindow({{\n"
+                "  fullscr: {fullScr},\n"
+                "  color: new util.Color({params[color]}),\n"
+                "  units: '{units}'\n"
+                "}});\n").format(fullScr=str(self.params['Full-screen window']).lower(),
+                                 params=self.params,
+                                 units=units)
         buff.writeIndentedLines(code)
 
     def writeEndCode(self, buff):
