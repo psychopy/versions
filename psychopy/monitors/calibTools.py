@@ -33,7 +33,6 @@ import sys
 from copy import deepcopy, copy
 
 import numpy as np
-import scipy.optimize as optim
 from scipy import interpolate
 import json_tricks  # allows json to dump/load np.arrays and dates
 
@@ -742,6 +741,7 @@ class GammaCalculator(object):
             -yVals are the measured luminances from a photometer/spectrometer
 
         """
+        from scipy import optimize
         minGamma = 0.8
         maxGamma = 20.0
         gammaGuess = 2.0
@@ -760,10 +760,10 @@ class GammaCalculator(object):
         # gamma = optim.fminbound(self.fitGammaErrFun,
         #    minGamma, maxGamma,
         #    args=(x,y, minLum, maxLum))
-        params = optim.fmin_tnc(self.fitGammaErrFun, np.array(guess),
-                                approx_grad=True,
-                                args=(x, y, minLum, maxLum),
-                                bounds=bounds, messages=0)
+        params = optimize.fmin_tnc(self.fitGammaErrFun, np.array(guess),
+                                   approx_grad=True,
+                                   args=(x, y, minLum, maxLum),
+                                   bounds=bounds, messages=0)
         return minLum, maxLum, params[0]
 
     def fitGammaErrFun(self, params, x, y, minLum, maxLum):
