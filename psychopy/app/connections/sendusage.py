@@ -11,7 +11,11 @@ import sys
 import platform
 import psychopy
 from psychopy import web, logging
-import requests
+
+try:
+    import certifi
+except ImportError:
+    certifi = None
 
 
 def sendUsageStats(app=None):
@@ -43,7 +47,11 @@ def sendUsageStats(app=None):
     u = "http://www.psychopy.org/usage.php?date=%s&sys=%s&version=%s&misc=%s"
     URL = u % (dateNow, systemInfo, v, miscInfo)
     try:
-        page = requests.get(URL, proxies=web.proxies)  # proxies
+        req = web.urllib.request.Request(URL)
+        if certifi:
+            page = web.urllib.request.urlopen(req, cafile=certifi.where())
+        else:
+            page = web.urllib.request.urlopen(req)
     except Exception:
         logging.warning("Couldn't connect to psychopy.org\n"
                         "Check internet settings (and proxy "
