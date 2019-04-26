@@ -10,6 +10,7 @@ Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import, division, print_function
 
+from pkg_resources import parse_version
 import wx
 import wx.stc
 from wx.lib import platebtn, scrolledpanel
@@ -22,6 +23,9 @@ try:
     from wx.adv import PseudoDC
 except ImportError:
     from wx import PseudoDC
+
+if parse_version(wx.__version__) < parse_version('4.0.3'):
+    wx.NewIdRef = wx.NewId
 
 import sys
 import os
@@ -54,6 +58,7 @@ from psychopy.scripts import psyexpCompile
 canvasColor = [200, 200, 200]  # in prefs? ;-)
 routineTimeColor = wx.Colour(50, 100, 200, 200)
 staticTimeColor = wx.Colour(200, 50, 50, 100)
+disabledTimeColor = wx.Colour(127, 127, 127, 100)
 nonSlipFill = wx.Colour(150, 200, 150, 255)
 nonSlipEdge = wx.Colour(0, 100, 0, 255)
 relTimeFill = wx.Colour(200, 150, 150, 255)
@@ -144,7 +149,7 @@ class RoutineCanvas(wx.ScrolledWindow):
         self.contextItemFromID = {}
         self.contextIDFromItem = {}
         for item in self.contextMenuItems:
-            id = wx.NewId()
+            id = wx.NewIdRef()
             self.contextItemFromID[id] = item
             self.contextIDFromItem[item] = id
 
@@ -322,7 +327,7 @@ class RoutineCanvas(wx.ScrolledWindow):
         xSt = self.timeXposStart
         xEnd = self.timeXposEnd
 
-        # dc.SetId(wx.NewId())
+        # dc.SetId(wx.NewIdRef())
         dc.SetPen(wx.Pen(wx.Colour(0, 0, 0, 150)))
         # draw horizontal lines on top and bottom
         dc.DrawLine(x1=xSt, y1=yPosTop,
@@ -377,7 +382,7 @@ class RoutineCanvas(wx.ScrolledWindow):
             if self.componentFromID[key] == component:
                 id = key
         if not id:  # then create one and add to the dict
-            id = wx.NewId()
+            id = wx.NewIdRef()
             self.componentFromID[id] = component
         dc.SetId(id)
         # deduce start and stop times if possible
@@ -393,7 +398,12 @@ class RoutineCanvas(wx.ScrolledWindow):
         # calculate rectangle for component
         xScale = self.getSecsPerPixel()
         dc.SetPen(wx.Pen(wx.Colour(200, 100, 100, 0), style=wx.TRANSPARENT))
-        dc.SetBrush(wx.Brush(staticTimeColor))
+
+        if component.params['disabled'].val:
+            dc.SetBrush(wx.Brush(disabledTimeColor))
+        else:
+            dc.SetBrush(wx.Brush(staticTimeColor))
+
         xSt = self.timeXposStart + startTime // xScale
         w = duration // xScale + 1  # +1 b/c border alpha=0 in dc.SetPen
         w = max(min(w, 10000), 2)  # ensure 2..10000 pixels
@@ -425,7 +435,7 @@ class RoutineCanvas(wx.ScrolledWindow):
             if self.componentFromID[key] == component:
                 id = key
         if not id:  # then create one and add to the dict
-            id = wx.NewId()
+            id = wx.NewIdRef()
             self.componentFromID[id] = component
         dc.SetId(id)
 
@@ -458,7 +468,12 @@ class RoutineCanvas(wx.ScrolledWindow):
             xScale = self.getSecsPerPixel()
             dc.SetPen(wx.Pen(wx.Colour(200, 100, 100, 0),
                              style=wx.TRANSPARENT))
-            dc.SetBrush(wx.Brush(routineTimeColor))
+
+            if component.params['disabled'].val:
+                dc.SetBrush(wx.Brush(disabledTimeColor))
+            else:
+                dc.SetBrush(wx.Brush(routineTimeColor))
+
             hSize = (3.5, 2.75, 2)[self.drawSize]
             yOffset = (3, 3, 0)[self.drawSize]
             h = self.componentStep // hSize
@@ -515,6 +530,7 @@ class RoutineCanvas(wx.ScrolledWindow):
         else:
             helpUrl = None
         old_name = component.params['name'].val
+        old_disabled = component.params['disabled'].val
         # check current timing settings of component (if it changes we
         # need to update views)
         initialTimings = component.getStartAndDuration()
@@ -536,6 +552,8 @@ class RoutineCanvas(wx.ScrolledWindow):
                 # self.frame.flowPanel.Refresh()
             elif component.params['name'].val != old_name:
                 self.redrawRoutine()  # need to refresh name
+            elif component.params['disabled'].val != old_disabled:
+                self.redrawRoutine()  # need to refresh color
             self.frame.exp.namespace.remove(old_name)
             self.frame.exp.namespace.add(component.params['name'].val)
             self.frame.addToUndoStack("EDIT `%s`" %
@@ -741,7 +759,9 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
         self.makeFavoriteButtons()
         # then add another copy for each category that the component itself
         # lists
-        for thisName in self.components:
+        componentNames = list(self.components.keys())
+        componentNames.sort()
+        for thisName in componentNames:
             thisComp = self.components[thisName]
             # NB thisComp is a class - we can't use its methods/attribs until
             # it is an instance
@@ -830,7 +850,7 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
             msg = "Remove from favorites"
             clickFunc = self.onRemFromFavorites
         menu = wx.Menu()
-        id = wx.NewId()
+        id = wx.NewIdRef()
         menu.Append(id, _localized[msg])
         menu.Bind(wx.EVT_MENU, clickFunc, id=id)
         # where to put the context menu
@@ -1156,68 +1176,159 @@ class BuilderFrame(wx.Frame):
         keys = {k: self.app.keys[k].replace('Ctrl+', ctrlKey)
                 for k in self.app.keys}
 
-        item = tb.AddSimpleTool(wx.ID_ANY, newBmp,
-                                _translate("New [%s]") % keys['new'],
-                                _translate("Create new experiment file"))
+        if 'phoenix' in wx.PlatformInfo:
+            item = tb.AddTool(wx.ID_ANY,
+                              _translate("New [%s]") % keys['new'],
+                              newBmp,
+                              _translate("Create new experiment file"))
+        else:
+            item = tb.AddSimpleTool(wx.ID_ANY,
+                                    newBmp,
+                                    _translate("New [%s]") % keys['new'],
+                                    _translate("Create new experiment file"))
         tb.Bind(wx.EVT_TOOL, self.app.newBuilderFrame, item)
-        item = tb.AddSimpleTool(wx.ID_ANY, openBmp,
-                                _translate("Open [%s]") % keys['open'],
-                                _translate("Open an existing experiment file"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            item = tb.AddTool(wx.ID_ANY,
+                              _translate("Open [%s]") % keys['open'],
+                              openBmp,
+                              _translate("Open an existing experiment file"))
+        else:
+            item = tb.AddSimpleTool(wx.ID_ANY,
+                                    openBmp,
+                                    _translate("Open [%s]") % keys['open'],
+                                    _translate("Open an existing experiment file"))
         tb.Bind(wx.EVT_TOOL, self.fileOpen, item)
-        self.bldrBtnSave = tb.AddSimpleTool(-1, saveBmp,
-                                            _translate("Save [%s]") % keys[
-                                                'save'],
-                                            _translate(
-                                                "Save current experiment file"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            self.bldrBtnSave = tb.AddTool(
+                -1,
+                _translate("Save [%s]") % keys['save'],
+                saveBmp,
+                _translate("Save current experiment file"))
+        else:
+            self.bldrBtnSave = tb.AddSimpleTool(
+                -1,
+                saveBmp,
+                _translate("Save [%s]") % keys['save'],
+                _translate("Save current experiment file"))
         self.toolbar.EnableTool(self.bldrBtnSave.Id, False)
         tb.Bind(wx.EVT_TOOL, self.fileSave, self.bldrBtnSave)
-        item = tb.AddSimpleTool(wx.ID_ANY, saveAsBmp,
-                                _translate("Save As... [%s]") % keys['saveAs'],
-                                _translate(
-                                    "Save current experiment file as..."))
+
+        if 'phoenix' in wx.PlatformInfo:
+            item = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Save As... [%s]") % keys['saveAs'],
+                saveAsBmp,
+                _translate("Save current experiment file as..."))
+        else:
+            item = tb.AddSimpleTool(
+                wx.ID_ANY,
+                saveAsBmp,
+                _translate("Save As... [%s]") % keys['saveAs'],
+                _translate("Save current experiment file as..."))
         tb.Bind(wx.EVT_TOOL, self.fileSaveAs, item)
-        self.bldrBtnUndo = tb.AddSimpleTool(wx.ID_ANY, undoBmp,
-                                            _translate("Undo [%s]") % keys[
-                                                'undo'],
-                                            _translate("Undo last action"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            self.bldrBtnUndo = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Undo [%s]") % keys['undo'],
+                undoBmp,
+                _translate("Undo last action"))
+        else:
+            self.bldrBtnUndo = tb.AddSimpleTool(
+                wx.ID_ANY,
+                undoBmp,
+                _translate("Undo [%s]") % keys['undo'],
+                _translate("Undo last action"))
         tb.Bind(wx.EVT_TOOL, self.undo, self.bldrBtnUndo)
-        self.bldrBtnRedo = tb.AddSimpleTool(wx.ID_ANY, redoBmp,
-                                            _translate("Redo [%s]") % keys[
-                                                'redo'],
-                                            _translate("Redo last action"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            self.bldrBtnRedo = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Redo [%s]") % keys['redo'],
+                redoBmp,
+                _translate("Redo last action"))
+        else:
+            self.bldrBtnRedo = tb.AddSimpleTool(
+                wx.ID_ANY,
+                redoBmp,
+                _translate("Redo [%s]") % keys['redo'],
+                _translate("Redo last action"))
         tb.Bind(wx.EVT_TOOL, self.redo, self.bldrBtnRedo)
 
         tb.AddSeparator()
-        self.bldrBtnPrefs = tb.AddSimpleTool(wx.ID_ANY, preferencesBmp,
-                                             _translate("Preferences"),
-                                             _translate(
-                                                 "Application preferences"))
-        tb.Bind(wx.EVT_TOOL, self.app.showPrefs, self.bldrBtnPrefs)
-        item = tb.AddSimpleTool(wx.ID_ANY, monitorsBmp,
-                                _translate("Monitor Center"),
-                                _translate("Monitor settings and calibration"))
-        tb.Bind(wx.EVT_TOOL, self.app.openMonitorCenter,
-                id=item.GetId())
+
+        if 'phoenix' in wx.PlatformInfo:
+            item = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Monitor Center"),
+                monitorsBmp,
+                _translate("Monitor settings and calibration"))
+        else:
+            item = tb.AddSimpleTool(
+                wx.ID_ANY,
+                monitorsBmp,
+                _translate("Monitor Center"),
+                _translate("Monitor settings and calibration"))
+        tb.Bind(wx.EVT_TOOL, self.app.openMonitorCenter, id=item.GetId())
+
+        if 'phoenix' in wx.PlatformInfo:
+            item = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Experiment Settings"),
+                settingsBmp,
+                _translate("Experiment settings"))
+        else:
+            item = tb.AddSimpleTool(
+                wx.ID_ANY,
+                settingsBmp,
+                _translate("Experiment Settings"),
+                _translate("Experiment settings"))
+        tb.Bind(wx.EVT_TOOL, self.setExperimentSettings, item)
 
         tb.AddSeparator()
-        item = tb.AddSimpleTool(wx.ID_ANY, settingsBmp,
-                                _translate("Experiment Settings"),
-                                _translate("Settings for this exp"))
-        tb.Bind(wx.EVT_TOOL, self.setExperimentSettings, item)
-        item = tb.AddSimpleTool(wx.ID_ANY, compileBmp,
-                                _translate("Compile Script [%s]") %
-                                keys['compileScript'],
-                                _translate("Compile to script"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            item = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Compile Script [%s]") % keys['compileScript'],
+                compileBmp,
+                _translate("Compile to script"))
+        else:
+            item = tb.AddSimpleTool(
+                wx.ID_ANY,
+                compileBmp,
+                _translate("Compile Script [%s]") % keys['compileScript'],
+                _translate("Compile to script"))
         tb.Bind(wx.EVT_TOOL, self.compileScript, item)
-        self.bldrBtnRun = tb.AddSimpleTool(wx.ID_ANY, runBmp,
-                                           _translate("Run [%s]") % keys[
-                                               'runScript'],
-                                           _translate("Run experiment"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            self.bldrBtnRun = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Run [%s]") % keys['runScript'],
+                runBmp,
+                _translate("Run experiment"))
+        else:
+            self.bldrBtnRun = tb.AddSimpleTool(
+                wx.ID_ANY,
+                runBmp,
+                _translate("Run [%s]") % keys['runScript'],
+                _translate("Run experiment"))
         tb.Bind(wx.EVT_TOOL, self.runFile, self.bldrBtnRun)
-        self.bldrBtnStop = tb.AddSimpleTool(wx.ID_ANY, stopBmp,
-                                            _translate("Stop [%s]") % keys[
-                                                'stopScript'],
-                                            _translate("Stop experiment"))
+
+        if 'phoenix' in wx.PlatformInfo:
+            self.bldrBtnStop = tb.AddTool(
+                wx.ID_ANY,
+                _translate("Stop [%s]") % keys['stopScript'],
+                stopBmp,
+                _translate("Stop experiment"))
+        else:
+            self.bldrBtnStop = tb.AddSimpleTool(
+                wx.ID_ANY,
+                stopBmp,
+                _translate("Stop [%s]") % keys['stopScript'],
+                _translate("Stop experiment"))
         tb.Bind(wx.EVT_TOOL, self.stopFile, self.bldrBtnStop)
         self.toolbar.EnableTool(self.bldrBtnStop.Id, False)
 
@@ -1503,10 +1614,10 @@ class BuilderFrame(wx.Frame):
             # as of wx3.0 the AUI manager needs to be uninitialised explicitly
             self._mgr.UnInit()
             # is it the last frame?
-            lastFrame = bool(len(wx.GetApp().getAllFrames()) == 1)
-            quitting = wx.GetApp().quitting
+            lastFrame = len(self.app.getAllFrames()) == 1
+            quitting = self.app.quitting
             if lastFrame and sys.platform != 'darwin' and not quitting:
-                wx.GetApp().quit(event)
+                self.app.quit(event)
             else:
                 self.app.forgetFrame(self)
                 self.Destroy()  # required
@@ -1996,7 +2107,7 @@ class BuilderFrame(wx.Frame):
             return
         # list available demos
         demoList = sorted(glob.glob(os.path.join(unpacked, '*')))
-        self.demos = {wx.NewId(): demoList[n]
+        self.demos = {wx.NewIdRef(): demoList[n]
                       for n in range(len(demoList))}
         for thisID in self.demos:
             junk, shortname = os.path.split(self.demos[thisID])
@@ -2289,7 +2400,7 @@ class BuilderFrame(wx.Frame):
                 self.fileExport()
             if noProject or noHtmlFolder:
                 pavlovia_ui.syncProject(parent=self, project=self.project,
-                                    closeFrameWhenDone=False)
+                                        closeFrameWhenDone=False)
 
         if self.project:
             self.project.pavloviaStatus = 'ACTIVATED'
@@ -2332,6 +2443,7 @@ class BuilderFrame(wx.Frame):
     @project.setter
     def project(self, project):
         self.__dict__['project'] = project
+
 
 class ReadmeFrame(wx.Frame):
     """Defines construction of the Readme Frame"""
@@ -2397,7 +2509,7 @@ class ReadmeFrame(wx.Frame):
             return False
         # attempt to open
         try:
-            f = codecs.open(filename, 'r', 'utf-8')
+            f = codecs.open(filename, 'r', 'utf-8-sig')
         except IOError as err:
             msg = ("Found readme file for %s and appear to have"
                    " permissions, but can't open")
@@ -2424,9 +2536,8 @@ class ReadmeFrame(wx.Frame):
             logging.warning(
                 'readme file has been changed by another programme?')
         txt = self.ctrl.GetValue()
-        f = codecs.open(self.filename, 'w', 'utf-8')
-        f.write(txt)
-        f.close()
+        with codecs.open(self.filename, 'w', 'utf-8-sig') as f:
+            f.write(txt)
 
     def toggleVisible(self, evt=None):
         """Defines visibility toggle for readme frame"""

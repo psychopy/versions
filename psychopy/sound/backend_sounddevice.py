@@ -9,6 +9,8 @@ import sys
 import os
 import time
 import re
+import atexit
+
 try:
     import readline  # Work around GH-2230
 except ImportError:
@@ -16,7 +18,7 @@ except ImportError:
 
 from psychopy import logging, exceptions
 from psychopy.constants import (PLAYING, PAUSED, FINISHED, STOPPED,
-                                NOT_STARTED)
+                                NOT_STARTED, PY3)
 from psychopy.exceptions import SoundFormatError, DependencyError
 from ._base import _SoundBase, HammingWindow
 
@@ -171,6 +173,7 @@ class _SoundStream(object):
             self.device = self._sdStream.device
             self.latency = self._sdStream.latency
             self.cpu_load = self._sdStream.cpu_load
+            atexit.register(self.__del__)
         self._tSoundRequestPlay = 0
 
     def callback(self, toSpk, blockSize, timepoint, status):
@@ -236,7 +239,10 @@ class _SoundStream(object):
             if not travisCI:
                 self._sdStream.stop()
             del self._sdStream
-        sys.stdout.flush()
+        if hasattr(sys, 'stdout'):
+            sys.stdout.flush()
+        if PY3:
+            atexit.unregister(self.__del__)
 
 
 class SoundDeviceSound(_SoundBase):
@@ -245,7 +251,7 @@ class SoundDeviceSound(_SoundBase):
 
     def __init__(self, value="C", secs=0.5, octave=4, stereo=-1,
                  volume=1.0, loops=0,
-                 sampleRate=44100, blockSize=128,
+                 sampleRate=None, blockSize=128,
                  preBuffer=-1,
                  hamming=True,
                  startTime=0, stopTime=-1,
@@ -289,7 +295,13 @@ class SoundDeviceSound(_SoundBase):
         self.preBuffer = preBuffer
         self.frameN = 0
         self._tSoundRequestPlay = 0
-        self.sampleRate = sampleRate
+        if sampleRate:  #a rate was requested so use it
+            self.sampleRate = sampleRate
+        else:  # no requested rate so use current stream or a default of 44100
+            rate = 44100  # start with a default
+            for streamLabel in streams:  # then look to see if we have an open stream and use that
+                rate = streams[streamLabel].sampleRate
+            self.sampleRate = rate
         self.channels = None  # let this be set by stereo
         self.stereo = stereo
         self.duplex = None
@@ -358,7 +370,7 @@ class SoundDeviceSound(_SoundBase):
                                          channels=-1,
                                          blockSize=-1)
             if altern is None:
-                raise SoundFormatError(err)
+                raise err
             else:  # safe to extract data
                 label, s = altern
             # update self in case it changed to fit the stream

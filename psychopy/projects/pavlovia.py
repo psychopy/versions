@@ -15,7 +15,7 @@ import traceback
 from pkg_resources import parse_version
 
 from psychopy import logging, prefs, constants, exceptions
-from psychopy.tools.filetools import DictStorage
+from psychopy.tools.filetools import DictStorage, KnownProjects
 from psychopy import app
 from psychopy.localization import _translate
 
@@ -58,7 +58,7 @@ knownUsers = DictStorage(
         filename=os.path.join(pavloviaPrefsDir, 'users.json'))
 
 # knownProjects is a dict stored by id ("namespace/name")
-knownProjects = DictStorage(
+knownProjects = KnownProjects(
         filename=os.path.join(pavloviaPrefsDir, 'projects.json'))
 # knownProjects stores the gitlab id to check if it's the same exact project
 # We add to the knownProjects when project.local is set (ie when we have a
@@ -931,7 +931,8 @@ class PavloviaProject(dict):
                         'The `files` provided to PavloviaProject.stageFiles '
                         'should be a list not a {}'.format(type(files)))
             try:
-                self.repo.git.add(files)
+                for thisFile in files:
+                    self.repo.git.add(thisFile)
             except git.exc.GitCommandError:
                 if infoStream:
                     infoStream.SetValue(traceback.format_exc())
@@ -1073,7 +1074,10 @@ def getProject(filename):
                             login(nameSpace, rememberMe=True)
                         else:  # Check whether project repo is found in any of the known users accounts
                             for user in knownUsers:
-                                login(user)
+                                try:
+                                    login(user)
+                                except requests.exceptions.ConnectionError:
+                                    break
                                 foundProject = False
                                 for repo in pavSession.findUserProjects():
                                     if namespaceName in repo['id']:

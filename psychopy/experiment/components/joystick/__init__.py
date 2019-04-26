@@ -6,6 +6,7 @@
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import, print_function
+from builtins import super  # provides Py3-style super() using python-future
 
 from os import path
 from psychopy.experiment.components import BaseComponent, Param, _translate
@@ -35,7 +36,7 @@ class JoystickComponent(BaseComponent):
 
     def __init__(self, exp, parentName, name='joystick',
                  startType='time (s)', startVal=0.0,
-                 stopType='duration (s)', stopVal=1.0,
+                 stopType='duration (s)', stopVal='',
                  startEstim='', durationEstim='',
                  save='final', forceEndRoutineOnPress="any click",
                  timeRelativeTo='joystick onset', deviceNumber='0', allowedButtons=''):
@@ -161,7 +162,7 @@ class JoystickComponent(BaseComponent):
         code = ("from psychopy.hardware import joystick as joysticklib  "
                 "# joystick/gamepad accsss\n"
                 "from psychopy.experiment.components.joystick import "
-                "mouseJoystick as fakejoysticklib\n")
+                "virtualJoystick as virtualjoysticklib\n")
         buff.writeIndentedLines(code % self.params)
 
     def writeInitCode(self, buff):
@@ -183,8 +184,34 @@ class JoystickComponent(BaseComponent):
         buff.writeIndentedLines(code % self.params)
 
         buff.setIndentLevel(+1, relative=True)
-        code = ("%(name)s.device = joysticklib.Joystick(%(deviceNumber)s)\n"
-                "if win.units == 'height':\n")
+        code = ("try:\n")
+        buff.writeIndentedLines(code % self.params)
+
+        buff.setIndentLevel(+1, relative=True)
+        code = ("joystickCache\n")
+        buff.writeIndentedLines(code % self.params)
+
+        buff.setIndentLevel(-1, relative=True)
+        code = ("except NameError:\n")
+        buff.writeIndentedLines(code % self.params)
+
+        buff.setIndentLevel(+1, relative=True)
+        code = ("joystickCache={}\n")
+        buff.writeIndentedLines(code % self.params)
+
+        buff.setIndentLevel(-1, relative=True)
+        code = ("if not %(deviceNumber)s in joystickCache:\n")
+        buff.writeIndentedLines(code % self.params)
+
+        buff.setIndentLevel(+1, relative=True)
+        code = ("joystickCache[%(deviceNumber)s] = joysticklib.Joystick(%(deviceNumber)s)\n")
+        buff.writeIndentedLines(code % self.params)
+
+        buff.setIndentLevel(-1, relative=True)
+        code = ("%(name)s.device = joystickCache[%(deviceNumber)s]\n")
+        buff.writeIndentedLines(code % self.params)
+
+        code = ("if win.units == 'height':\n")
         buff.writeIndentedLines(code % self.params)
 
         buff.setIndentLevel(1, relative=True)
@@ -199,7 +226,7 @@ class JoystickComponent(BaseComponent):
         buff.writeIndentedLines(code % self.params)
 
         buff.setIndentLevel(+1, relative=True)
-        code = ("%(name)s.device = fakejoysticklib.Joystick(%(deviceNumber)s)\n"
+        code = ("%(name)s.device = virtualjoysticklib.VirtualJoystick(%(deviceNumber)s)\n"
                 "logging.warning(\"joystick_{}: "
                 "Using keyboard+mouse emulation 'ctrl' "
                 "+ 'Alt' + digit.\".format(%(name)s.device_number))\n")
@@ -265,7 +292,8 @@ class JoystickComponent(BaseComponent):
             buff.writeIndentedLines(code.format(allowedButtons))
 
             buff.setIndentLevel(-1, relative=True)
-            code = ("elif not isinstance({0}, str):\n")
+            code = ("elif not (isinstance({0}, str) "
+                    "or isinstance({0}, unicode)):\n")
             buff.writeIndentedLines(code.format(allowedButtons))
 
             buff.setIndentLevel(1, relative=True)
@@ -555,6 +583,9 @@ class JoystickComponent(BaseComponent):
                         "{name}.buttonLogs[i][0]) for i in {name}.activeButtons "
                         "if len({name}.buttonLogs[i])]\n")
             buff.writeIndented(code.format(currLoop.params['name'], **self.params))
+
+        # get parent to write code too (e.g. store onset/offset times)
+        super().writeRoutineEndCode(buff)
 
         if currLoop.params['name'].val == self.exp._expHandler.name:
             buff.writeIndented("%s.nextEntry()\n" % self.exp._expHandler.name)

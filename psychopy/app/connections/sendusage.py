@@ -27,12 +27,15 @@ def sendUsageStats(app=None):
 
     v = psychopy.__version__
     dateNow = time.strftime("%Y-%m-%d_%H:%M")
-    miscInfo = ''
+    try:
+        miscInfo = platform.machine()
+    except AttributeError:
+        miscInfo=''
 
     # get platform-specific info
     if sys.platform == 'darwin':
         OSXver, junk, architecture = platform.mac_ver()
-        systemInfo = "OSX_%s_%s" % (OSXver, architecture)
+        systemInfo = "OSX_%s" % (OSXver)
     elif sys.platform.startswith('linux'):
         systemInfo = '%s_%s_%s' % (
             'Linux',
@@ -44,7 +47,7 @@ def sendUsageStats(app=None):
         systemInfo = "win32_v" + platform.version()
     else:
         systemInfo = platform.system() + platform.release()
-    u = "http://www.psychopy.org/usage.php?date=%s&sys=%s&version=%s&misc=%s"
+    u = "http://usage.psychopy.org/submit.php?date=%s&sys=%s&version=%s&misc=%s"
     URL = u % (dateNow, systemInfo, v, miscInfo)
     try:
         req = web.urllib.request.Request(URL)

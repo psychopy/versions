@@ -1,0 +1,7307 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2019-03-05 14:21+0000\n"
+"PO-Revision-Date: 2019-03-18 12:22+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.1\n"
+"X-Poedit-Basepath: ../../../..\n"
+"Plural-Forms: nplurals=2; plural=(n==0 || n==1);\n"
+"X-Poedit-KeywordsList: _translate\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: app\n"
+
+#: app/Resources/psychopy.desktop:5 app/Resources/psychopy.desktop:6
+#, fuzzy
+msgid "PsychoPy"
+msgstr "روان پری"
+
+#: app/Resources/psychopy.desktop:7
+#, fuzzy
+msgid "Psychology software in Python"
+msgstr "نرم افزار روانشناسی در پایتون"
+
+#: app/Resources/psychopy.desktop:11
+#, fuzzy
+msgid "psychopy"
+msgstr "روانپزشکی"
+
+#: app/_psychopyApp.py:82 app/builder/builder.py:1351 app/coder/coder.py:1534
+msgid "&View"
+msgstr "& مشاهده"
+
+#: app/_psychopyApp.py:83
+#, python-format
+msgid "&Open Builder view\t%s"
+msgstr "& مشاهده باز ساز %s"
+
+#: app/_psychopyApp.py:86
+msgid "Open a new Builder view"
+msgstr "باز کردن نماى ساز جدید"
+
+#: app/_psychopyApp.py:89 app/builder/builder.py:1355
+#, fuzzy, python-format
+msgid "&Open Coder view\t%s"
+msgstr "بازکردن کدور٪ s"
+
+#: app/_psychopyApp.py:92 app/builder/builder.py:1357
+#, fuzzy
+msgid "Open a new Coder view"
+msgstr "یک نمای جدید Coder باز کنید"
+
+#: app/_psychopyApp.py:95 app/builder/builder.py:1293 app/coder/coder.py:328
+#: app/coder/coder.py:1386 app/pavlovia_ui/_base.py:38
+#, python-format
+msgid "&Quit\t%s"
+msgstr "& ترک %s"
+
+#: app/_psychopyApp.py:97 app/builder/builder.py:1294 app/coder/coder.py:1387
+#: app/pavlovia_ui/_base.py:39
+#, fuzzy
+msgid "Terminate the program"
+msgstr "برنامه را خاتمه دهید"
+
+#: app/_psychopyApp.py:217
+#, fuzzy
+msgid "Loading libraries..."
+msgstr "بارگذاری کتابخانه ها ..."
+
+#: app/_psychopyApp.py:225
+#, fuzzy
+msgid "Loading PsychoPy3..."
+msgstr "Loading PsychoPy3 ..."
+
+#: app/_psychopyApp.py:327
+#, fuzzy
+msgid "  Creating frames..."
+msgstr "ایجاد فریم ها ..."
+
+#: app/_psychopyApp.py:345
+#, fuzzy
+msgid "Compatibility information"
+msgstr "اطلاعات سازگاری"
+
+#: app/_psychopyApp.py:353
+#, fuzzy
+msgid "tips.txt"
+msgstr "tips.txt"
+
+#: app/_psychopyApp.py:419
+#, fuzzy
+msgid "Select .psydat file(s) to extract"
+msgstr "فایل های .psydat را برای استخراج انتخاب کنید"
+
+#: app/_psychopyApp.py:703
+#, fuzzy
+msgid ""
+"For stimulus generation and experimental control in python.\n"
+"PsychoPy depends on your feedback. If something doesn't work\n"
+"then let us know at psychopy-users@googlegroups.com"
+msgstr ""
+"برای تولید محرک و کنترل تجربی در پایتون. PsychoPy به نظرات شما بستگی دارد. "
+"اگر چیزی کار نمی کند، به ما در psychopy-users@googlegroups.com اطلاع دهید"
+
+#: app/builder/builder.py:70 app/builder/localizedStrings.py:79
+#, fuzzy
+msgid "Field"
+msgstr "فیلد"
+
+#: app/builder/builder.py:71 app/builder/localizedStrings.py:80
+#, fuzzy
+msgid "Default"
+msgstr "پیش فرض"
+
+#: app/builder/builder.py:72
+#, fuzzy
+msgid "Favorites"
+msgstr "علاقه مندی ها"
+
+#: app/builder/builder.py:73
+#, fuzzy
+msgid "Stimuli"
+msgstr "محرک ها"
+
+#: app/builder/builder.py:74
+#, fuzzy
+msgid "Responses"
+msgstr "پاسخ"
+
+#: app/builder/builder.py:75 app/builder/dialogs/__init__.py:494
+#, fuzzy
+msgid "Custom"
+msgstr "سفارشی"
+
+#: app/builder/builder.py:76
+#, fuzzy
+msgid "I/O"
+msgstr "I / O"
+
+#: app/builder/builder.py:77
+#, fuzzy
+msgid "Add to favorites"
+msgstr "اضافه کردن به علاقه مندی ها"
+
+#: app/builder/builder.py:78
+#, fuzzy
+msgid "Remove from favorites"
+msgstr "از علاقه مندی ها حذف شود"
+
+#: app/builder/builder.py:80
+#, fuzzy
+msgid "edit"
+msgstr "ویرایش"
+
+#: app/builder/builder.py:81 app/builder/flow.py:95
+#, fuzzy
+msgid "remove"
+msgstr "حذف"
+
+#: app/builder/builder.py:82 app/preferencesDlg.py:90
+#, fuzzy
+msgid "copy"
+msgstr "کپی"
+
+#: app/builder/builder.py:83
+#, fuzzy
+msgid "move to top"
+msgstr "حرکت به بالا"
+
+#: app/builder/builder.py:84
+#, fuzzy
+msgid "move up"
+msgstr " "
+
+#: app/builder/builder.py:85
+#, fuzzy
+msgid "move down"
+msgstr " "
+
+#: app/builder/builder.py:86
+#, fuzzy
+msgid "move to bottom"
+msgstr "حرکت به پایین"
+
+#: app/builder/builder.py:487 app/builder/builder.py:2105
+#, fuzzy, python-format
+msgid "New name for copy of \"%(copied)s\"?  [%(default)s]"
+msgstr "نام جدید برای کپی از٪ (کپی شده) s؟ [٪ (پیش فرض) s]"
+
+#: app/builder/builder.py:491
+#, fuzzy
+msgid "Paste Component"
+msgstr "کامپوننت چسباندن"
+
+#: app/builder/builder.py:594
+#, fuzzy
+msgid "What is the name for the new Routine? (e.g. instr, trial, feedback)"
+msgstr "نام جدید Routine چیست؟ (مثلا instr، trial، feedback)"
+
+#: app/builder/builder.py:597
+#, fuzzy
+msgid "New Routine"
+msgstr "روال جدید"
+
+#: app/builder/builder.py:850
+#, fuzzy
+msgid "Create a routine (Experiment menu) before adding components"
+msgstr "قبل از اضافه کردن اجزای یک روال (منو آزمایش) ایجاد کنید"
+
+#: app/builder/builder.py:853 app/preferencesDlg.py:345
+#, fuzzy
+msgid "Error"
+msgstr "خطا"
+
+#: app/builder/builder.py:1160 app/coder/coder.py:1724
+#, fuzzy, python-format
+msgid "New [%s]"
+msgstr "اخبار]"
+
+#: app/builder/builder.py:1161
+#, fuzzy
+msgid "Create new experiment file"
+msgstr "ایجاد فایل آزمایش جدید"
+
+#: app/builder/builder.py:1164 app/coder/coder.py:1730
+#, fuzzy, python-format
+msgid "Open [%s]"
+msgstr "باز [٪ s]"
+
+#: app/builder/builder.py:1165
+#, fuzzy
+msgid "Open an existing experiment file"
+msgstr "یک پرونده آزمایش موجود را باز کنید"
+
+#: app/builder/builder.py:1168 app/coder/coder.py:1735
+#, fuzzy, python-format
+msgid "Save [%s]"
+msgstr "صرفه جویی [٪ s]"
+
+#: app/builder/builder.py:1171 app/builder/builder.py:1266
+#, fuzzy
+msgid "Save current experiment file"
+msgstr "ذخیره پرونده آزمایش فعلی"
+
+#: app/builder/builder.py:1175 app/coder/coder.py:1741
+#, fuzzy, python-format
+msgid "Save As... [%s]"
+msgstr "ذخیره به عنوان ... [٪ s]"
+
+#: app/builder/builder.py:1177 app/builder/builder.py:1270
+#, fuzzy
+msgid "Save current experiment file as..."
+msgstr "ذخیره فایل آزمایش فعلی به عنوان ..."
+
+#: app/builder/builder.py:1180 app/coder/coder.py:1746
+#, fuzzy, python-format
+msgid "Undo [%s]"
+msgstr "واگرد [٪ s]"
+
+#: app/builder/builder.py:1182 app/builder/builder.py:1303
+#: app/coder/coder.py:1460 app/coder/coder.py:1749
+#, fuzzy
+msgid "Undo last action"
+msgstr "لغو آخرین اقدام"
+
+#: app/builder/builder.py:1185 app/coder/coder.py:1751
+#, fuzzy, python-format
+msgid "Redo [%s]"
+msgstr "باز [٪ s]"
+
+#: app/builder/builder.py:1187 app/builder/builder.py:1308
+#: app/coder/coder.py:1465 app/coder/coder.py:1754
+#, fuzzy
+msgid "Redo last action"
+msgstr "آخرین اقدام را دوباره انجام دهید"
+
+#: app/builder/builder.py:1192 app/coder/coder.py:1759
+#, fuzzy
+msgid "Preferences"
+msgstr "تنظیمات"
+
+#: app/builder/builder.py:1194 app/coder/coder.py:1760
+#, fuzzy
+msgid "Application preferences"
+msgstr "تنظیمات برنامه"
+
+#: app/builder/builder.py:1197 app/builder/builder.py:1319
+#: app/coder/coder.py:1488 app/coder/coder.py:1763
+#, fuzzy
+msgid "Monitor Center"
+msgstr "مرکز مانیتورینگ"
+
+#: app/builder/builder.py:1198 app/coder/coder.py:1764
+#, fuzzy
+msgid "Monitor settings and calibration"
+msgstr "نظارت بر تنظیمات و کالیبراسیون"
+
+#: app/builder/builder.py:1204
+#, fuzzy
+msgid "Experiment Settings"
+msgstr "تنظیمات آزمایش"
+
+#: app/builder/builder.py:1205
+#, fuzzy
+msgid "Settings for this exp"
+msgstr "تنظیمات برای این اکسپرس"
+
+#: app/builder/builder.py:1208
+#, fuzzy, python-format
+msgid "Compile Script [%s]"
+msgstr "اسکریپت کامپایل [٪ s]"
+
+#: app/builder/builder.py:1210
+#, fuzzy
+msgid "Compile to script"
+msgstr "کامپایل به اسکریپت"
+
+#: app/builder/builder.py:1213 app/coder/coder.py:1772
+#, fuzzy, python-format
+msgid "Run [%s]"
+msgstr "اجرای [٪ s]"
+
+#: app/builder/builder.py:1215
+#, fuzzy
+msgid "Run experiment"
+msgstr "آزمایش را اجرا کنید"
+
+#: app/builder/builder.py:1218 app/coder/coder.py:1777
+#, fuzzy, python-format
+msgid "Stop [%s]"
+msgstr "توقف [٪ s]"
+
+#: app/builder/builder.py:1220
+#, fuzzy
+msgid "Stop experiment"
+msgstr "آزمایش را متوقف کنید"
+
+#: app/builder/builder.py:1241 app/builder/builder.py:2369
+#: app/coder/coder.py:1345 app/pavlovia_ui/_base.py:23 app/stdOutRich.py:118
+#: monitors/MonitorCenter.py:234
+#, fuzzy
+msgid "&File"
+msgstr "&amp;فایل"
+
+#: app/builder/builder.py:1256 app/coder/coder.py:1359
+#, fuzzy, python-format
+msgid "&New\t%s"
+msgstr "&amp;اخبار"
+
+#: app/builder/builder.py:1259 app/coder/coder.py:1360
+#, fuzzy, python-format
+msgid "&Open...\t%s"
+msgstr "&amp; باز ...٪ s"
+
+#: app/builder/builder.py:1262 app/coder/coder.py:1361
+#, fuzzy
+msgid "Open &Recent"
+msgstr "باز و اخیر"
+
+#: app/builder/builder.py:1265 app/builder/builder.py:2372
+#: app/coder/coder.py:1363
+#, fuzzy, python-format
+msgid "&Save\t%s"
+msgstr "&amp; ذخیره٪ s"
+
+#: app/builder/builder.py:1269 app/coder/coder.py:1366
+#, fuzzy, python-format
+msgid "Save &as...\t%s"
+msgstr "ذخیره و به عنوان ...٪ s"
+
+#: app/builder/builder.py:1273
+#, fuzzy, python-format
+msgid "Export HTML...\t%s"
+msgstr "صادرات HTML ...٪ s"
+
+#: app/builder/builder.py:1274
+#, fuzzy
+msgid "Export experiment to html/javascript file"
+msgstr "آزمایش صادرات به فایل html / جاوا اسکریپت"
+
+#: app/builder/builder.py:1277 app/coder/coder.py:1369
+#, fuzzy, python-format
+msgid "&Close file\t%s"
+msgstr "&amp; بستن پرونده٪ s"
+
+#: app/builder/builder.py:1278
+#, fuzzy
+msgid "Close current experiment"
+msgstr "آزمایش کنونی را بست"
+
+#: app/builder/builder.py:1288 app/coder/coder.py:1379
+#, fuzzy, python-format
+msgid "&Preferences\t%s"
+msgstr "&amp; ترجیحات٪ s"
+
+#: app/builder/builder.py:1299 app/coder/coder.py:1393
+#: monitors/MonitorCenter.py:242
+#, fuzzy
+msgid "&Edit"
+msgstr "&amp; ویرایش"
+
+#: app/builder/builder.py:1302 app/builder/builder.py:1934
+#: app/coder/coder.py:1459
+#, fuzzy, python-format
+msgid "Undo\t%s"
+msgstr "لغو٪ s"
+
+#: app/builder/builder.py:1307 app/builder/builder.py:1948
+#: app/coder/coder.py:1464
+#, fuzzy, python-format
+msgid "Redo\t%s"
+msgstr "دوباره٪ s"
+
+#: app/builder/builder.py:1311 app/coder/coder.py:1398
+#, fuzzy, python-format
+msgid "&Paste\t%s"
+msgstr "&amp; Paste٪ s"
+
+#: app/builder/builder.py:1316 app/coder/coder.py:1486
+#, fuzzy
+msgid "&Tools"
+msgstr "&amp; ابزارها"
+
+#: app/builder/builder.py:1320 app/coder/coder.py:1489
+#, fuzzy
+msgid "To set information about your monitor"
+msgstr "برای تنظیم اطلاعات مربوط به مانیتور خود"
+
+#: app/builder/builder.py:1324
+#, fuzzy, python-format
+msgid "Compile\t%s"
+msgstr "کامپایل٪ s"
+
+#: app/builder/builder.py:1325
+#, fuzzy
+msgid "Compile the exp to a script"
+msgstr "جمع آوری exp به یک اسکریپت"
+
+#: app/builder/builder.py:1328 app/coder/coder.py:1503
+#, fuzzy, python-format
+msgid "Run\t%s"
+msgstr "اجرای٪ s"
+
+#: app/builder/builder.py:1329 app/coder/coder.py:1504
+#, fuzzy
+msgid "Run the current script"
+msgstr "اجرای اسکریپت فعلی"
+
+#: app/builder/builder.py:1332 app/coder/coder.py:1507
+#, fuzzy, python-format
+msgid "Stop\t%s"
+msgstr "توقف٪ s"
+
+#: app/builder/builder.py:1333
+#, fuzzy
+msgid "Abort the current script"
+msgstr "لغو اسکریپت فعلی"
+
+#: app/builder/builder.py:1338 app/coder/coder.py:1513
+#, fuzzy
+msgid "PsychoPy updates..."
+msgstr "به روز رسانی های PsychoPy ..."
+
+#: app/builder/builder.py:1339 app/coder/coder.py:1514
+#, fuzzy
+msgid "Update PsychoPy to the latest, or a specific, version"
+msgstr "به روز رسانی PsychoPy به آخرین یا یک نسخه خاص"
+
+#: app/builder/builder.py:1344 app/coder/coder.py:1517
+#, fuzzy
+msgid "Benchmark wizard"
+msgstr "جادوگر معیار"
+
+#: app/builder/builder.py:1345 app/coder/coder.py:1518
+#, fuzzy
+msgid "Check software & hardware, generate report"
+msgstr "بررسی نرم افزار و سخت افزار، گزارش تولید"
+
+#: app/builder/builder.py:1360 app/builder/builder.py:2376
+#, fuzzy, python-format
+msgid "&Toggle readme\t%s"
+msgstr "&amp; Toggle readme٪ s"
+
+#: app/builder/builder.py:1362 app/builder/builder.py:2378
+#, fuzzy
+msgid "Toggle Readme"
+msgstr "تعویض Readme"
+
+#: app/builder/builder.py:1365
+#, fuzzy, python-format
+msgid "&Flow Larger\t%s"
+msgstr "&amp; Flow بزرگتر٪ s"
+
+#: app/builder/builder.py:1367
+#, fuzzy
+msgid "Larger flow items"
+msgstr "اقلام جوی بزرگتر"
+
+#: app/builder/builder.py:1370
+#, fuzzy, python-format
+msgid "&Flow Smaller\t%s"
+msgstr "&amp; جریان کمتر٪ s"
+
+#: app/builder/builder.py:1372
+#, fuzzy
+msgid "Smaller flow items"
+msgstr "آیتم های جریانی کوچکتر"
+
+#: app/builder/builder.py:1375
+#, fuzzy, python-format
+msgid "&Routine Larger\t%s"
+msgstr "&amp; روال بزرگتر٪ s"
+
+#: app/builder/builder.py:1377
+#, fuzzy
+msgid "Larger routine items"
+msgstr "اقلام روزمره بزرگتر"
+
+#: app/builder/builder.py:1380
+#, fuzzy, python-format
+msgid "&Routine Smaller\t%s"
+msgstr "&amp; روال کوچکتر٪ s"
+
+#: app/builder/builder.py:1382
+#, fuzzy
+msgid "Smaller routine items"
+msgstr "اقلام روزمره کوچکتر"
+
+#: app/builder/builder.py:1387
+#, fuzzy
+msgid "&Experiment"
+msgstr "&amp; آزمایش"
+
+#: app/builder/builder.py:1390
+#, fuzzy, python-format
+msgid "&New Routine\t%s"
+msgstr "&amp; روش جدید٪ s"
+
+#: app/builder/builder.py:1391
+#, fuzzy
+msgid "Create a new routine (e.g. the trial definition)"
+msgstr "ایجاد روال جدید (به عنوان مثال تعریف محاکمه)"
+
+#: app/builder/builder.py:1395
+#, fuzzy, python-format
+msgid "&Copy Routine\t%s"
+msgstr "&amp; رونویسی٪ s"
+
+#: app/builder/builder.py:1397
+#, fuzzy
+msgid "Copy the current routine so it can be used in another exp"
+msgstr "نسخه فعلی را کپی کنید تا بتوانید در یکی دیگر از آنها استفاده کنید"
+
+#: app/builder/builder.py:1402
+#, fuzzy, python-format
+msgid "&Paste Routine\t%s"
+msgstr "&amp; Paste Routine٪ s"
+
+#: app/builder/builder.py:1404
+#, fuzzy
+msgid "Paste the Routine into the current experiment"
+msgstr "روال معمول را در آزمایش فعلی قرار دهید"
+
+#: app/builder/builder.py:1409
+#, fuzzy, python-format
+msgid "&Rename Routine\t%s"
+msgstr "&amp; تغییر نام معمول٪ s"
+
+#: app/builder/builder.py:1411
+#, fuzzy
+msgid "Change the name of this routine"
+msgstr "نام این رویه را تغییر دهید"
+
+#: app/builder/builder.py:1414
+#, fuzzy, python-format
+msgid "Paste Component\t%s"
+msgstr "چسباندن کامپوننت٪ s"
+
+#: app/builder/builder.py:1417
+#, fuzzy
+msgid "Paste the Component at bottom of the current Routine"
+msgstr "کامپوننت را در انتهای رویداد کنونی قرار دهید"
+
+#: app/builder/builder.py:1424
+#, fuzzy
+msgid "Insert Routine in Flow"
+msgstr "روتین را در جریان قرار دهید"
+
+#: app/builder/builder.py:1426
+#, fuzzy
+msgid "Select one of your routines to be inserted into the experiment flow"
+msgstr "یکی از روال های خود را انتخاب کنید تا در جریان آزمایش قرار گیرد"
+
+#: app/builder/builder.py:1430
+#, fuzzy
+msgid "Insert Loop in Flow"
+msgstr "حلقه در جریان قرار دهید"
+
+#: app/builder/builder.py:1431
+#, fuzzy
+msgid "Create a new loop in your flow window"
+msgstr "یک حلقه جدید در پنجره جریان خود ایجاد کنید"
+
+#: app/builder/builder.py:1442
+#, fuzzy
+msgid "&Unpack Demos..."
+msgstr "&amp; باز کردن نسخه ی نمایشی ..."
+
+#: app/builder/builder.py:1444
+#, fuzzy
+msgid "Unpack demos to a writable location (so that they can be run)"
+msgstr ""
+"نسخه ی نمایشی را به محل قابل نوشتن باز کنید (به طوری که بتوان آنها را اجرا "
+"کرد)"
+
+#: app/builder/builder.py:1450 app/coder/coder.py:1603
+#, fuzzy
+msgid "&Demos"
+msgstr "&amp; نسخه ی نمایشی"
+
+#: app/builder/builder.py:1454 app/coder/coder.py:1653
+#, fuzzy
+msgid "Pavlovia.org"
+msgstr "Pavlovia.org"
+
+#: app/builder/builder.py:1458 app/coder/coder.py:1657
+#, fuzzy
+msgid "&Help"
+msgstr "&amp;کمک"
+
+#: app/builder/builder.py:1462 app/coder/coder.py:1659
+#, fuzzy
+msgid "&PsychoPy Homepage"
+msgstr "صفحه اصلی &amp; PsychoPy"
+
+#: app/builder/builder.py:1463 app/coder/coder.py:1660
+#, fuzzy
+msgid "Go to the PsychoPy homepage"
+msgstr "به صفحه اصلی PsychoPy بروید"
+
+#: app/builder/builder.py:1467
+#, fuzzy
+msgid "&PsychoPy Builder Help"
+msgstr "راهنما PsychoPy Builder"
+
+#: app/builder/builder.py:1469
+#, fuzzy
+msgid "Go to the online documentation for PsychoPy Builder"
+msgstr "به مستندات آنلاین برای PsychoPy Builder بروید"
+
+#: app/builder/builder.py:1476 app/coder/coder.py:1676
+#, fuzzy
+msgid "&About..."
+msgstr "&amp;در باره..."
+
+#: app/builder/builder.py:1476 app/coder/coder.py:1677
+#, fuzzy
+msgid "About PsychoPy"
+msgstr "درباره PsychoPy"
+
+#: app/builder/builder.py:1482 app/coder/coder.py:1681
+#, fuzzy
+msgid "&News..."
+msgstr "&amp;اخبار..."
+
+#: app/builder/builder.py:1483 app/coder/coder.py:1682
+#, fuzzy
+msgid "News"
+msgstr "اخبار"
+
+#: app/builder/builder.py:1554 app/builder/dialogs/__init__.py:1542
+#: app/coder/coder.py:2135
+#, fuzzy
+msgid "Open file ..."
+msgstr "باز کردن فایل ..."
+
+#: app/builder/builder.py:1633 app/coder/coder.py:2269
+#, fuzzy
+msgid "Save file as ..."
+msgstr "ذخیره فایل به عنوان ..."
+
+#: app/builder/builder.py:1669
+#, fuzzy
+msgid "Export HTML file"
+msgstr "فایل HTML را صادر کنید"
+
+#: app/builder/builder.py:1746
+#, fuzzy, python-format
+msgid "Experiment %s has changed. Save before quitting?"
+msgstr "آزمایش٪ s تغییر کرده است ذخیره قبل از ترک"
+
+#: app/builder/builder.py:1938
+#, fuzzy, python-format
+msgid "Undo %(action)s\t%(key)s"
+msgstr "واگرد٪ (عمل) s٪ (کلید) s"
+
+#: app/builder/builder.py:1952
+#, fuzzy, python-format
+msgid "Redo %(action)s\t%(key)s"
+msgstr "دوباره٪ (عمل) s٪ (کلید) s"
+
+#: app/builder/builder.py:1965
+#, fuzzy
+msgid "Location to unpack demos"
+msgstr "موقعیت مکانی برای باز کردن بستههای نمایشی"
+
+#: app/builder/builder.py:2109
+#, fuzzy
+msgid "Paste Routine"
+msgstr "چسباندن روتین"
+
+#: app/builder/builder.py:2177
+#, fuzzy
+msgid "What is the new name for the Routine?"
+msgstr "نام جدید روال چیست؟"
+
+#: app/builder/builder.py:2179
+#, fuzzy
+msgid "Rename"
+msgstr "تغییر نام"
+
+#: app/builder/builder.py:2374
+#, fuzzy, python-format
+msgid "&Close readme\t%s"
+msgstr "&amp; بستن readme٪ s"
+
+#: app/builder/builder.py:2449
+#, fuzzy
+msgid ""
+"Warning, HTML outputs are very new.\n"
+"Treat with caution (CHECK YOUR EXPERIMENT)!"
+msgstr ""
+"هشدار، خروجی های HTML بسیار جدید هستند. درمان با احتیاط (آزمایش خود را بررسی "
+"کنید)!"
+
+#: app/builder/builder.py:2457
+#, fuzzy
+msgid "Filepath:"
+msgstr "مسیر فایل:"
+
+#: app/builder/builder.py:2469
+#, fuzzy
+msgid ""
+"Select 'manually' to receive this alert when exporting HTML.\n"
+"Click 'OK' to export HTML, or click 'Cancel' to return."
+msgstr ""
+"برای دریافت این هشدار هنگام صادر کردن HTML، «دستی» را انتخاب کنید. برای "
+"صادرات HTML روی OK کلیک کنید یا برای لغو کلیک کنید 'لغو'."
+
+#: app/builder/dialogs/__init__.py:241
+#, fuzzy
+msgid "set during: "
+msgstr "تنظیم در طول:"
+
+#: app/builder/dialogs/__init__.py:259 app/pavlovia_ui/project.py:77
+#: app/pavlovia_ui/project.py:197
+#, fuzzy
+msgid "Browse..."
+msgstr "انتخاب..."
+
+#: app/builder/dialogs/__init__.py:408 app/builder/dialogs/__init__.py:1122
+#: app/builder/dialogs/dlgsCode.py:39
+#, fuzzy
+msgid " Properties"
+msgstr " املاک"
+
+#: app/builder/dialogs/__init__.py:488
+#, fuzzy
+msgid "Basic"
+msgstr "پایه"
+
+#: app/builder/dialogs/__init__.py:489
+#, fuzzy
+msgid "Data"
+msgstr "داده"
+
+#: app/builder/dialogs/__init__.py:490
+#: experiment/components/settings/__init__.py:47
+#, fuzzy
+msgid "Screen"
+msgstr "صفحه نمایش"
+
+#: app/builder/dialogs/__init__.py:491
+#, fuzzy
+msgid "Dots"
+msgstr "نقطه ها"
+
+#: app/builder/dialogs/__init__.py:492
+#, fuzzy
+msgid "Grating"
+msgstr "گریتینگ"
+
+#: app/builder/dialogs/__init__.py:493
+#, fuzzy
+msgid "Advanced"
+msgstr "پیشرفته"
+
+#: app/builder/dialogs/__init__.py:495
+#, fuzzy
+msgid "Carrier"
+msgstr "حامل"
+
+#: app/builder/dialogs/__init__.py:496
+#, fuzzy
+msgid "Envelope"
+msgstr "پاكت نامه"
+
+#: app/builder/dialogs/__init__.py:497
+#, fuzzy
+msgid "Appearance"
+msgstr "ظاهر"
+
+#: app/builder/dialogs/__init__.py:498 monitors/MonitorCenter.py:266
+#, fuzzy
+msgid "Save"
+msgstr "ذخیره"
+
+#: app/builder/dialogs/__init__.py:499
+#, fuzzy
+msgid "Online"
+msgstr "آنلاین"
+
+#: app/builder/dialogs/__init__.py:636 localization/__init__.py:157
+#, fuzzy
+msgid "Start"
+msgstr "شروع"
+
+#: app/builder/dialogs/__init__.py:639 localization/__init__.py:159
+#, fuzzy
+msgid "Expected start (s)"
+msgstr "آغاز (های) پیش بینی شده"
+
+#: app/builder/dialogs/__init__.py:681 localization/__init__.py:158
+#, fuzzy
+msgid "Stop"
+msgstr "توقف"
+
+#: app/builder/dialogs/__init__.py:684 localization/__init__.py:160
+#, fuzzy
+msgid "Expected duration (s)"
+msgstr "مدت زمان انتظار (ها)"
+
+#: app/builder/dialogs/__init__.py:836 app/builder/dialogs/__init__.py:1821
+#: app/builder/dialogs/dlgsCode.py:116
+#: app/builder/dialogs/dlgsConditions.py:516
+#, fuzzy
+msgid " Help "
+msgstr "کمک"
+
+#: app/builder/dialogs/__init__.py:837 app/builder/dialogs/dlgsCode.py:117
+#, fuzzy
+msgid "Go to online help about this component"
+msgstr "به کمک آنلاین در مورد این جزء بروید"
+
+#: app/builder/dialogs/__init__.py:842 app/builder/dialogs/__init__.py:1825
+#: app/builder/dialogs/dlgsCode.py:119
+#: app/builder/dialogs/dlgsConditions.py:521 gui/qtgui.py:75 gui/wxgui.py:71
+#: monitors/MonitorCenter.py:1113 monitors/MonitorCenter.py:1220
+msgid " OK "
+msgstr "باشه"
+
+#: app/builder/dialogs/__init__.py:850 app/builder/dialogs/__init__.py:1828
+#: app/builder/dialogs/dlgsCode.py:122
+#: app/builder/dialogs/dlgsConditions.py:529 gui/qtgui.py:76 gui/wxgui.py:72
+#: monitors/MonitorCenter.py:1115 monitors/MonitorCenter.py:1223
+msgid " Cancel "
+msgstr "لغو"
+
+#: app/builder/dialogs/__init__.py:1084 app/builder/validators.py:100
+#, fuzzy
+msgid "Missing name"
+msgstr "نام یافت نشد"
+
+#: app/builder/dialogs/__init__.py:1091
+#, fuzzy, python-format
+msgid "That name is in use (it's a %s). Try another name."
+msgstr "این نام در حال استفاده است (٪ s است). نام دیگری را امتحان کنید"
+
+#: app/builder/dialogs/__init__.py:1094
+#: app/builder/dialogs/dlgsConditions.py:304
+#: app/builder/dialogs/dlgsConditions.py:579 app/builder/validators.py:110
+#, fuzzy
+msgid "Name must be alpha-numeric or _, no spaces"
+msgstr "نام باید الف-عددی باشد یا _، بدون فضای"
+
+#: app/builder/dialogs/__init__.py:1318 app/builder/dialogs/__init__.py:1467
+#, fuzzy
+msgid "No parameters set"
+msgstr "هیچ پارامتری تنظیم نشده است"
+
+#: app/builder/dialogs/__init__.py:1390
+#, fuzzy
+msgid "No parameters set (select a file above)"
+msgstr "هیچ پارامتری تنظیم نمی شود (یک فایل را در بالا انتخاب کنید)"
+
+#: app/builder/dialogs/__init__.py:1457
+#, fuzzy, python-format
+msgid ""
+"%(nCondition)i conditions, with %(nParam)i parameters\n"
+"%(paramStr)s"
+msgstr "٪ (nCondition) شرایط i با پارامتر٪ (پارامتر) پارامتر٪ (paramStr) s"
+
+#: app/builder/dialogs/__init__.py:1466 app/builder/dialogs/__init__.py:1690
+#, fuzzy
+msgid "No parameters set (conditionsFile not found)"
+msgstr "پارامترهای تعیین نشده (conditionsFile not found)"
+
+#: app/builder/dialogs/__init__.py:1563
+#, fuzzy
+msgid "Could not read conditions from:\n"
+msgstr "شرایط را نمی توان از موارد زیر خواند:"
+
+#: app/builder/dialogs/__init__.py:1572
+#, fuzzy
+msgid "Configuration error in conditions file"
+msgstr "خطای پیکربندی در فایل شرایط"
+
+#: app/builder/dialogs/__init__.py:1576
+#, fuzzy
+msgid "Bad condition name(s) in file:\n"
+msgstr "نام وضعیت بد در فایل:"
+
+#: app/builder/dialogs/__init__.py:1591
+#, fuzzy
+msgid "Builder variable(s) ({}) in file:{}"
+msgstr "متغیر ساز (ها) ({}) در فایل: {}"
+
+#: app/builder/dialogs/__init__.py:1679
+#, fuzzy
+msgid "Badly formed condition name(s) in file:\n"
+msgstr "نام وضعیت بد در پرونده:"
+
+#: app/builder/dialogs/__init__.py:1680
+#, fuzzy
+msgid ""
+".\n"
+"Need to be legal as var name; edit file, try again."
+msgstr ". نیازی به نام قانونی قانونی نیست ویرایش فایل، دوباره امتحان کنید"
+
+#: app/builder/dialogs/__init__.py:1822
+#, fuzzy
+msgid "Get help about this component"
+msgstr "درباره این جزء کمک کنید"
+
+#: app/builder/dialogs/dlgsConditions.py:87
+#, fuzzy
+msgid "New (no file)"
+msgstr "جدید (بدون فایل)"
+
+#: app/builder/dialogs/dlgsConditions.py:95
+#, fuzzy
+msgid "Conditions data (no file)"
+msgstr "داده های شرایط (بدون فایل)"
+
+#: app/builder/dialogs/dlgsConditions.py:168
+#, fuzzy
+msgid "Params:"
+msgstr "Params:"
+
+#: app/builder/dialogs/dlgsConditions.py:177
+#, fuzzy
+msgid "type:"
+msgstr "نوع:"
+
+#: app/builder/dialogs/dlgsConditions.py:233
+#, fuzzy, python-format
+msgid "cond %s:"
+msgstr "cond٪ s:"
+
+#: app/builder/dialogs/dlgsConditions.py:270
+#, fuzzy
+msgid "Should be legal as a variable name (alphanumeric)"
+msgstr "باید به عنوان نام متغیر (الفبایی) قانونی باشد"
+
+#: app/builder/dialogs/dlgsConditions.py:281
+#, fuzzy
+msgid "extra white-space"
+msgstr "سفید سفید اضافی"
+
+#: app/builder/dialogs/dlgsConditions.py:447
+#, fuzzy
+msgid "PREVIEW"
+msgstr "پیش نمایش"
+
+#: app/builder/dialogs/dlgsConditions.py:484
+#, fuzzy
+msgid "+cond."
+msgstr "+ مخلوط"
+
+#: app/builder/dialogs/dlgsConditions.py:485
+#, fuzzy
+msgid "Add a condition (row); to delete a condition, delete all of its values."
+msgstr ""
+"یک شرط (ردیف) اضافه کنید برای حذف یک وضعیت، تمام مقادیر آن را حذف کنید."
+
+#: app/builder/dialogs/dlgsConditions.py:491
+#, fuzzy
+msgid "+param"
+msgstr "+ پارامتر"
+
+#: app/builder/dialogs/dlgsConditions.py:492
+#, fuzzy
+msgid ""
+"Add a parameter (column); to delete a param, set its type to None, or delete "
+"all of its values."
+msgstr ""
+"یک پارامتر (ستون) را اضافه کنید برای حذف پارام، نوع آن را به None انتخاب "
+"کنید یا تمام مقادیر آن را حذف کنید."
+
+#: app/builder/dialogs/dlgsConditions.py:498
+#, fuzzy
+msgid "Preview"
+msgstr "پیش نمایش"
+
+#: app/builder/dialogs/dlgsConditions.py:499
+#, fuzzy
+msgid ""
+"Show all values as they would appear after saving to a file, without "
+"actually saving anything."
+msgstr ""
+"نمایش تمام ارزش ها به عنوان آنها پس از صرفه جویی در یک فایل ظاهر می شود، "
+"بدون هیچ چیز صرفه جویی در هر چیزی."
+
+#: app/builder/dialogs/dlgsConditions.py:505
+#, fuzzy
+msgid "Save as"
+msgstr "ذخیره به عنوان"
+
+#: app/builder/dialogs/dlgsConditions.py:517
+#, fuzzy
+msgid "Go to online help"
+msgstr "به کمک آنلاین بروید"
+
+#: app/builder/dialogs/dlgsConditions.py:523
+#, fuzzy
+msgid "Save and exit"
+msgstr "ذخیره و خروج"
+
+#: app/builder/dialogs/dlgsConditions.py:531
+#, fuzzy
+msgid "Exit, discard any edits"
+msgstr "خروج، هرگونه ویرایش را رد کنید"
+
+#: app/builder/dialogs/dlgsConditions.py:592
+#, fuzzy
+msgid "Param name(s) adjusted to be legal. Look ok?"
+msgstr "نام پارامتر قانونی است. خوب نگاه کن"
+
+#: app/builder/flow.py:96
+#, fuzzy
+msgid "rename"
+msgstr "تغییر نام دهید"
+
+#: app/builder/flow.py:108
+#, fuzzy
+msgid "Insert Routine "
+msgstr "روتین را وارد کنید"
+
+#: app/builder/flow.py:109
+#, fuzzy
+msgid "Insert Loop     "
+msgstr "حلقه درج"
+
+#: app/builder/flow.py:155
+#, fuzzy
+msgid "Insert Routine"
+msgstr "روتین را وارد کنید"
+
+#: app/builder/flow.py:156
+#, fuzzy
+msgid "Insert Loop"
+msgstr "حلقه درج"
+
+#: app/builder/flow.py:186
+#, fuzzy
+msgid "Select a Routine to insert (Esc to exit)"
+msgstr "یک روال را برای وارد کردن انتخاب کنید (Esc برای خروج)"
+
+#: app/builder/flow.py:221
+#, fuzzy
+msgid "CANCEL Insert"
+msgstr "لغو قرار دادن"
+
+#: app/builder/flow.py:224
+#, fuzzy
+msgid "Click where you want to insert the Routine, or CANCEL insert."
+msgstr "کلیک کنید کجا می خواهید برای قرار دادن روال، و یا قرار دادن CANCEL."
+
+#: app/builder/flow.py:253
+#, fuzzy
+msgid "CANCEL insert"
+msgstr "قرار دادن CANCEL"
+
+#: app/builder/flow.py:257
+#, fuzzy
+msgid "Click where you want the loop to start/end, or CANCEL insert."
+msgstr ""
+"کلیک کنید کجا که شما می خواهید حلقه برای شروع / پایان، و یا CANCEL قرار دادن."
+
+#: app/builder/flow.py:266
+#, fuzzy
+msgid "Click the other end for the loop"
+msgstr "روی انتهای دیگر برای حلقه کلیک کنید"
+
+#: app/builder/flow.py:494
+#, fuzzy, python-format
+msgid ""
+"The \"%s\" Loop is about to be deleted as well (by collapsing). OK to "
+"proceed?"
+msgstr "حلقه «٪ s» نیز باید حذف شود (با فروپاشی). خوب برای ادامه؟"
+
+#: app/builder/flow.py:496
+#, fuzzy
+msgid "Impending Loop collapse"
+msgstr "فروپاشی حلقه پیشرو"
+
+#: app/builder/localizedStrings.py:24
+#, fuzzy
+msgid "linear"
+msgstr "خطی"
+
+#: app/builder/localizedStrings.py:25
+#, fuzzy
+msgid "nearest"
+msgstr "نزدیکترین"
+
+#: app/builder/localizedStrings.py:28
+#, fuzzy
+msgid "last key"
+msgstr "آخرین کلید"
+
+#: app/builder/localizedStrings.py:29
+#, fuzzy
+msgid "first key"
+msgstr "کلید اول"
+
+#: app/builder/localizedStrings.py:30
+#, fuzzy
+msgid "all keys"
+msgstr "همه کلید ها"
+
+#: app/builder/localizedStrings.py:31
+#, fuzzy
+msgid "nothing"
+msgstr "هیچ چیز"
+
+#: app/builder/localizedStrings.py:32
+#, fuzzy
+msgid "last button"
+msgstr "آخرین دکمه"
+
+#: app/builder/localizedStrings.py:33
+#, fuzzy
+msgid "first button"
+msgstr "دکمه اول"
+
+#: app/builder/localizedStrings.py:34
+#, fuzzy
+msgid "all buttons"
+msgstr "همه دکمه ها"
+
+#: app/builder/localizedStrings.py:35
+#, fuzzy
+msgid "final"
+msgstr "نهایی"
+
+#: app/builder/localizedStrings.py:36
+#, fuzzy
+msgid "on click"
+msgstr "روی کلیک کنید"
+
+#: app/builder/localizedStrings.py:37
+#, fuzzy
+msgid "every frame"
+msgstr "هر فریم"
+
+#: app/builder/localizedStrings.py:38
+#, fuzzy
+msgid "never"
+msgstr "هرگز"
+
+#: app/builder/localizedStrings.py:39
+#, fuzzy
+msgid "from exp settings"
+msgstr "از تنظیمات exp"
+
+#: app/builder/localizedStrings.py:40
+#, fuzzy
+msgid "from preferences"
+msgstr "از ترجیحات"
+
+#: app/builder/localizedStrings.py:41
+#, fuzzy
+msgid "circle"
+msgstr "دایره"
+
+#: app/builder/localizedStrings.py:42
+#, fuzzy
+msgid "square"
+msgstr "مربع"
+
+#: app/builder/localizedStrings.py:44
+#, fuzzy
+msgid "direction"
+msgstr "جهت"
+
+#: app/builder/localizedStrings.py:45
+#, fuzzy
+msgid "position"
+msgstr "موقعیت"
+
+#: app/builder/localizedStrings.py:46
+#, fuzzy
+msgid "walk"
+msgstr "راه رفتن"
+
+#: app/builder/localizedStrings.py:48
+#, fuzzy
+msgid "same"
+msgstr "یکسان"
+
+#: app/builder/localizedStrings.py:49
+#, fuzzy
+msgid "different"
+msgstr "ناهمسان"
+
+#: app/builder/localizedStrings.py:50
+#, fuzzy
+msgid "Experiment"
+msgstr "آزمایشی"
+
+#: app/builder/localizedStrings.py:52
+#, fuzzy
+msgid "time (s)"
+msgstr "بار)"
+
+#: app/builder/localizedStrings.py:53
+#, fuzzy
+msgid "frame N"
+msgstr "قاب N"
+
+#: app/builder/localizedStrings.py:54
+#, fuzzy
+msgid "condition"
+msgstr "وضعیت"
+
+#: app/builder/localizedStrings.py:55
+#, fuzzy
+msgid "duration (s)"
+msgstr "مدت زمان (ها)"
+
+#: app/builder/localizedStrings.py:56
+#, fuzzy
+msgid "duration (frames)"
+msgstr "مدت زمان (فریم)"
+
+#: app/builder/localizedStrings.py:64
+#, fuzzy
+msgid "constant"
+msgstr "ثابت"
+
+#: app/builder/localizedStrings.py:65
+#, fuzzy
+msgid "set every repeat"
+msgstr "هر تکرار را تنظیم کنید"
+
+#: app/builder/localizedStrings.py:66
+#, fuzzy
+msgid "set every frame"
+msgstr "هر فریم را تنظیم کنید"
+
+#: app/builder/localizedStrings.py:68
+#, fuzzy
+msgid "add"
+msgstr "اضافه کردن"
+
+#: app/builder/localizedStrings.py:69 app/builder/localizedStrings.py:97
+#, fuzzy
+msgid "average"
+msgstr "میانگین"
+
+#: app/builder/localizedStrings.py:70
+#, fuzzy
+msgid "use preferences"
+msgstr "استفاده از ترجیحات"
+
+#: app/builder/localizedStrings.py:72
+#, fuzzy
+msgid "debug"
+msgstr "اشکال زدایی"
+
+#: app/builder/localizedStrings.py:73
+#, fuzzy
+msgid "info"
+msgstr "اطلاعات"
+
+#: app/builder/localizedStrings.py:74
+#, fuzzy
+msgid "exp"
+msgstr "نمایش"
+
+#: app/builder/localizedStrings.py:75
+#, fuzzy
+msgid "data"
+msgstr "داده ها"
+
+#: app/builder/localizedStrings.py:76
+#, fuzzy
+msgid "warning"
+msgstr "هشدار"
+
+#: app/builder/localizedStrings.py:77
+#, fuzzy
+msgid "error"
+msgstr "خطا"
+
+#: app/builder/localizedStrings.py:82
+#, fuzzy
+msgid "any click"
+msgstr "هر کلیک"
+
+#: app/builder/localizedStrings.py:83
+#, fuzzy
+msgid "valid click"
+msgstr "کلیک کنید معتبر"
+
+#: app/builder/localizedStrings.py:84
+#, fuzzy
+msgid "mouse onset"
+msgstr "شروع موش"
+
+#: app/builder/localizedStrings.py:85
+#, fuzzy
+msgid "Routine"
+msgstr "روال عادی"
+
+#: app/builder/localizedStrings.py:87
+#, fuzzy
+msgid "line"
+msgstr "خط"
+
+#: app/builder/localizedStrings.py:88
+#, fuzzy
+msgid "triangle"
+msgstr "مثلث"
+
+#: app/builder/localizedStrings.py:89
+#, fuzzy
+msgid "rectangle"
+msgstr "مستطیل"
+
+#: app/builder/localizedStrings.py:90
+#, fuzzy
+msgid "cross"
+msgstr "صلیب"
+
+#: app/builder/localizedStrings.py:91
+#, fuzzy
+msgid "star"
+msgstr "ستاره"
+
+#: app/builder/localizedStrings.py:92
+#, fuzzy
+msgid "regular polygon..."
+msgstr "چند ضلعی منظم ..."
+
+#: app/builder/localizedStrings.py:94
+#, fuzzy
+msgid "first"
+msgstr "اولین"
+
+#: app/builder/localizedStrings.py:95
+#, fuzzy
+msgid "last"
+msgstr "آخرین"
+
+#: app/builder/localizedStrings.py:96
+#, fuzzy
+msgid "all"
+msgstr "همه"
+
+#: app/builder/validators.py:107
+#, fuzzy, python-format
+msgid "That name is in use (by %s). Try another name."
+msgstr "این نام در حال استفاده است (توسط٪ s). نام دیگری را امتحان کنید"
+
+#: app/builder/validators.py:198
+#, fuzzy, python-brace-format
+msgid ""
+"It looks like your 'Correct answer' contains a variable - prepend variables "
+"with '$' e.g. ${val}"
+msgstr ""
+"به نظر می رسد که پاسخ صحیح شما شامل یک متغیر متغیرهای پیش فرض با $، مانند $ "
+"{val}"
+
+#: app/builder/validators.py:210
+#, fuzzy
+msgid "Python syntax error in field `{}`:  {}"
+msgstr "خطای نحو پایتون در فیلد `{}`: {}"
+
+#: app/builder/validators.py:221
+#, fuzzy, python-brace-format
+msgid ""
+"Looks like your variable '{code}' in '{displayName}' should be set to update."
+msgstr ""
+"به نظر می رسد متغیر '{code}' در '{displayName}' باید برای به روز رسانی تنظیم "
+"شود."
+
+#: app/builder/validators.py:237
+#, fuzzy
+msgid "Python var `{}` in `{}` is same as Name"
+msgstr "پایتون var `{}` در `{} 'مشابه نام است"
+
+#: app/coder/coder.py:62
+#, fuzzy
+msgid "basic"
+msgstr "پایه"
+
+#: app/coder/coder.py:63
+#, fuzzy
+msgid "input"
+msgstr "ورودی."
+
+#: app/coder/coder.py:64
+#, fuzzy
+msgid "stimuli"
+msgstr "محرک ها"
+
+#: app/coder/coder.py:65
+#, fuzzy
+msgid "exp control"
+msgstr "کنترل دقت"
+
+#: app/coder/coder.py:67
+#, fuzzy
+msgid "hardware"
+msgstr "سخت افزار"
+
+#: app/coder/coder.py:68
+#, fuzzy
+msgid "timing"
+msgstr "زمان سنجی"
+
+#: app/coder/coder.py:69
+#, fuzzy
+msgid "misc"
+msgstr "متاسفم"
+
+#: app/coder/coder.py:272
+#, fuzzy
+msgid "PsychoPy unit testing"
+msgstr "تست واحد PsychoPy"
+
+#: app/coder/coder.py:305
+#, fuzzy
+msgid "&Tests"
+msgstr "&amp; تست ها"
+
+#: app/coder/coder.py:308
+#, fuzzy, python-format
+msgid "&Run tests\t%s"
+msgstr "اجرای آزمون٪ s"
+
+#: app/coder/coder.py:312
+#, fuzzy, python-format
+msgid "&Cancel running test\t%s"
+msgstr "&amp; لغو تست در حال اجرا٪ s"
+
+#: app/coder/coder.py:313
+#, fuzzy
+msgid "Quit a test in progress"
+msgstr "یک آزمایش در حال انجام است"
+
+#: app/coder/coder.py:317
+#, fuzzy, python-format
+msgid "&Close tests panel\t%s"
+msgstr "بستن تست پنل٪ s"
+
+#: app/coder/coder.py:321
+#, fuzzy, python-format
+msgid "Go to &Coder view\t%s"
+msgstr "به &amp; نماینده Coder بروید٪ s"
+
+#: app/coder/coder.py:322
+#, fuzzy
+msgid "Go to the Coder view"
+msgstr "به نمای Coder بروید"
+
+#: app/coder/coder.py:329
+#, fuzzy
+msgid "Terminate PsychoPy"
+msgstr "پایان دادن به PsychoPy"
+
+#: app/coder/coder.py:332
+#, fuzzy
+msgid "&Preferences"
+msgstr "&amp;اولویت ها"
+
+#: app/coder/coder.py:352
+#, fuzzy
+msgid ""
+"Select the test(s) to run, from:\n"
+"psychopy/tests/test*"
+msgstr "آزمون (ها) را اجرا کنید، از: psychopy / tests / test *"
+
+#: app/coder/coder.py:359
+#, fuzzy
+msgid "Run tests"
+msgstr "تستها را اجرا کنید"
+
+#: app/coder/coder.py:361 app/dialogs.py:53 app/pavlovia_ui/project.py:98
+#: app/pavlovia_ui/project.py:594 app/preferencesDlg.py:205
+#, fuzzy
+msgid "Cancel"
+msgstr "لغو"
+
+#: app/coder/coder.py:367
+#, fuzzy
+msgid "Coverage Report"
+msgstr "گزارش پوشش"
+
+#: app/coder/coder.py:368
+#, fuzzy
+msgid "Include coverage report (requires coverage module)"
+msgstr "شامل گزارش پوشش (نیاز به پوشش ماژول)"
+
+#: app/coder/coder.py:372
+#, fuzzy
+msgid "ALL stdout"
+msgstr "ALL STDOUT"
+
+#: app/coder/coder.py:374
+#, fuzzy
+msgid "Report all printed output & show any new rms-test images"
+msgstr ""
+"گزارش تمام خروجی چاپ شده و نشان دادن تصاویر جدید RMS-Test را نشان می دهد"
+
+#: app/coder/coder.py:1128
+#, fuzzy, python-format
+msgid "Unable to find \"%s\""
+msgstr "پیدا نشد \"٪ s\""
+
+#: app/coder/coder.py:1233 app/coder/coder.py:1332
+#, fuzzy
+msgid "Editor"
+msgstr "ویرایشگر"
+
+#: app/coder/coder.py:1265 app/coder/coder.py:1329
+#, fuzzy
+msgid "Shelf"
+msgstr "تاقچه"
+
+#: app/coder/coder.py:1279 tools/wizard.py:518
+#, fuzzy
+msgid "Welcome to PsychoPy3!"
+msgstr "به PsychoPy3 خوش آمدید!"
+
+#: app/coder/coder.py:1281
+#, fuzzy
+msgid "Output"
+msgstr "خروجی"
+
+#: app/coder/coder.py:1295
+#, fuzzy
+msgid "IPython failed as shell, using pyshell (IPython v0.12 can fail on wx)"
+msgstr ""
+"IPython به عنوان پوسته، با استفاده از pyshell شکست خورده است (IPython v0.12 "
+"می تواند بر روی wx خراب شود)"
+
+#: app/coder/coder.py:1300
+#, fuzzy
+msgid "PyShell in PsychoPy - type some commands!"
+msgstr "PyShell در PsychoPy - برخی از دستورات را تایپ کنید"
+
+#: app/coder/coder.py:1303
+#, fuzzy
+msgid "Shell"
+msgstr "پوسته"
+
+#: app/coder/coder.py:1313 app/coder/coder.py:1331
+#, fuzzy
+msgid "Source Assistant"
+msgstr "دستیار منبع"
+
+#: app/coder/coder.py:1364 app/coder/coder.py:1738
+#, fuzzy
+msgid "Save current file"
+msgstr "ذخیره فایل فعلی"
+
+#: app/coder/coder.py:1367 app/coder/coder.py:1744
+#, fuzzy
+msgid "Save current python file as..."
+msgstr "ذخیره فایل فعلی پایتون به عنوان ..."
+
+#: app/coder/coder.py:1370
+#, fuzzy
+msgid "Close current python file"
+msgstr "بستن پرونده پایتون فعلی"
+
+#: app/coder/coder.py:1377
+#, fuzzy, python-format
+msgid "Print\t%s"
+msgstr "چاپ٪ s"
+
+#: app/coder/coder.py:1394
+#, fuzzy, python-format
+msgid "Cu&t\t%s"
+msgstr "Cu &amp; t٪ s"
+
+#: app/coder/coder.py:1396
+#, fuzzy, python-format
+msgid "&Copy\t%s"
+msgstr "&amp; کپی٪ s"
+
+#: app/coder/coder.py:1400
+#, fuzzy
+msgid "Duplicate the current line (or current selection)"
+msgstr "خط کنونی (یا انتخاب فعلی) را کپی کنید"
+
+#: app/coder/coder.py:1402
+#, fuzzy, python-format
+msgid "&Duplicate\t%s"
+msgstr "&amp; تکراری٪ s"
+
+#: app/coder/coder.py:1408
+#, fuzzy, python-format
+msgid "&Find\t%s"
+msgstr "&amp; پیدا کردن٪ s"
+
+#: app/coder/coder.py:1411
+#, fuzzy, python-format
+msgid "Find &Next\t%s"
+msgstr "پیدا کردن بعدی٪ s"
+
+#: app/coder/coder.py:1416
+#, fuzzy, python-format
+msgid "Comment\t%s"
+msgstr "نظرات"
+
+#: app/coder/coder.py:1417
+#, fuzzy
+msgid "Comment selected lines"
+msgstr "نظر خطوط انتخاب شده"
+
+#: app/coder/coder.py:1421
+#, fuzzy, python-format
+msgid "Uncomment\t%s"
+msgstr "Uncomment٪ s"
+
+#: app/coder/coder.py:1422
+#, fuzzy
+msgid "Un-comment selected lines"
+msgstr "Un-comment خطوط انتخاب شده"
+
+#: app/coder/coder.py:1427
+#, fuzzy, python-format
+msgid "Toggle comment\t%s"
+msgstr "تعویض نظر٪ s"
+
+#: app/coder/coder.py:1428
+#, fuzzy
+msgid "Toggle commenting of selected lines"
+msgstr "تعویض توضیحات خطوط انتخاب شده"
+
+#: app/coder/coder.py:1433
+#, fuzzy, python-format
+msgid "Toggle fold\t%s"
+msgstr "تغییر درجه٪ s"
+
+#: app/coder/coder.py:1434
+#, fuzzy
+msgid "Toggle folding of top level"
+msgstr "تاول زدن سطح بالا را تغییر دهید"
+
+#: app/coder/coder.py:1440
+#, fuzzy, python-format
+msgid "Indent selection\t%s"
+msgstr "انتخاب برگه٪ s"
+
+#: app/coder/coder.py:1441
+#, fuzzy
+msgid "Increase indentation of current line"
+msgstr "تداخل خط فعلی را افزایش دهید"
+
+#: app/coder/coder.py:1445
+#, fuzzy, python-format
+msgid "Dedent selection\t%s"
+msgstr "انتخاب نماینده٪ s"
+
+#: app/coder/coder.py:1446
+#, fuzzy
+msgid "Decrease indentation of current line"
+msgstr "کاهش دندانه خط فعلی"
+
+#: app/coder/coder.py:1449
+#, fuzzy
+msgid "Try to indent to the correct position w.r.t. last line"
+msgstr "سعی کنید به آخرین موقعیت خط درست بپردازید"
+
+#: app/coder/coder.py:1452
+#, fuzzy, python-format
+msgid "SmartIndent\t%s"
+msgstr "SmartIndent٪ s"
+
+#: app/coder/coder.py:1471
+#, fuzzy, python-format
+msgid "Enlarge font\t%s"
+msgstr "بزرگنمایی فونت٪ s"
+
+#: app/coder/coder.py:1472
+#, fuzzy
+msgid "Increase font size"
+msgstr ""
+"Translate\n"
+"\n"
+"Increase font size\n"
+"\n"
+"افزایش اندازه فونت"
+
+#: app/coder/coder.py:1476
+#, fuzzy, python-format
+msgid "Shrink font\t%s"
+msgstr "کاهش فونت٪ s"
+
+#: app/coder/coder.py:1477
+#, fuzzy
+msgid "Decrease font size"
+msgstr "کاهش اندازه فونت"
+
+#: app/coder/coder.py:1508
+#, fuzzy
+msgid "Stop the current script"
+msgstr "اسکریپت فعلی را متوقف کنید"
+
+#: app/coder/coder.py:1521
+#, fuzzy
+msgid "csv from psydat"
+msgstr "CSV از psydat"
+
+#: app/coder/coder.py:1522
+#, fuzzy
+msgid "Create a .csv file from an existing .psydat file"
+msgstr "یک فایل CSV را از یک فایل psidat موجود ایجاد کنید"
+
+#: app/coder/coder.py:1527
+#, fuzzy
+msgid "Unit &testing...\tCtrl-T"
+msgstr "واحد و آزمایش ... Ctrl-T"
+
+#: app/coder/coder.py:1528
+#, fuzzy
+msgid "Show dialog to run unit tests"
+msgstr "نمایش گفتگو برای اجرای آزمونهای واحد"
+
+#: app/coder/coder.py:1538
+#, fuzzy
+msgid "Shows guides in the editor for your indentation level"
+msgstr ""
+"راهنمایی های خود را در ویرایشگر نشان می دهد تا سطح دندانه خود را نشان دهد"
+
+#: app/coder/coder.py:1541
+#, fuzzy, python-format
+msgid "&Indentation guides\t%s"
+msgstr "راهنماهای ردگیری٪ s"
+
+#: app/coder/coder.py:1547
+#, fuzzy
+msgid "Show whitespace characters in the code"
+msgstr "نمادهای فضای خالی را در کد نمایش دهید"
+
+#: app/coder/coder.py:1549
+#, fuzzy, python-format
+msgid "&Whitespace\t%s"
+msgstr "&amp; فضای باز٪ s"
+
+#: app/coder/coder.py:1555
+#, fuzzy
+msgid "Show End Of Line markers in the code"
+msgstr "نشانگرهای پایان خط را در کد نمایش دهید"
+
+#: app/coder/coder.py:1558
+#, fuzzy, python-format
+msgid "Show &EOLs\t%s"
+msgstr "نشان دادن &amp; EOLs٪ s"
+
+#: app/coder/coder.py:1566
+#, fuzzy
+msgid "Shows the output and shell panes (and starts capturing stdout)"
+msgstr "پانل خروجی و پوسته را نشان می دهد (و شروع به گرفتن stdout می کند)"
+
+#: app/coder/coder.py:1569
+#, fuzzy, python-format
+msgid "Show &Output/Shell\t%s"
+msgstr "نمایش و خروجی / پوسته٪ s"
+
+#: app/coder/coder.py:1574
+#, fuzzy
+msgid "Provides help functions and attributes of classes in your script"
+msgstr "توابع راهنما و صفات کلاس ها را در اسکریپت شما فراهم می کند"
+
+#: app/coder/coder.py:1577
+#, fuzzy
+msgid "&Source Assistant"
+msgstr "&amp; منبع دستیار"
+
+#: app/coder/coder.py:1587
+#, fuzzy, python-format
+msgid "Go to &Builder view\t%s"
+msgstr "به &amp; نماینده سازنده بروید٪ s"
+
+#: app/coder/coder.py:1588
+#, fuzzy
+msgid "Go to the Builder view"
+msgstr "به نماینده Builder بروید"
+
+#: app/coder/coder.py:1664
+#, fuzzy
+msgid "&PsychoPy Coder Tutorial"
+msgstr "آموزش روانشناسی و روانشناسی Coder"
+
+#: app/coder/coder.py:1665
+#, fuzzy
+msgid "Go to the online PsychoPy tutorial"
+msgstr "به آموزش آنلاین PsychoPy بروید"
+
+#: app/coder/coder.py:1669
+#, fuzzy
+msgid "&PsychoPy API (reference)"
+msgstr "API روانشناسی (مرجع)"
+
+#: app/coder/coder.py:1670
+#, fuzzy
+msgid "Go to the online PsychoPy reference manual"
+msgstr "به کتاب مرجع آنلاین PsychoPy بروید"
+
+#: app/coder/coder.py:1728
+#, fuzzy
+msgid "Create new python file"
+msgstr "ایجاد فایل جدید پایتون"
+
+#: app/coder/coder.py:1733
+#, fuzzy
+msgid "Open an existing file"
+msgstr "یک فایل موجود باز کنید"
+
+#: app/coder/coder.py:1767 app/coder/coder.py:1768
+#, fuzzy
+msgid "Color Picker -> clipboard"
+msgstr "انتخاب رنگ -> کلیپ بورد"
+
+#: app/coder/coder.py:1775
+#, fuzzy
+msgid "Run current script"
+msgstr "اجرای اسکریپت فعلی"
+
+#: app/coder/coder.py:1780
+#, fuzzy
+msgid "Stop current script"
+msgstr "اسکریپت فعلی را متوقف کنید"
+
+#: app/coder/coder.py:1816 app/coder/coder.py:1841
+#, fuzzy, python-format
+msgid ""
+"'%s' was modified outside of PsychoPy:\n"
+"\n"
+"Reload (without saving)?"
+msgstr "'٪ s' در خارج از PsychoPy اصلاح شد: Reload (بدون صرفه جویی)؟"
+
+#: app/coder/coder.py:1820 app/coder/coder.py:1845
+#, fuzzy
+msgid "Reloading file"
+msgstr "فایل بارگذاری مجدد"
+
+#: app/coder/coder.py:1930 app/coder/coder.py:2299
+#, fuzzy, python-format
+msgid "Save changes to %s before quitting?"
+msgstr "قبل از ترک، تغییرات را به٪ s ذخیره کنید؟"
+
+#: app/coder/coder.py:2069
+#, fuzzy
+msgid "Failed to open {}. Make sure that encoding of the file is utf-8."
+msgstr "باز نشد {}. اطمینان حاصل کنید که رمزگذاری فایل utf-8 است."
+
+#: app/coder/coder.py:2119 app/coder/coder.py:2598
+#, fuzzy
+msgid "Analyzing code"
+msgstr "تجزیه و تحلیل کد"
+
+#: app/coder/coder.py:2141
+#, fuzzy
+msgid "Loading file"
+msgstr "بارگیری فایل"
+
+#: app/coder/coder.py:2194
+#, fuzzy, python-format
+msgid ""
+"File appears to have been modified outside of PsychoPy:\n"
+"   %s\n"
+"OK to overwrite?"
+msgstr ""
+"به نظر می رسد که فایل خارج از PsychoPy اصلاح شده است:٪ s OK برای بازنویسی؟"
+
+#: app/coder/coder.py:2206
+#, fuzzy, python-format
+msgid ""
+"File '%s' lacks write-permission:\n"
+"Will try save-as instead."
+msgstr "فایل '٪ s' دارای نوشتن مجوز: سعی کنید ذخیره کنید - به جای آن."
+
+#: app/coder/coder.py:2220
+#, fuzzy
+msgid "Saving file"
+msgstr "ذخیره فایل"
+
+#: app/coder/coder.py:2232
+#, fuzzy
+msgid "Analyzing current source code"
+msgstr "تجزیه و تحلیل کد منبع فعلی"
+
+#: app/coder/coder.py:2262
+#, fuzzy
+msgid "Python scripts (*.py)|*.py|Text file (*.txt)|*.txt|Any file (*.*)|*.*"
+msgstr ""
+"اسکریپت های Python (* .py) | * .py | فایل متنی (* .txt) | * .txt | هر فایل "
+"(*. *) | *. *"
+
+#: app/coder/coder.py:2265
+#, fuzzy
+msgid "Python scripts (*.py)|*.py|Text file (*.txt)|*.txt|Any file (*.*)|*"
+msgstr ""
+"اسکریپت های Python (* .py) | * .py | فایل متنی (* .txt) | * .txt | هر فایل "
+"(*. *) | *"
+
+#: app/coder/coder.py:2400
+#, fuzzy, python-format
+msgid "Save changes to %s before running?"
+msgstr "قبل از اجرای تغییرات را به٪ s ذخیره کنید"
+
+#: app/coder/coder.py:2606
+#, fuzzy
+msgid "ready"
+msgstr "آماده"
+
+#: app/connections/updates.py:99
+#, fuzzy
+msgid "Couldn't connect to psychopy.org to check for updates. \n"
+msgstr "برای چک کردن بهروزرسانی به psychopy.org نمیتوانید وصل شوید."
+
+#: app/connections/updates.py:101
+#, fuzzy
+msgid "Check internet settings (and proxy setting in PsychoPy Preferences)."
+msgstr "تنظیمات اینترنت (و تنظیمات پروکسی در تنظیمات PsychoPy را بررسی کنید)."
+
+#: app/connections/updates.py:105 app/connections/updates.py:154
+#: app/connections/updates.py:173
+#, fuzzy
+msgid "PsychoPy updates"
+msgstr "به روز رسانی PsychoPy"
+
+#: app/connections/updates.py:144
+#, fuzzy, python-format
+msgid ""
+"PsychoPy v%(latest)s is available (you are running %(running)s).\n"
+"\n"
+msgstr "PsychoPy v٪ (آخرین) s در دسترس است (شما در حال اجرا٪ (در حال اجرا) s)."
+
+#: app/connections/updates.py:148
+#, fuzzy
+msgid "This version is too big an update to be handled automatically.\n"
+msgstr "این نسخه بیش از حد بزرگ به روز رسانی به صورت خودکار انجام می شود."
+
+#: app/connections/updates.py:150
+#, fuzzy
+msgid ""
+"Please fetch the latest version from www.psychopy.org and install manually."
+msgstr "لطفا آخرین نسخه از www.psychopy.org را بگیرید و نصب کنید."
+
+#: app/connections/updates.py:155
+#, fuzzy
+msgid "Go to downloads"
+msgstr "برو به دریافت ها"
+
+#: app/connections/updates.py:157
+#, fuzzy
+msgid "Go to changelog"
+msgstr "برو به تغییرات"
+
+#: app/connections/updates.py:158
+#, fuzzy
+msgid "Later"
+msgstr "بعدا"
+
+#: app/connections/updates.py:169
+#, fuzzy, python-format
+msgid "You are running the latest version of PsychoPy (%s). "
+msgstr "شما در حال اجرای آخرین نسخه PsychoPy (٪ s) هستید."
+
+#: app/connections/updates.py:195
+#, fuzzy, python-format
+msgid ""
+"PsychoPy v%(latest)s is available (you are running %(running)s).\n"
+"\n"
+"(To disable this check, see Preferences > connections > checkForUpdates)"
+msgstr ""
+"PsychoPy v٪ (آخرین) s در دسترس است (شما در حال اجرا٪ (در حال اجرا) s). (برای "
+"غیر فعال کردن این چک، به ترجیحات> اتصالات> checkForUpdates مراجعه کنید)"
+
+#: app/connections/updates.py:202
+#, fuzzy
+msgid ""
+"This version MAY require you to modify your\n"
+"scripts/exps slightly. Read the changelog carefully."
+msgstr ""
+"این نسخه ممکن است شما را مجبور به اصلاح اسکریپت های شما / EXPS کمی کند. با "
+"دقت بخوانید."
+
+#: app/connections/updates.py:208
+#, fuzzy
+msgid ""
+"There are no known compatibility\n"
+"issues with your current version."
+msgstr "هیچ مشکل سازگاری شناخته شده ای با نسخه فعلی شما وجود ندارد."
+
+#: app/connections/updates.py:212
+#, fuzzy
+msgid "View complete Changelog"
+msgstr "مشاهده تغییرات کامل"
+
+#: app/connections/updates.py:216
+#, fuzzy
+msgid "You can update PsychoPy with your package manager"
+msgstr "شما می توانید PsychoPy را با مدیر بسته خود به روز کنید"
+
+#: app/connections/updates.py:220
+#, fuzzy
+msgid "Should PsychoPy update itself?"
+msgstr "آیا باید روانشناسی خود را به روز رسانی کند؟"
+
+#: app/connections/updates.py:234
+#, fuzzy
+msgid "Keep warning me"
+msgstr "به من هشدار بده"
+
+#: app/connections/updates.py:237
+#, fuzzy
+msgid "Stop warning me"
+msgstr "من را متوقف کن"
+
+#: app/connections/updates.py:239 app/dialogs.py:50
+#, fuzzy
+msgid "Yes"
+msgstr "بله"
+
+#: app/connections/updates.py:242
+#, fuzzy
+msgid "Not now"
+msgstr "حالا نه"
+
+#: app/connections/updates.py:244
+#, fuzzy
+msgid "Skip this version"
+msgstr "این نسخه را پر کنید"
+
+#: app/connections/updates.py:281
+#, fuzzy
+msgid "PsychoPy Updates"
+msgstr "به روز رسانی PsychoPy"
+
+#: app/connections/updates.py:290
+#, fuzzy
+msgid " Auto-update (will fetch latest version)"
+msgstr "خودکار بهروزرسانی (آخرین نسخه را دریافت خواهد کرد)"
+
+#: app/connections/updates.py:299
+#, fuzzy
+msgid " Use zip file below (download a PsychoPy release file ending .zip)"
+msgstr ""
+"از فایل زیپ زیر استفاده کنید (دانلود یک فایل انتشار PsychoPy با پایان دادن "
+"به .zip)"
+
+#: app/connections/updates.py:310
+#, fuzzy
+msgid "Install"
+msgstr "نصب"
+
+#: app/connections/updates.py:313
+#, fuzzy
+msgid "Close"
+msgstr "بستن"
+
+#: app/connections/updates.py:333
+#, fuzzy, python-format
+msgid ""
+"You are running PsychoPy v%s.\n"
+" "
+msgstr "شما در حال اجرا PsychoPy v٪ s هستید."
+
+#: app/connections/updates.py:334
+#, fuzzy
+msgid ""
+"PsychoPy could not connect to the \n"
+" internet to check for more recent versions.\n"
+msgstr ""
+"PsychoPy نمی تواند به اینترنت متصل شود تا نسخه های جدیدتری را بررسی کند."
+
+#: app/connections/updates.py:336
+#, fuzzy
+msgid "Check proxy settings in preferences."
+msgstr "تنظیمات پروکسی را در تنظیمات بررسی کنید."
+
+#: app/connections/updates.py:340
+#, fuzzy, python-format
+msgid ""
+"You are running PsychoPy (%(running)s), which is ahead of the latest "
+"official version (%(latest)s)"
+msgstr ""
+"شما در حال اجرا PsychoPy (٪ (اجرا) s)، که پیش از آخرین نسخه رسمی (٪ (آخرین) "
+"s)"
+
+#: app/connections/updates.py:345
+#, fuzzy, python-format
+msgid ""
+"You are running the latest version of PsychoPy (%s)\n"
+" "
+msgstr "شما در حال اجرای آخرین نسخه PsychoPy (٪ s) هستید"
+
+#: app/connections/updates.py:346
+#, fuzzy
+msgid ""
+"You can revert to a previous version by selecting a specific .zip source "
+"installation file"
+msgstr ""
+"شما می توانید با انتخاب یک فایل نصب فایل منبع فایل zip به یک نسخه قبلی "
+"بازگردید"
+
+#: app/connections/updates.py:350
+#, fuzzy, python-format
+msgid ""
+"PsychoPy v%(latest)s is available\n"
+"You are running v%(running)s"
+msgstr "PsychoPy v٪ (آخرین) s در دسترس است شما در حال اجرا v٪ (در حال اجرا) s"
+
+#: app/connections/updates.py:355
+#, fuzzy
+msgid ""
+"\n"
+"You can update to the latest version automatically"
+msgstr "شما می توانید به آخرین نسخه به طور خودکار به روز رسانی"
+
+#: app/connections/updates.py:357
+#, fuzzy
+msgid ""
+"\n"
+"You cannot update to the latest version automatically.\n"
+"Please fetch the latest Standalone package from www.psychopy.org"
+msgstr ""
+"شما نمی توانید به آخرین نسخه به طور خودکار به روز رسانی کنید. لطفا آخرین "
+"بسته مستقل از www.psychopy.org را بیابید"
+
+#: app/connections/updates.py:408
+#, fuzzy, python-format
+msgid "Attempting to fetch PsychoPy %s..."
+msgstr "تلاش برای به دست آوردن PsychoPy٪ s ..."
+
+#: app/connections/updates.py:429
+#, fuzzy, python-format
+msgid "Fetched %(done)i of %(total)i kb of PsychoPy-%(version)s.zip"
+msgstr ""
+"٪ (انجام شده) i از٪ (مجموع) i kb از PsychoPy به دست آمده -٪ (نسخه) s.zip"
+
+#: app/connections/updates.py:434
+#, fuzzy, python-format
+msgid "Successfully downloaded PsychoPy-%s.zip"
+msgstr "موفق به دانلود PsychoPy-٪ s.zip"
+
+#: app/connections/updates.py:484
+#, fuzzy
+msgid ""
+"To upgrade you need to restart the app as admin (Right-click the app and "
+"'Run as admin')"
+msgstr ""
+"برای ارتقاء به شما باید برنامه را به عنوان مدیر مجددا راه اندازی کنید (روی "
+"برنامه کلیک راست کرده و «اجرای به عنوان مدیر» را اجرا کنید)"
+
+#: app/connections/updates.py:488
+#, fuzzy
+msgid "Could not move existing PsychoPy installation (permissions error?)"
+msgstr "آیا نصب روانشناسی موجود (خطای مجوز؟) امکان پذیر نیست؟"
+
+#: app/connections/updates.py:517
+#, fuzzy, python-format
+msgid ""
+"Right-click the app and 'Run as admin'):\n"
+"%s"
+msgstr "راست کلیک بر روی برنامه و 'اجرای به عنوان مدیر'):٪ s"
+
+#: app/connections/updates.py:519
+#, fuzzy, python-format
+msgid ""
+"Failed to create directory for new version (permissions error?):\n"
+"%s"
+msgstr "ایجاد دایرکتوری برای نسخه جدید (خطای مجوز؟):٪ s"
+
+#: app/connections/updates.py:544
+#, fuzzy
+msgid ""
+"Success. \n"
+"Changes to PsychoPy will be completed when the application is next run"
+msgstr ""
+"موفقیت تغییرات در PsychoPy زمانی انجام خواهد شد که برنامه بعدی اجرا شود"
+
+#: app/connections/updates.py:553
+#, fuzzy, python-format
+msgid "Downloading PsychoPy v%s"
+msgstr "دانلود PsychoPy v٪ s"
+
+#: app/connections/updates.py:558
+#, fuzzy
+msgid ""
+"Failed to fetch PsychoPy release.\n"
+"Check proxy setting in preferences"
+msgstr "بازخوانی PsychoPy نشد. تنظیمات پروکسی را در تنظیمات بررسی کنید"
+
+#: app/dialogs.py:38 gui/qtgui.py:577
+#, fuzzy
+msgid "Warning"
+msgstr "هشدار"
+
+#: app/dialogs.py:39
+#, fuzzy
+msgid "Info"
+msgstr "اطلاعات"
+
+#: app/dialogs.py:54
+#, fuzzy
+msgid "No"
+msgstr "خیر"
+
+#: app/dialogs.py:65 app/pavlovia_ui/project.py:592 app/pavlovia_ui/user.py:71
+#: app/preferencesDlg.py:198
+#, fuzzy
+msgid "OK"
+msgstr "تایید"
+
+#: app/pavlovia_ui/_base.py:32
+#, fuzzy, python-format
+msgid "&Close View\t%s"
+msgstr "بستن نمای٪ s"
+
+#: app/pavlovia_ui/_base.py:33
+#, fuzzy
+msgid "Close current window"
+msgstr "بستن پنجره فعلی"
+
+#: app/pavlovia_ui/_base.py:183
+#, fuzzy
+msgid "Mandatory title summarizing the changes you're making in these files"
+msgstr "عنوان اجباری خلاصه سازی تغییراتی که در این فایل ها ایجاد می کنید"
+
+#: app/pavlovia_ui/_base.py:186 app/pavlovia_ui/functions.py:120
+#, fuzzy
+msgid "Optional further details about the changes you're making in these files"
+msgstr ""
+"جزئیات بیشتر در مورد تغییراتی که در این فایل ها ایجاد می کنید اختیاری است"
+
+#: app/pavlovia_ui/functions.py:43
+#, fuzzy
+msgid "Choose/create the root location for the synced project"
+msgstr "انتخاب / ایجاد محل ریشه برای پروژه همگام سازی شده"
+
+#: app/pavlovia_ui/functions.py:114
+#, fuzzy
+msgid "A title summarizing the changes you're making in these files"
+msgstr "یک عنوان خلاصه تغییراتی که در این فایل ها ایجاد می کنید"
+
+#: app/pavlovia_ui/functions.py:161
+#, fuzzy
+msgid "You need to install git to use Pavlovia projects"
+msgstr "شما باید از Git استفاده کنید تا از پروژه های Pavlovia استفاده کنید"
+
+#: app/pavlovia_ui/menu.py:53
+#, fuzzy
+msgid "Log in to Pavlovia...\t{}"
+msgstr "ورود به پافویو ... {}"
+
+#: app/pavlovia_ui/menu.py:56
+#, fuzzy
+msgid "User"
+msgstr "کاربر"
+
+#: app/pavlovia_ui/menu.py:60
+#, fuzzy
+msgid "Search Pavlovia\t{}"
+msgstr "جستجو Pavlovia {}"
+
+#: app/pavlovia_ui/menu.py:66
+#, fuzzy
+msgid "New...\t{}"
+msgstr "جدید... {}"
+
+#: app/pavlovia_ui/menu.py:70
+#, fuzzy
+msgid "Sync\t{}"
+msgstr "همگام سازی {}"
+
+#: app/pavlovia_ui/menu.py:125
+#, fuzzy
+msgid "You need to log in to create a project"
+msgstr "برای ایجاد یک پروژه باید وارد سیستم شوید"
+
+#: app/pavlovia_ui/project.py:53
+#, fuzzy
+msgid "Name:"
+msgstr "نام:"
+
+#: app/pavlovia_ui/project.py:66
+#, fuzzy
+msgid "Group/owner:"
+msgstr "گروه / مالک:"
+
+#: app/pavlovia_ui/project.py:70
+#, fuzzy
+msgid "Description:"
+msgstr "توضیحات:"
+
+#: app/pavlovia_ui/project.py:74
+#, fuzzy
+msgid "Local folder:"
+msgstr "پوشه محلی:"
+
+#: app/pavlovia_ui/project.py:84
+#, fuzzy
+msgid "Tags (comma separated):"
+msgstr "برچسب ها (جدا شده با کاما):"
+
+#: app/pavlovia_ui/project.py:88
+#, fuzzy
+msgid "Public:"
+msgstr "عمومی:"
+
+#: app/pavlovia_ui/project.py:93
+#, fuzzy
+msgid "Create project on Pavlovia"
+msgstr "ایجاد پروژه در پولوویا"
+
+#: app/pavlovia_ui/project.py:95
+#, fuzzy
+msgid "Submit changes to Pavlovia"
+msgstr "تغییرات را به پاورویا اضافه کنید"
+
+#: app/pavlovia_ui/project.py:195
+#, fuzzy
+msgid "Local root: "
+msgstr "ریشه محلی:"
+
+#: app/pavlovia_ui/project.py:207
+#, fuzzy
+msgid "Select a project for details"
+msgstr "یک پروژه برای جزئیات انتخاب کنید"
+
+#: app/pavlovia_ui/project.py:213 app/pavlovia_ui/project.py:302
+#, fuzzy
+msgid "Sync..."
+msgstr "همگام سازی..."
+
+#: app/pavlovia_ui/project.py:248
+#, fuzzy
+msgid "Ready to sync"
+msgstr "آماده همگام سازی"
+
+#: app/pavlovia_ui/project.py:251
+#, fuzzy
+msgid "This file doesn't belong to a project yet"
+msgstr "این فایل هنوز به یک پروژه تعلق ندارد"
+
+#: app/pavlovia_ui/project.py:280
+#, fuzzy
+msgid "User not logged in!"
+msgstr "کاربر وارد نشده است"
+
+#: app/pavlovia_ui/project.py:285
+#, fuzzy
+msgid "Visibility: {}"
+msgstr "دید: {}"
+
+#: app/pavlovia_ui/project.py:290
+#, fuzzy
+msgid "<not yet synced>"
+msgstr "<not yet synced>"
+
+#: app/pavlovia_ui/project.py:291 app/pavlovia_ui/project.py:358
+#: app/pavlovia_ui/project.py:371
+#, fuzzy
+msgid "Local root: {}"
+msgstr "ریشه محلی: {}"
+
+#: app/pavlovia_ui/project.py:298
+#, fuzzy
+msgid "Log in to sync..."
+msgstr "برای همگامسازی وارد شوید"
+
+#: app/pavlovia_ui/project.py:300
+#, fuzzy
+msgid "Fork + sync..."
+msgstr "همگام سازی فور ..."
+
+#: app/pavlovia_ui/project.py:307
+#, fuzzy
+msgid "Tags:"
+msgstr "برچسب ها:"
+
+#: app/pavlovia_ui/project.py:363
+#, fuzzy
+msgid "Synchronizing..."
+msgstr "همگام سازی..."
+
+#: app/pavlovia_ui/project.py:388
+#, fuzzy
+msgid "Project info"
+msgstr "اطلاعات پروژه"
+
+#: app/pavlovia_ui/project.py:436
+#, fuzzy
+msgid "This file doesn't belong to any existing project."
+msgstr "این فایل متعلق به هیچ پروژه موجود نیست"
+
+#: app/pavlovia_ui/project.py:439
+#, fuzzy
+msgid "Create a project"
+msgstr "یک پروژه ایجاد کنید"
+
+#: app/pavlovia_ui/project.py:578
+#, fuzzy
+msgid "points to a remote that doesn't exist (deleted?)."
+msgstr "اشاره به یک راه دور که وجود ندارد (حذف شده است)."
+
+#: app/pavlovia_ui/project.py:579
+#, fuzzy
+msgid "What shall we do?"
+msgstr "چکار باید بکنیم؟"
+
+#: app/pavlovia_ui/project.py:581
+#, fuzzy
+msgid "(Re)create a project"
+msgstr "(Re) یک پروژه ایجاد کنید"
+
+#: app/pavlovia_ui/project.py:582
+#, fuzzy
+msgid "Point to an different location"
+msgstr "نقطه به مکان دیگر"
+
+#: app/pavlovia_ui/project.py:583
+#, fuzzy
+msgid "not yet supported"
+msgstr "هنوز پشتیبانی نشده است"
+
+#: app/pavlovia_ui/project.py:584
+#, fuzzy
+msgid "Forget the local git repository (deletes history keeps files)"
+msgstr "سایت مخفی git را فراموش کرده اید (تاریخچه فایل ها را پاک می کند)"
+
+#: app/pavlovia_ui/search.py:36
+#, fuzzy
+msgid "Search for projects online"
+msgstr "جستجو برای پروژه های آنلاین"
+
+#: app/pavlovia_ui/search.py:51
+#, fuzzy
+msgid "Search:"
+msgstr "جستجو:"
+
+#: app/pavlovia_ui/search.py:54
+#, fuzzy
+msgid "Search"
+msgstr "جستجو"
+
+#: app/pavlovia_ui/toolbar.py:27
+#, fuzzy
+msgid "Run online"
+msgstr "اجرای آنلاین"
+
+#: app/pavlovia_ui/toolbar.py:28
+#, fuzzy
+msgid "Run the study online (with pavlovia.org)"
+msgstr "این مطالعه را آنلاین انجام دهید (با pavlovia.org)"
+
+#: app/pavlovia_ui/toolbar.py:32
+#, fuzzy
+msgid "Sync online"
+msgstr "همگام سازی آنلاین"
+
+#: app/pavlovia_ui/toolbar.py:33
+#, fuzzy
+msgid "Sync with web project (at pavlovia.org)"
+msgstr "همگام سازی با پروژه وب (در pavlovia.org)"
+
+#: app/pavlovia_ui/toolbar.py:37
+#, fuzzy
+msgid "Search Pavlovia.org"
+msgstr "جستجو Pavlovia.org"
+
+#: app/pavlovia_ui/toolbar.py:38
+#, fuzzy
+msgid "Find existing studies online (at pavlovia.org)"
+msgstr "یافتن مطالعات موجود در اینترنت (در pavlovia.org)"
+
+#: app/pavlovia_ui/toolbar.py:42
+#, fuzzy
+msgid "Log in to Pavlovia"
+msgstr "ورود به پافویانا"
+
+#: app/pavlovia_ui/toolbar.py:43
+#, fuzzy
+msgid "Log in to (or create user at) Pavlovia.org"
+msgstr "ورود به (یا ایجاد کاربر در) Pavlovia.org"
+
+#: app/pavlovia_ui/toolbar.py:47
+#, fuzzy
+msgid "View project"
+msgstr "نمایش پروژه"
+
+#: app/pavlovia_ui/toolbar.py:48
+#, fuzzy
+msgid "View details of this project"
+msgstr "مشاهده جزئیات این پروژه"
+
+#: app/pavlovia_ui/user.py:50
+#, fuzzy
+msgid "Full name:"
+msgstr "نام و نام خانوادگی:"
+
+#: app/pavlovia_ui/user.py:63
+#, fuzzy
+msgid "Organization:"
+msgstr "سازمان:"
+
+#: app/pavlovia_ui/user.py:67
+#, fuzzy
+msgid "Bio (250 chrs):"
+msgstr "بیو (250 اسب بخار):"
+
+#: app/preferencesDlg.py:28
+#, fuzzy
+msgid "General"
+msgstr "عمومی"
+
+#: app/preferencesDlg.py:29
+#, fuzzy
+msgid "App"
+msgstr "برنامه"
+
+#: app/preferencesDlg.py:32
+#, fuzzy
+msgid "Hardware"
+msgstr "سخت افزار"
+
+#: app/preferencesDlg.py:33
+#, fuzzy
+msgid "Connections"
+msgstr "اتصالات"
+
+#: app/preferencesDlg.py:34
+#, fuzzy
+msgid "Key bindings"
+msgstr "پیوست های کلید"
+
+#: app/preferencesDlg.py:36
+#, fuzzy
+msgid "window type"
+msgstr "نوع پنجره"
+
+#: app/preferencesDlg.py:37
+#, fuzzy
+msgid "units"
+msgstr "واحد"
+
+#: app/preferencesDlg.py:38 tools/wizard.py:37
+#, fuzzy
+msgid "full-screen"
+msgstr "تمام صفحه"
+
+#: app/preferencesDlg.py:39
+#, fuzzy
+msgid "allow GUI"
+msgstr "اجازه می دهد تا رابط کاربری گرافیکی"
+
+#: app/preferencesDlg.py:40
+#, fuzzy
+msgid "paths"
+msgstr "راه ها"
+
+#: app/preferencesDlg.py:41
+#, fuzzy
+msgid "audio library"
+msgstr "کتابخانه صوتی"
+
+#: app/preferencesDlg.py:42
+#, fuzzy
+msgid "audio driver"
+msgstr "راننده صوتی"
+
+#: app/preferencesDlg.py:43
+#, fuzzy
+msgid "audio device"
+msgstr "دستگاه صوتی"
+
+#: app/preferencesDlg.py:44
+#, fuzzy
+msgid "flac audio compression"
+msgstr "فشرده سازی صدا صوتی"
+
+#: app/preferencesDlg.py:45
+#, fuzzy
+msgid "parallel ports"
+msgstr "پورت های موازی"
+
+#: app/preferencesDlg.py:46
+#, fuzzy
+msgid "Qmix configuration"
+msgstr "پیکربندی Qmix"
+
+#: app/preferencesDlg.py:47
+#, fuzzy
+msgid "shutdown key"
+msgstr "کلید خاموش شدن"
+
+#: app/preferencesDlg.py:48
+#, fuzzy
+msgid "shutdown key modifier keys"
+msgstr "کلید های اصلاح کلید کلید خاموش"
+
+#: app/preferencesDlg.py:49
+#, fuzzy
+msgid "show start-up tips"
+msgstr "راهنمایی های راه اندازی را نشان می دهد"
+
+#: app/preferencesDlg.py:50
+#, fuzzy
+msgid "large icons"
+msgstr "آیکون های بزرگ"
+
+#: app/preferencesDlg.py:51
+#, fuzzy
+msgid "default view"
+msgstr "نمایش پیش فرض"
+
+#: app/preferencesDlg.py:52
+#, fuzzy
+msgid "reset preferences"
+msgstr "تنظیمات بازنشانی"
+
+#: app/preferencesDlg.py:53
+#, fuzzy
+msgid "auto-save prefs"
+msgstr "پیش ذخیره خودکار"
+
+#: app/preferencesDlg.py:54
+#, fuzzy
+msgid "debug mode"
+msgstr "حالت اشکال زدایی"
+
+#: app/preferencesDlg.py:55 tools/wizard.py:42
+#, fuzzy
+msgid "locale"
+msgstr "زبان"
+
+#: app/preferencesDlg.py:56
+#, fuzzy
+msgid "read-only"
+msgstr "فقط خواندنی"
+
+#: app/preferencesDlg.py:57
+#, fuzzy
+msgid "code font"
+msgstr "فونت کد"
+
+#: app/preferencesDlg.py:58
+#, fuzzy
+msgid "comment font"
+msgstr "فونت نظر"
+
+#: app/preferencesDlg.py:59
+#, fuzzy
+msgid "output font"
+msgstr "فونت خروجی"
+
+#: app/preferencesDlg.py:60
+#, fuzzy
+msgid "output font size"
+msgstr "اندازه فونت خروجی"
+
+#: app/preferencesDlg.py:61
+#, fuzzy
+msgid "code font size"
+msgstr "اندازه فونت کد"
+
+#: app/preferencesDlg.py:62
+#, fuzzy
+msgid "show source asst"
+msgstr "نشان دادن منبع asst"
+
+#: app/preferencesDlg.py:63
+#, fuzzy
+msgid "show output"
+msgstr "نمایش خروجی"
+
+#: app/preferencesDlg.py:64
+#, fuzzy
+msgid "reload previous files"
+msgstr "فایل های قبلی را دوباره بارگذاری کنید"
+
+#: app/preferencesDlg.py:65
+#, fuzzy
+msgid "preferred shell"
+msgstr "پوسته مورد نظر"
+
+#: app/preferencesDlg.py:66
+#, fuzzy
+msgid "reload previous exp"
+msgstr "بارگیری مجدد قبلی"
+
+#: app/preferencesDlg.py:67
+#, fuzzy
+msgid "uncluttered namespace"
+msgstr "فضای نامحدود"
+
+#: app/preferencesDlg.py:68
+#, fuzzy
+msgid "components folders"
+msgstr "پوشه های اجزاء"
+
+#: app/preferencesDlg.py:69
+#, fuzzy
+msgid "hidden components"
+msgstr "اجزای مخفی"
+
+#: app/preferencesDlg.py:70
+#, fuzzy
+msgid "unpacked demos dir"
+msgstr "نسخه پشتیبان تهیه نشده"
+
+#: app/preferencesDlg.py:71
+#, fuzzy
+msgid "saved data folder"
+msgstr "پوشه داده ذخیره شده"
+
+#: app/preferencesDlg.py:72
+#, fuzzy
+msgid "Flow at top"
+msgstr "جریان در بالای صفحه"
+
+#: app/preferencesDlg.py:73
+#, fuzzy
+msgid "always show readme"
+msgstr "همیشه نمایش داده می شود"
+
+#: app/preferencesDlg.py:74
+#, fuzzy
+msgid "max favorites"
+msgstr "حداکثر مورد علاقه"
+
+#: app/preferencesDlg.py:75
+#, fuzzy
+msgid "proxy"
+msgstr "پروکسی"
+
+#: app/preferencesDlg.py:76
+#, fuzzy
+msgid "auto-proxy"
+msgstr "خودکار پروکسی"
+
+#: app/preferencesDlg.py:77
+#, fuzzy
+msgid "allow usage stats"
+msgstr "اجازه استفاده از آمار"
+
+#: app/preferencesDlg.py:78
+#, fuzzy
+msgid "check for updates"
+msgstr "بررسی برای به روز رسانی"
+
+#: app/preferencesDlg.py:79
+#, fuzzy
+msgid "timeout"
+msgstr "تعطیلات"
+
+#: app/preferencesDlg.py:80
+#, fuzzy
+msgid "open"
+msgstr "باز"
+
+#: app/preferencesDlg.py:81
+#, fuzzy
+msgid "new"
+msgstr "جدید"
+
+#: app/preferencesDlg.py:82
+#, fuzzy
+msgid "save"
+msgstr "ذخیره"
+
+#: app/preferencesDlg.py:83
+#, fuzzy
+msgid "save as"
+msgstr "ذخیره به عنوان"
+
+#: app/preferencesDlg.py:84
+#, fuzzy
+msgid "print"
+msgstr "چاپ"
+
+#: app/preferencesDlg.py:85
+#, fuzzy
+msgid "close"
+msgstr "بستن"
+
+#: app/preferencesDlg.py:86
+#, fuzzy
+msgid "quit"
+msgstr "ترک"
+
+#: app/preferencesDlg.py:87
+#, fuzzy
+msgid "preferences"
+msgstr "اولویت ها"
+
+#: app/preferencesDlg.py:88
+#, fuzzy
+msgid "export HTML"
+msgstr "صادرات HTML"
+
+#: app/preferencesDlg.py:89
+#, fuzzy
+msgid "cut"
+msgstr "برش"
+
+#: app/preferencesDlg.py:91
+#, fuzzy
+msgid "paste"
+msgstr "جایگذاری"
+
+#: app/preferencesDlg.py:92
+#, fuzzy
+msgid "duplicate"
+msgstr "تکراری"
+
+#: app/preferencesDlg.py:93
+#, fuzzy
+msgid "indent"
+msgstr "عقب نشینی"
+
+#: app/preferencesDlg.py:94
+#, fuzzy
+msgid "dedent"
+msgstr "جدی"
+
+#: app/preferencesDlg.py:95
+#, fuzzy
+msgid "smart indent"
+msgstr "هوشمند است"
+
+#: app/preferencesDlg.py:96
+#, fuzzy
+msgid "find"
+msgstr "پیدا کردن"
+
+#: app/preferencesDlg.py:97
+#, fuzzy
+msgid "find again"
+msgstr "دوباره پیدا کنید"
+
+#: app/preferencesDlg.py:98
+#, fuzzy
+msgid "undo"
+msgstr "لغو کردن"
+
+#: app/preferencesDlg.py:99
+#, fuzzy
+msgid "redo"
+msgstr "ازنو"
+
+#: app/preferencesDlg.py:100
+#, fuzzy
+msgid "comment"
+msgstr "نظر"
+
+#: app/preferencesDlg.py:101
+#, fuzzy
+msgid "uncomment"
+msgstr "رد کردن"
+
+#: app/preferencesDlg.py:102
+#, fuzzy
+msgid "toggle comment"
+msgstr "تعویض نظر"
+
+#: app/preferencesDlg.py:103
+#, fuzzy
+msgid "fold"
+msgstr "تا کردن"
+
+#: app/preferencesDlg.py:104
+#, fuzzy
+msgid "enlarge Font"
+msgstr "بزرگنمایی فونت"
+
+#: app/preferencesDlg.py:105
+#, fuzzy
+msgid "shrink Font"
+msgstr "کوچک قلم"
+
+#: app/preferencesDlg.py:106
+#, fuzzy
+msgid "analyze code"
+msgstr "کد را تجزیه و تحلیل کنید"
+
+#: app/preferencesDlg.py:107
+#, fuzzy
+msgid "compile script"
+msgstr "اسکریپت کامپایل"
+
+#: app/preferencesDlg.py:108
+#, fuzzy
+msgid "run script"
+msgstr "اجرای اسکریپت"
+
+#: app/preferencesDlg.py:109
+#, fuzzy
+msgid "stop script"
+msgstr "توقف اسکریپت"
+
+#: app/preferencesDlg.py:110
+#, fuzzy
+msgid "toggle whitespace"
+msgstr "فضای سفید را تغییر دهید"
+
+#: app/preferencesDlg.py:111
+#, fuzzy
+msgid "toggle EOLs"
+msgstr "جابجایی EOL ها"
+
+#: app/preferencesDlg.py:112
+#, fuzzy
+msgid "toggle indent guides"
+msgstr "راهنماهای تندرستی را تغییر دهید"
+
+#: app/preferencesDlg.py:113
+#, fuzzy
+msgid "new Routine"
+msgstr "روتین جدید"
+
+#: app/preferencesDlg.py:114
+#, fuzzy
+msgid "copy Routine"
+msgstr "کپی معمولی"
+
+#: app/preferencesDlg.py:115
+#, fuzzy
+msgid "paste Routine"
+msgstr "روت معمولی"
+
+#: app/preferencesDlg.py:116
+#, fuzzy
+msgid "paste Component"
+msgstr "کامپوننت رب"
+
+#: app/preferencesDlg.py:117
+#, fuzzy
+msgid "toggle output panel"
+msgstr "پانل خروجی را تغییر دهید"
+
+#: app/preferencesDlg.py:118
+#, fuzzy
+msgid "rename Routine"
+msgstr "تغییر نام معمولی"
+
+#: app/preferencesDlg.py:119
+#, fuzzy
+msgid "switch to Builder"
+msgstr "به سازنده بروید"
+
+#: app/preferencesDlg.py:120
+#, fuzzy
+msgid "switch to Coder"
+msgstr "به Coder بروید"
+
+#: app/preferencesDlg.py:121
+#, fuzzy
+msgid "larger Flow"
+msgstr "جریان بزرگتر"
+
+#: app/preferencesDlg.py:122
+#, fuzzy
+msgid "smaller Flow"
+msgstr "جریان کوچکتر"
+
+#: app/preferencesDlg.py:123
+#, fuzzy
+msgid "larger routine"
+msgstr "روال بزرگتر"
+
+#: app/preferencesDlg.py:124
+#, fuzzy
+msgid "smaller routine"
+msgstr "رویه کوچکتر"
+
+#: app/preferencesDlg.py:125
+#, fuzzy
+msgid "toggle readme"
+msgstr "تغییرمسیر"
+
+#: app/preferencesDlg.py:126
+#, fuzzy
+msgid "login to projects"
+msgstr "ورود به پروژه"
+
+#: app/preferencesDlg.py:127
+#, fuzzy
+msgid "login to pavlovia"
+msgstr "ورود به pavlovia"
+
+#: app/preferencesDlg.py:128
+#, fuzzy
+msgid "login to OSF"
+msgstr "ورود به OSF"
+
+#: app/preferencesDlg.py:129
+#, fuzzy
+msgid "sync projects"
+msgstr "همگام سازی پروژه ها"
+
+#: app/preferencesDlg.py:130
+#, fuzzy
+msgid "find projects"
+msgstr "إيجاد مشاريع"
+
+#: app/preferencesDlg.py:131
+#, fuzzy
+msgid "open projects"
+msgstr "پروژه های باز"
+
+#: app/preferencesDlg.py:132
+#, fuzzy
+msgid "new projects"
+msgstr "پروژه های جدید"
+
+#: app/preferencesDlg.py:134
+#, fuzzy
+msgid "same as last session"
+msgstr "همانند آخرین جلسه"
+
+#: app/preferencesDlg.py:135
+#, fuzzy
+msgid "both Builder & Coder"
+msgstr "هر دو Builder &amp; Coder"
+
+#: app/preferencesDlg.py:136
+#, fuzzy
+msgid "same as in the file"
+msgstr "همانند فایل"
+
+#: app/preferencesDlg.py:156
+#, fuzzy
+msgid "PsychoPy Preferences"
+msgstr "تنظیمات روانشناسی"
+
+#: app/preferencesDlg.py:199
+#, fuzzy
+msgid "Save prefs (in all sections) and close window"
+msgstr "ذخیره پیشوند (در تمام بخش ها) و پنجره نزدیک"
+
+#: app/preferencesDlg.py:206
+#, fuzzy
+msgid "Cancel any changes (to any panel)"
+msgstr "لغو هر گونه تغییر (به هر پانل)"
+
+#: app/preferencesDlg.py:210
+#, fuzzy
+msgid "Help"
+msgstr "کمک"
+
+#: app/preferencesDlg.py:211
+#, fuzzy
+msgid "Get help on prefs"
+msgstr "کمک در prefs دریافت کنید"
+
+#: app/preferencesDlg.py:343
+#, fuzzy, python-format
+msgid "Invalid value in \"%(pref)s\" (\"%(section)s\" Tab)"
+msgstr "مقدار نامعتبر در \"٪ (pref) s\" (\"٪ (section) s\" Tab)"
+
+#: app/stdOutRich.py:109
+#, fuzzy, python-format
+msgid "&Close output window\t%s"
+msgstr "&amp; بستن پنجره خروجی٪ s"
+
+#: app/stdOutRich.py:113
+#, fuzzy, python-format
+msgid "&Quit (PsychoPy)\t%s"
+msgstr "&amp; Quit (PsychoPy)٪ s"
+
+#: app/stdOutRich.py:115
+#, fuzzy
+msgid "Terminate the application"
+msgstr "برنامه را خاتمه دهید"
+
+#: experiment/_experiment.py:435
+#, fuzzy
+msgid ""
+"Name of the folder in which to save data and log files (blank defaults to "
+"the builder pref)"
+msgstr ""
+"نام پوشه ای که در آن ذخیره داده ها و فایل های ورودی (پیش فرض های خالی به "
+"پیشوند سازنده)"
+
+#: experiment/_experiment.py:473
+#, fuzzy
+msgid ""
+"This parameter is not known by this version of PsychoPy. It might be worth "
+"upgrading"
+msgstr ""
+"این پارامتر با این نسخه از PsychoPy شناخته نشده است. ممکن است ارزش ارتقاء "
+"داشته باشد"
+
+#: experiment/_experiment.py:480
+#, fuzzy, python-format
+msgid ""
+"Parameter %r is not known to this version of PsychoPy but has come from your "
+"experiment file (saved by a future version of PsychoPy?). This experiment "
+"may not run correctly in the current version."
+msgstr ""
+"پارامتر٪ r برای این نسخه از PsychoPy شناخته نشده است اما از پرونده آزمایش "
+"شما (توسط نسخه آینده PsychoPy ذخیره شده است). این آزمایش ممکن است در نسخه "
+"فعلی به درستی اجرا نشود."
+
+#: experiment/components/_base.py:48
+#: experiment/components/eyetracker/__init__.py:40
+#: experiment/components/unknown/__init__.py:36
+#, fuzzy
+msgid "Name of this component (alpha-numeric or _, no spaces)"
+msgstr "نام این جزء (الف-عددی یا _، بدون فاصله)"
+
+#: experiment/components/_base.py:54
+#: experiment/components/eyetracker/__init__.py:49
+#: experiment/components/eyetracker/__init__.py:81
+#: experiment/components/static/__init__.py:50
+#, fuzzy
+msgid "How do you want to define your start point?"
+msgstr "چگونه می خواهید نقطه شروع خود را تعریف کنید؟"
+
+#: experiment/components/_base.py:61
+#: experiment/components/eyetracker/__init__.py:55
+#: experiment/components/static/__init__.py:54
+#, fuzzy
+msgid "How do you want to define your end point?"
+msgstr "چگونه می خواهید نقطه پایان خود را تعریف کنید؟"
+
+#: experiment/components/_base.py:71
+#: experiment/components/eyetracker/__init__.py:59
+#: experiment/components/static/__init__.py:59
+#, fuzzy
+msgid "When does the component start?"
+msgstr "وقتی مولفه شروع می شود؟"
+
+#: experiment/components/_base.py:77
+#: experiment/components/eyetracker/__init__.py:64
+#: experiment/components/static/__init__.py:63
+#, fuzzy
+msgid "When does the component end? (blank is endless)"
+msgstr "وقتی جزء پایان می یابد؟ (خالی بی پایان است)"
+
+#: experiment/components/_base.py:80
+#: experiment/components/eyetracker/__init__.py:66
+#: experiment/components/static/__init__.py:68
+#, fuzzy
+msgid "(Optional) expected start (s), purely for representing in the timeline"
+msgstr "(اختیاری) آغاز می شود، صرفا برای نمایندگی در جدول زمانی"
+
+#: experiment/components/_base.py:87
+#: experiment/components/eyetracker/__init__.py:72
+#: experiment/components/static/__init__.py:73
+#, fuzzy
+msgid ""
+"(Optional) expected duration (s), purely for representing in the timeline"
+msgstr "(اختیاری) طول مدت انتظار (انتظار)، صرفا برای نمایندگی در جدول زمانی"
+
+#: experiment/components/_base.py:484
+#, fuzzy
+msgid "Units of dimensions for this stimulus"
+msgstr "واحد ابعاد این محرک"
+
+#: experiment/components/_base.py:492
+#, fuzzy
+msgid ""
+"Color of this stimulus (e.g. $[1,1,0], red ); Right-click to bring up a "
+"color-picker (rgb only)"
+msgstr ""
+"رنگ این محرک (به عنوان مثال $ [1،1،0]، قرمز)؛ راست کلیک بر روی یک انتخاب رنگ "
+"(فقط RGB)"
+
+#: experiment/components/_base.py:501
+#, fuzzy
+msgid ""
+"Opacity of the stimulus (1=opaque, 0=fully transparent, 0.5=translucent)"
+msgstr "درخشندگی محرک (1 = مات، 0 = کاملا شفاف، 0.5 = شفاف)"
+
+#: experiment/components/_base.py:511
+#, fuzzy
+msgid "Choice of color space for the color (rgb, dkl, lms, hsv)"
+msgstr "انتخاب فضای رنگی برای رنگ (rgb، dkl، lms، hsv)"
+
+#: experiment/components/_base.py:519
+#, fuzzy
+msgid "Position of this stimulus (e.g. [1,2] )"
+msgstr "موقعیت این محرک (به عنوان مثال [1،2])"
+
+#: experiment/components/_base.py:527
+#, fuzzy
+msgid ""
+"Size of this stimulus (either a single value or x,y pair, e.g. 2.5, [1,2] "
+msgstr ""
+"اندازه این محرک (یا یک مقدار واحد یا x، y جفت، به عنوان مثال 2.5، [1،2]"
+
+#: experiment/components/_base.py:540
+#: experiment/components/envelopegrating/__init__.py:67
+#: experiment/components/noise/__init__.py:86
+#, fuzzy
+msgid "Orientation of this stimulus (in deg)"
+msgstr "جهت گیری این محرک ها (در درجه)"
+
+#: experiment/components/aperture/__init__.py:20
+#, fuzzy
+msgid "Aperture: restrict the drawing of stimuli to a given region"
+msgstr "دیافراگم: طراحی محرک ها را به یک منطقه مشخص محدود کنید"
+
+#: experiment/components/aperture/__init__.py:48
+#, fuzzy
+msgid "How big is the aperture? (a single number for diameter)"
+msgstr "دیافراگم چقدر بزرگ است؟ (شماره تک قطر)"
+
+#: experiment/components/aperture/__init__.py:51
+#: experiment/components/ratingScale/__init__.py:33
+#: experiment/components/slider/__init__.py:28
+#, fuzzy
+msgid "Size"
+msgstr "اندازه"
+
+#: experiment/components/aperture/__init__.py:52
+#, fuzzy
+msgid "Where is the aperture centred?"
+msgstr "دیافراگم محدوده کجاست؟"
+
+#: experiment/components/cedrusBox/__init__.py:23
+#, fuzzy
+msgid ""
+"Cedrus Button Box: Cedrus response boxes, using the pyxid library provided "
+"by Cedrus"
+msgstr ""
+"جعبه جعبه Cedrus: جعبه پاسخ Cedrus، با استفاده از کتابخانه Pixid ارائه شده "
+"توسط Cedrus"
+
+#: experiment/components/cedrusBox/__init__.py:27
+#: experiment/components/joystick/__init__.py:26
+#, fuzzy
+msgid "Device number"
+msgstr "شماره دستگاه"
+
+#: experiment/components/cedrusBox/__init__.py:28
+#, fuzzy
+msgid "Use box timer"
+msgstr "استفاده از تایمر جعبه"
+
+#: experiment/components/cedrusBox/__init__.py:66
+#, fuzzy
+msgid ""
+"What is the 'correct' response? NB, buttons are labelled 0 to 6 on a 7-"
+"button box. Enter 'None' (no quotes) if withholding a response is correct. "
+"Might be helpful to add a correctAns column and use $correctAns to compare "
+"to the key press."
+msgstr ""
+"پاسخ صحیح چیست؟ توجه داشته باشید، دکمه ها بر روی جعبه 7 دکمه برچسب 0 تا 6 "
+"هستند. اگر هیچ پاسخی درست نباشد، «هیچ» (بدون نقل قول) وارد کنید ممکن است "
+"مفید باشد برای اضافه کردن یک ستون درستAns و استفاده از $ correctAns برای "
+"مقایسه با کلید مطبوعات."
+
+#: experiment/components/cedrusBox/__init__.py:74
+#, fuzzy
+msgid "Keys to be read (blank for any) or key numbers separated by commas"
+msgstr ""
+"کلید هایی که خوانده می شوند (خالی برای هر کدام) و یا شماره های کلید جدا شده "
+"با کاما"
+
+#: experiment/components/cedrusBox/__init__.py:77
+#: experiment/components/joystick/__init__.py:112
+#, fuzzy
+msgid ""
+"Device number, if you have multiple devices which one do you want (0, 1, "
+"2...)"
+msgstr ""
+"شماره دستگاه، اگر دستگاه های چندگانه ای دارید که یکی از آن ها می خواهید (0، "
+"1، 2 ...)"
+
+#: experiment/components/cedrusBox/__init__.py:92
+#, fuzzy
+msgid ""
+"According to Cedrus the response box timer has a drift - use with caution!"
+msgstr "با توجه به Cedrus تایمر جعبه پاسخ رانندگی - با احتیاط استفاده کنید!"
+
+#: experiment/components/code/__init__.py:17
+#, fuzzy
+msgid "Code: insert python commands into an experiment"
+msgstr "کد: دستورات پایتون را به یک آزمایش وارد کنید"
+
+#: experiment/components/code/__init__.py:18
+#, fuzzy
+msgid "Code Type"
+msgstr "نوع کد"
+
+#: experiment/components/code/__init__.py:19
+#, fuzzy
+msgid "Begin Experiment"
+msgstr "شروع آزمایش"
+
+#: experiment/components/code/__init__.py:20
+#, fuzzy
+msgid "Begin Routine"
+msgstr "شروع منظم"
+
+#: experiment/components/code/__init__.py:21
+#, fuzzy
+msgid "Each Frame"
+msgstr "هر فریم"
+
+#: experiment/components/code/__init__.py:22
+#, fuzzy
+msgid "End Routine"
+msgstr "پایان معمولی"
+
+#: experiment/components/code/__init__.py:23
+#, fuzzy
+msgid "End Experiment"
+msgstr "آزمایش پایان دادن"
+
+#: experiment/components/code/__init__.py:24
+#, fuzzy
+msgid "Begin JS Experiment"
+msgstr "شروع آزمایش JS"
+
+#: experiment/components/code/__init__.py:25
+#, fuzzy
+msgid "Begin JS Routine"
+msgstr "شروع JS روتین"
+
+#: experiment/components/code/__init__.py:26
+#, fuzzy
+msgid "Each JS Frame"
+msgstr "هر قاب JS"
+
+#: experiment/components/code/__init__.py:27
+#, fuzzy
+msgid "End JS Routine"
+msgstr "پایان JS روتین"
+
+#: experiment/components/code/__init__.py:28
+#, fuzzy
+msgid "End JS Experiment"
+msgstr "پایان آزمایش JS"
+
+#: experiment/components/code/__init__.py:60
+#: experiment/components/code/__init__.py:104
+#, fuzzy
+msgid ""
+"Code at the start of the experiment (initialization); right-click checks "
+"syntax"
+msgstr "کد در ابتدای آزمایش (اولیه)؛ راست کلیک بر روی چک نحو"
+
+#: experiment/components/code/__init__.py:68
+#: experiment/components/code/__init__.py:112
+#, fuzzy
+msgid ""
+"Code to be run at the start of each repeat of the Routine (e.g. each trial); "
+"right-click checks syntax"
+msgstr ""
+"کد باید در ابتدای هر تکرار معمول (مانند هر محاکمه) اجرا شود؛ راست کلیک بر "
+"روی چک نحو"
+
+#: experiment/components/code/__init__.py:77
+#: experiment/components/code/__init__.py:121
+#, fuzzy
+msgid ""
+"Code to be run on every video frame during for the duration of this Routine; "
+"right-click checks syntax"
+msgstr ""
+"کد برای اجرا در هر فریم فیلم در طول مدت این روال؛ راست کلیک بر روی چک نحو"
+
+#: experiment/components/code/__init__.py:86
+#: experiment/components/code/__init__.py:130
+#, fuzzy
+msgid ""
+"Code at the end of this repeat of the Routine (e.g. getting/storing "
+"responses); right-click checks syntax"
+msgstr ""
+"کد در پایان این تکرار معمول (مانند گرفتن / ذخیره پاسخ ها)؛ راست کلیک بر روی "
+"چک نحو"
+
+#: experiment/components/code/__init__.py:95
+#: experiment/components/code/__init__.py:139
+#, fuzzy
+msgid ""
+"Code at the end of the entire experiment (e.g. saving files, resetting "
+"computer); right-click checks syntax"
+msgstr ""
+"کد در پایان تمام آزمایش (به عنوان مثال ذخیره فایل ها، تنظیم مجدد کامپیوتر)؛ "
+"راست کلیک بر روی چک نحو"
+
+#: experiment/components/dots/__init__.py:16
+#, fuzzy
+msgid "Dots: Random Dot Kinematogram"
+msgstr "نقطه ها: Kinematogram تصادفی نقطه"
+
+#: experiment/components/dots/__init__.py:18
+#, fuzzy
+msgid "Number of dots"
+msgstr "تعداد نقاط"
+
+#: experiment/components/dots/__init__.py:19
+#, fuzzy
+msgid "Direction"
+msgstr "جهت"
+
+#: experiment/components/dots/__init__.py:20
+#, fuzzy
+msgid "Speed"
+msgstr "سرعت"
+
+#: experiment/components/dots/__init__.py:21
+#, fuzzy
+msgid "Coherence"
+msgstr "انسجام"
+
+#: experiment/components/dots/__init__.py:22
+#, fuzzy
+msgid "Dot size"
+msgstr "اندازه نقطه"
+
+#: experiment/components/dots/__init__.py:23
+#, fuzzy
+msgid "Dot life-time"
+msgstr "زمان زندگی"
+
+#: experiment/components/dots/__init__.py:24
+#, fuzzy
+msgid "Signal dots"
+msgstr "نقطه های سیگنال"
+
+#: experiment/components/dots/__init__.py:25
+#, fuzzy
+msgid "Noise dots"
+msgstr "نقاط آشفتگی"
+
+#: experiment/components/dots/__init__.py:26
+#, fuzzy
+msgid "Field shape"
+msgstr "شکل فیلد"
+
+#: experiment/components/dots/__init__.py:27
+#, fuzzy
+msgid "Field size"
+msgstr "اندازه فیلد"
+
+#: experiment/components/dots/__init__.py:28
+#, fuzzy
+msgid "Field position"
+msgstr "موقعیت فیلد"
+
+#: experiment/components/dots/__init__.py:29
+#, fuzzy
+msgid "Dot refresh rule"
+msgstr "قانون تازه کردن نقطه"
+
+#: experiment/components/dots/__init__.py:58
+#, fuzzy
+msgid ""
+"Number of dots in the field (for circular fields this will be average number "
+"of dots)"
+msgstr ""
+"تعداد نقاط در این زمینه (برای زمینه های دایره ای این مقدار می شود به طور "
+"متوسط تعداد نقاط)"
+
+#: experiment/components/dots/__init__.py:66
+#, fuzzy
+msgid "Direction of motion for the signal dots (degrees)"
+msgstr "جهت حرکت برای نقاط سیگنال (درجه)"
+
+#: experiment/components/dots/__init__.py:74
+#, fuzzy
+msgid "Speed of the dots (displacement per frame in the specified units)"
+msgstr "سرعت نقطه ها (جابجایی در هر فریم در واحد های مشخص شده)"
+
+#: experiment/components/dots/__init__.py:83
+#, fuzzy
+msgid ""
+"Coherence of the dots (fraction moving in the signal direction on any one "
+"frame)"
+msgstr "همبستگی نقطه ها (کسری حرکت در جهت سیگنال بر روی هر یک از فریم)"
+
+#: experiment/components/dots/__init__.py:92
+#, fuzzy
+msgid "Size of the dots IN PIXELS regardless of the set units"
+msgstr "اندازه نقاط در PIXELS بدون توجه به واحد های تعیین شده"
+
+#: experiment/components/dots/__init__.py:101
+#, fuzzy
+msgid ""
+"Number of frames before each dot is killed and randomly assigned a new "
+"position"
+msgstr ""
+"تعداد فریم ها قبل از هر نقطه کشته شده و به طور تصادفی یک موقعیت جدید اختصاص "
+"داده شده است"
+
+#: experiment/components/dots/__init__.py:108
+#, fuzzy
+msgid ""
+"On each frame are the signals dots remaining the same or changing? See Scase "
+"et al."
+msgstr ""
+"در هر فریم، نقطه های سیگنال باقی می مانند یا تغییر می کنند؟ به Scase et al "
+"نگاه کنید."
+
+#: experiment/components/dots/__init__.py:115
+#, fuzzy
+msgid "When should the whole sample of dots be refreshed"
+msgstr "هنگامی که کل نمونه از نقاط باید تجدید"
+
+#: experiment/components/dots/__init__.py:123
+#, fuzzy
+msgid "What governs the behaviour of the noise dots? See Scase et al."
+msgstr "چه رفتار نقطه های نویز را کنترل می کند؟ به Scase et al نگاه کنید."
+
+#: experiment/components/dots/__init__.py:135
+#, fuzzy
+msgid "What is the shape of the field?"
+msgstr "شکل میدان چیست؟"
+
+#: experiment/components/dots/__init__.py:138
+#, fuzzy
+msgid "What is the size of the field (in the specified units)?"
+msgstr "اندازه فیلد (در واحد های مشخص شده) چیست؟"
+
+#: experiment/components/dots/__init__.py:148
+#, fuzzy
+msgid "Where is the field centred (in the specified units)?"
+msgstr "کجا زمینه مرکزی (در واحد های مشخص شده) است؟"
+
+#: experiment/components/envelopegrating/__init__.py:16
+#, fuzzy
+msgid ""
+"Envelope Grating: present cyclic textures including 2nd order envelope "
+"stimuli, prebuilt or from a file"
+msgstr ""
+"Envelope Grating: بافت های چرخه ای موجود شامل محرک های بسته بندی دوم، پیش "
+"ساخته یا از یک پرونده"
+
+#: experiment/components/envelopegrating/__init__.py:20
+#, fuzzy
+msgid "Carrier texture"
+msgstr "بافت حامل"
+
+#: experiment/components/envelopegrating/__init__.py:21
+#, fuzzy
+msgid "Carrier Orientation"
+msgstr "جهت گیری حامل"
+
+#: experiment/components/envelopegrating/__init__.py:22
+#: experiment/components/grating/__init__.py:22
+#: experiment/components/image/__init__.py:21
+#: experiment/components/noise/__init__.py:22
+#: experiment/components/patch/__init__.py:21
+#, fuzzy
+msgid "Mask"
+msgstr "ماسک"
+
+#: experiment/components/envelopegrating/__init__.py:23
+#, fuzzy
+msgid "Carrier spatial frequency"
+msgstr "فرکانس فضایی حامل"
+
+#: experiment/components/envelopegrating/__init__.py:24
+#, fuzzy
+msgid "Carrier phase (in cycles)"
+msgstr "فاز حامل (در دوره)"
+
+#: experiment/components/envelopegrating/__init__.py:25
+#, fuzzy
+msgid "Carrier contrast"
+msgstr "کنتراست کنتراست"
+
+#: experiment/components/envelopegrating/__init__.py:26
+#: experiment/components/grating/__init__.py:25
+#: experiment/components/image/__init__.py:22
+#: experiment/components/noise/__init__.py:26
+#: experiment/components/patch/__init__.py:24
+#, fuzzy
+msgid "Texture resolution"
+msgstr "وضوح بافت"
+
+#: experiment/components/envelopegrating/__init__.py:27
+#: experiment/components/grating/__init__.py:27
+#: experiment/components/image/__init__.py:25
+#: experiment/components/noise/__init__.py:27
+#: experiment/components/patch/__init__.py:25
+#: experiment/components/polygon/__init__.py:27
+#, fuzzy
+msgid "Interpolate"
+msgstr "interpolate"
+
+#: experiment/components/envelopegrating/__init__.py:28
+#, fuzzy
+msgid "Envelope texture"
+msgstr "بافت پاکت"
+
+#: experiment/components/envelopegrating/__init__.py:29
+#, fuzzy
+msgid "Envelope spatial frequency"
+msgstr "فرکانس فضایی پاکت"
+
+#: experiment/components/envelopegrating/__init__.py:30
+#, fuzzy
+msgid "Envelope orientation"
+msgstr "جهت گیری پاکت نامه"
+
+#: experiment/components/envelopegrating/__init__.py:31
+#, fuzzy
+msgid "Envelope phase"
+msgstr "مرحله پاکت"
+
+#: experiment/components/envelopegrating/__init__.py:32
+#, fuzzy
+msgid "Envelope modulation depth"
+msgstr "عمق مدولاسیون پاکت"
+
+#: experiment/components/envelopegrating/__init__.py:33
+#, fuzzy
+msgid "Is modulation a beat"
+msgstr "مدولاسیون یک ضرب و شتم است"
+
+#: experiment/components/envelopegrating/__init__.py:34
+#: experiment/components/grating/__init__.py:26
+#: experiment/components/noise/__init__.py:40
+#, fuzzy
+msgid "OpenGL blend mode"
+msgstr "حالت مخلوط OpenGL"
+
+#: experiment/components/envelopegrating/__init__.py:70
+#, fuzzy
+msgid ""
+"The (2D) texture of the background - can be sin, sqr, sinXsin... or a "
+"filename (including path)"
+msgstr ""
+"بافت (2D) پس زمینه - می تواند گناه، sqr، sinXsin ... یا یک نام فایل (از جمله "
+"مسیر)"
+
+#: experiment/components/envelopegrating/__init__.py:79
+#: experiment/components/grating/__init__.py:62
+#: experiment/components/noise/__init__.py:91
+#: experiment/components/patch/__init__.py:61
+#, fuzzy
+msgid ""
+"An image to define the alpha mask (ie shape)- gauss, circle... or a filename "
+"(including path)"
+msgstr ""
+"یک تصویر برای تعریف ماسک آلفا (یعنی شکل) - gauss، دایره ... یا یک نام فایل "
+"(از جمله مسیر)"
+
+#: experiment/components/envelopegrating/__init__.py:88
+#, fuzzy
+msgid "Contrast of background carrier"
+msgstr "کنتراست حامل پسزمینه"
+
+#: experiment/components/envelopegrating/__init__.py:96
+#, fuzzy
+msgid ""
+"Spatial frequency of background carrier repeats across the grating in 1 or 2 "
+"dimensions, e.g. 4 or [2,3]"
+msgstr ""
+"فرکانس فضایی حامل پسزمینه در 1 یا 2 ابعاد در سراسر گرید تکرار می شود، مانند "
+"4 یا [2،3]"
+
+#: experiment/components/envelopegrating/__init__.py:105
+#, fuzzy
+msgid "Spatial positioning of the background carrier (wraps in range 0-1.0)"
+msgstr "موقعیت مکانی حامل پس زمینه (پیچ و تاب در محدوده 0-1.0)"
+
+#: experiment/components/envelopegrating/__init__.py:115
+#: experiment/components/grating/__init__.py:90
+#: experiment/components/noise/__init__.py:126
+#: experiment/components/patch/__init__.py:89
+#, fuzzy
+msgid ""
+"Resolution of the texture for standard ones such as sin, sqr etc. For most "
+"cases a value of 256 pixels will suffice"
+msgstr ""
+"رزولوشن بافت برای موارد استاندارد مانند گناه، sqr و غیره برای اغلب موارد "
+"مقدار 256 پیکسل کافی است"
+
+#: experiment/components/envelopegrating/__init__.py:124
+#: experiment/components/grating/__init__.py:99
+#: experiment/components/image/__init__.py:84
+#: experiment/components/noise/__init__.py:135
+#: experiment/components/patch/__init__.py:99
+#: experiment/components/polygon/__init__.py:131
+#, fuzzy
+msgid "How should the image be interpolated if/when rescaled"
+msgstr ""
+"اگر / هنگامی که مجددا مجددا تکرار شود، چگونه تصویر باید در نظر گرفته شود"
+
+#: experiment/components/envelopegrating/__init__.py:133
+#, fuzzy
+msgid ""
+"The (2D) texture of the envelope - can be sin, sqr, sinXsin... or a filename "
+"(including path)"
+msgstr ""
+"بافت (2D) پاکت - می تواند گناه، sqr، sinXsin ... یا یک نام فایل (از جمله "
+"مسیر)"
+
+#: experiment/components/envelopegrating/__init__.py:142
+#, fuzzy
+msgid ""
+"Spatial frequency of the modulation envelope repeats across the grating in 1 "
+"or 2 dimensions, e.g. 4 or [2,3]"
+msgstr ""
+"فرکانس فضایی پوشش مدولاسیون تکرار در سراسر گریت در ابعاد 1 یا 2، به عنوان "
+"مثال 4 یا [2،3]"
+
+#: experiment/components/envelopegrating/__init__.py:151
+#, fuzzy
+msgid "Spatial positioning of the modulation envelope(wraps in range 0-1.0)"
+msgstr "موقعیت مکانی پاکت مدولاسیون (پیچ و تاب در محدوده 0-1.0)"
+
+#: experiment/components/envelopegrating/__init__.py:160
+#, fuzzy
+msgid "Orientation of the modulation envelope(wraps in range 0-360)"
+msgstr "جهت بسته بندی مدولاسیون (پیچ و تاب در محدوده 0-360)"
+
+#: experiment/components/envelopegrating/__init__.py:169
+#, fuzzy
+msgid "Modulation depth of modulation envelope"
+msgstr "عمق مدولاسیون پاکت مدولاسیون"
+
+#: experiment/components/envelopegrating/__init__.py:177
+#, fuzzy
+msgid ""
+"Do you want a 'beat'? [beat = carrier*envelope, no beat = "
+"carrier*(1+envelope), True/False, Y/N]"
+msgstr ""
+"آیا می خواهید یک ضرب و شتم؟ [بیت = حامل * پاکت، بدون ضرب = حامل * (1 + "
+"پاکت)، واقعی / نادرست، Y / N]"
+
+#: experiment/components/envelopegrating/__init__.py:186
+#, fuzzy
+msgid ""
+"OpenGL Blendmode. Avg is most common mode in PsychoPy, add is useful if "
+"combining a beat with the carrier image or numpy array at point of display"
+msgstr ""
+"OpenGL Blendmode. Avg رایج ترین حالت در PsychoPy است، اضافه کردن مفید است "
+"اگر ترکیب ضرب و شتم با تصویر حامل یا آرایه numpy در نقطه نمایش"
+
+#: experiment/components/eyetracker/__init__.py:16
+#, fuzzy
+msgid "Eyetracker: use one of several eyetrackers to follow gaze"
+msgstr "Eyetracker: استفاده از یکی از چند eyetrackers برای دنبال کردن چشم"
+
+#: experiment/components/eyetracker/__init__.py:84
+#, fuzzy
+msgid ""
+"How often should the eyetracker state (x,y,pupilsize...) be stored? On every "
+"video frame, every click or just at the end of the Routine?"
+msgstr ""
+"چقدر باید حالت State Eyetracker (x، y، pupilsize ...) ذخیره شود؟ در هر فریم "
+"فیلم، هر کلیک یا فقط در انتهای روال"
+
+#: experiment/components/grating/__init__.py:17
+#, fuzzy
+msgid "Grating: present cyclic textures, prebuilt or from a file"
+msgstr "گریت: بافت های چرخه ای موجود، از قبل ساخته شده یا از یک پرونده"
+
+#: experiment/components/grating/__init__.py:21
+#, fuzzy
+msgid "Texture"
+msgstr "بافت"
+
+#: experiment/components/grating/__init__.py:23
+#: experiment/components/patch/__init__.py:22
+#, fuzzy
+msgid "Spatial frequency"
+msgstr "فرکانس فضایی"
+
+#: experiment/components/grating/__init__.py:24
+#: experiment/components/noise/__init__.py:24
+#: experiment/components/patch/__init__.py:23
+#, fuzzy
+msgid "Phase (in cycles)"
+msgstr "فاز (در چرخه)"
+
+#: experiment/components/grating/__init__.py:53
+#, fuzzy
+msgid ""
+"The (2D) texture of the grating - can be sin, sqr, sinXsin... or a filename "
+"(including path)"
+msgstr ""
+"بافت (2D) گرت - می تواند گناه، sqr، sinXsin ... یا نام فایل (از جمله مسیر)"
+
+#: experiment/components/grating/__init__.py:71
+#, fuzzy
+msgid ""
+"Spatial frequency of image repeats across the grating in 1 or 2 dimensions, "
+"e.g. 4 or [2,3]"
+msgstr ""
+"فركانس فضايي تصوير در ميان گيتس در ابعاد 1 يا 2 تكرار مي شود، مانند 4 يا "
+"[2،3]"
+
+#: experiment/components/grating/__init__.py:80
+#, fuzzy
+msgid "Spatial positioning of the image on the grating (wraps in range 0-1.0)"
+msgstr "موقعیت مکانی تصویر بر روی گریتینگ (پیچ و تاب در محدوده 0-1.0)"
+
+#: experiment/components/grating/__init__.py:107
+#, fuzzy
+msgid ""
+"OpenGL Blendmode: avg gives traditional transparency, add is important to "
+"combine gratings)]"
+msgstr ""
+"OpenGL Blendmode: avg شفافیت سنتی را ارائه می دهد، افزودن برای ترکیب گرات ها "
+"مهم است)]"
+
+#: experiment/components/image/__init__.py:17
+#, fuzzy
+msgid "Image: present images (bmp, jpg, tif...)"
+msgstr "تصویر: تصاویر در حال حاضر (bmp، jpg، tif ...)"
+
+#: experiment/components/image/__init__.py:20
+#, fuzzy
+msgid "Image"
+msgstr "تصویر"
+
+#: experiment/components/image/__init__.py:23
+#, fuzzy
+msgid "Flip vertically"
+msgstr "‫قرینه سازی عمودی"
+
+#: experiment/components/image/__init__.py:24
+#, fuzzy
+msgid "Flip horizontally"
+msgstr "تلنگر به صورت افقی"
+
+#: experiment/components/image/__init__.py:57
+#, fuzzy
+msgid "The image to be displayed - a filename, including path"
+msgstr "تصویر نمایش داده می شود - نام فایل، از جمله مسیر"
+
+#: experiment/components/image/__init__.py:66
+#, fuzzy
+msgid ""
+"An image to define the alpha mask through which the image is seen - gauss, "
+"circle, None or a filename (including path)"
+msgstr ""
+"یک تصویر برای تعریف ماسک آلفا که از طریق آن تصویر می شود - gauss، دایره، هیچ "
+"یا یک نام فایل (از جمله مسیر)"
+
+#: experiment/components/image/__init__.py:75
+#, fuzzy
+msgid "Resolution of the mask if one is used."
+msgstr "رزولوشن ماسک اگر یکی از آن استفاده شود."
+
+#: experiment/components/image/__init__.py:92
+#, fuzzy
+msgid "Should the image be flipped vertically (top to bottom)?"
+msgstr "آیا تصویر باید به صورت عمودی (از بالا به پایین) برگرداند؟"
+
+#: experiment/components/image/__init__.py:100
+#, fuzzy
+msgid "Should the image be flipped horizontally (left to right)?"
+msgstr "آیا تصویر باید به صورت افقی (چپ به راست) تلنگر شود؟"
+
+#: experiment/components/ioLabs/__init__.py:19
+#, fuzzy
+msgid ""
+"ioLabs ButtonBox: check and record response buttons on ioLab Systems "
+"ButtonBox"
+msgstr ""
+"ioLabs ButtonBox: دکمه های پاسخ را در ioLab Systems ButtonBox بررسی و ثبت "
+"کنید"
+
+#: experiment/components/ioLabs/__init__.py:23
+#, fuzzy
+msgid "Active buttons"
+msgstr "دکمه های فعال"
+
+#: experiment/components/ioLabs/__init__.py:24
+#, fuzzy
+msgid "Lights"
+msgstr "چراغ"
+
+#: experiment/components/ioLabs/__init__.py:25
+#, fuzzy
+msgid "Lights off"
+msgstr "چراغ خاموش"
+
+#: experiment/components/ioLabs/__init__.py:65
+#, fuzzy
+msgid ""
+"What is the 'correct' response? NB, buttons are labelled 0 to 7 on a 8-"
+"button box. Enter 'None' (no quotes) if withholding a response is correct. "
+"Might be helpful to add a correctAns column and use $correctAns to compare "
+"to the key press."
+msgstr ""
+"پاسخ صحیح چیست؟ توجه داشته باشید، دکمه ها بر روی جعبه 8 دکمه با برچسب 0 تا 7 "
+"برچسب گذاری می شوند. اگر هیچ پاسخی درست نباشد، «هیچ» (بدون نقل قول) وارد "
+"کنید ممکن است مفید باشد برای اضافه کردن یک ستون درستAns و استفاده از $ "
+"correctAns برای مقایسه با کلید مطبوعات."
+
+#: experiment/components/ioLabs/__init__.py:75
+#, fuzzy
+msgid "Choose which (if any) responses to store at end of a trial"
+msgstr "برای پاسخگویی در پایان آزمایش، انتخاب کنید که (اگر هر کدام) باشد"
+
+#: experiment/components/ioLabs/__init__.py:78
+#, fuzzy
+msgid "Active buttons, such as '1,6', '(1,2,5,6)' or '0' (without quotes)"
+msgstr "دکمه های فعال مانند '1،6'، '(1،2،5،6)' یا '0' (بدون نقل قول ها)"
+
+#: experiment/components/ioLabs/__init__.py:90
+#, fuzzy
+msgid "Turn ON the lights for the active buttons?"
+msgstr "چراغ را برای دکمه های فعال روشن کنید؟"
+
+#: experiment/components/ioLabs/__init__.py:96
+#, fuzzy
+msgid "Turn OFF all lights at the end of each routine?"
+msgstr "خاموش کردن تمام چراغ ها در انتهای هر روال؟"
+
+#: experiment/components/joystick/__init__.py:18
+#, fuzzy
+msgid "Joystick: query joystick position and buttons"
+msgstr "جوی استیک: جوی استیک پرس و جو و دکمه ها"
+
+#: experiment/components/joystick/__init__.py:21
+#, fuzzy
+msgid "Save joystick state"
+msgstr "وضعیت جوی استیک را ذخیره کنید"
+
+#: experiment/components/joystick/__init__.py:22
+#: experiment/components/mouse/__init__.py:21
+#, fuzzy
+msgid "End Routine on press"
+msgstr "پایان روال در مطبوعات"
+
+#: experiment/components/joystick/__init__.py:23
+#: experiment/components/mouse/__init__.py:22
+#, fuzzy
+msgid "Time relative to"
+msgstr "زمان نسبت به"
+
+#: experiment/components/joystick/__init__.py:24
+#: experiment/components/mouse/__init__.py:23
+#, fuzzy
+msgid "Clickable stimuli"
+msgstr "محرک های قابل کلیک"
+
+#: experiment/components/joystick/__init__.py:25
+#: experiment/components/mouse/__init__.py:24
+#, fuzzy
+msgid "Store params for clicked"
+msgstr "پارامترهای فروشگاه را کلیک کنید"
+
+#: experiment/components/joystick/__init__.py:27
+#, fuzzy
+msgid "Allowed Buttons"
+msgstr "دکمه های مجاز"
+
+#: experiment/components/joystick/__init__.py:60
+#, fuzzy
+msgid ""
+"How often should the joystick state (x,y,buttons) be stored? On every video "
+"frame, every click or just at the end of the Routine?"
+msgstr ""
+"چقدر باید حالت جوی استیک (x، y، دکمه) ذخیره شود؟ در هر فریم فیلم، هر کلیک یا "
+"فقط در انتهای روال"
+
+#: experiment/components/joystick/__init__.py:69
+#: experiment/components/mouse/__init__.py:68
+#, fuzzy
+msgid "Should a button press force the end of the routine (e.g end the trial)?"
+msgstr ""
+"آیا یک دکمه مطبوعات را خاتمه می دهد (به عنوان مثال پایان دادن به محاکمه)؟"
+
+#: experiment/components/joystick/__init__.py:82
+#, fuzzy
+msgid "What should the values of joystick.time should be relative to?"
+msgstr "ارزش های جوی استیک باید چه مقدار باشد؟"
+
+#: experiment/components/joystick/__init__.py:91
+#: experiment/components/mouse/__init__.py:100
+#, fuzzy
+msgid ""
+"A comma-separated list of your stimulus names that can be \"clicked\" by the "
+"participant. e.g. target, foil"
+msgstr ""
+"لیستی از نام های محرک خود را که با کاما از هم جدا شده اند را می توان توسط "
+"شرکت کننده \"کلیک\" کرد. مثلا هدف، فویل"
+
+#: experiment/components/joystick/__init__.py:101
+#, fuzzy
+msgid ""
+"The params (e.g. name, text), for which you want to store the current value, "
+"for the stimulus that was\"clicked\" by the joystick. Make sure that all the "
+"clickable objects have all these params."
+msgstr ""
+"پارامترها (مانند نام، متن)، برای آن شما می خواهید برای ذخیره مقدار فعلی، "
+"برای محرک هایی که توسط جوی استیک \"کلیک\" شده است. اطمینان حاصل کنید که تمام "
+"اشیاء قابل کلیک همه این پارامترها را دارند."
+
+#: experiment/components/joystick/__init__.py:121
+#, fuzzy
+msgid "Buttons to be read (blank for any) numbers separated by commas"
+msgstr "دکمه های خوانده شده (برای هر کدام) اعداد جدا از کاما هستند"
+
+#: experiment/components/keyboard/__init__.py:21
+#, fuzzy
+msgid "Keyboard: check and record keypresses"
+msgstr "صفحه کلید: کلید های میانبر را بررسی و ضبط کنید"
+
+#: experiment/components/keyboard/__init__.py:24
+#, fuzzy
+msgid "Allowed keys"
+msgstr "کلید مجاز"
+
+#: experiment/components/keyboard/__init__.py:25
+#, fuzzy
+msgid "Discard previous"
+msgstr "از قبل حذف شود"
+
+#: experiment/components/keyboard/__init__.py:26
+#, fuzzy
+msgid "Store"
+msgstr "فروشگاه"
+
+#: experiment/components/keyboard/__init__.py:27
+#: experiment/components/movie/__init__.py:20
+#: experiment/components/ratingScale/__init__.py:37
+#: experiment/components/slider/__init__.py:30
+#, fuzzy
+msgid "Force end of Routine"
+msgstr "پایان دوره معمولی"
+
+#: experiment/components/keyboard/__init__.py:28
+#, fuzzy
+msgid "Store correct"
+msgstr "فروشگاه صحیح است"
+
+#: experiment/components/keyboard/__init__.py:29
+#, fuzzy
+msgid "Correct answer"
+msgstr "پاسخ صحیح"
+
+#: experiment/components/keyboard/__init__.py:30
+#: experiment/components/sound/__init__.py:24
+#, fuzzy
+msgid "sync RT with screen"
+msgstr "همگام RT با صفحه نمایش"
+
+#: experiment/components/keyboard/__init__.py:64
+#, fuzzy
+msgid ""
+"A comma-separated list of keys (with quotes), such as "
+"'q','right','space','left'"
+msgstr ""
+"لیست کلید جدا شده با کاما (با نقل قول)، مانند 'q'، 'right'، 'space'، 'left'"
+
+#: experiment/components/keyboard/__init__.py:75
+#, fuzzy
+msgid ""
+"Do you want to discard all responses occuring before the onset of this "
+"component?"
+msgstr "آیا می خواهید تمام پاسخ های قبل از شروع این جزء را رد کنید؟"
+
+#: experiment/components/keyboard/__init__.py:83
+#, fuzzy
+msgid "Choose which (if any) responses to store at the end of a trial"
+msgstr "در انتهای محاکمه، پاسخ هایی را که در صورت وجود دارد انتخاب کنید"
+
+#: experiment/components/keyboard/__init__.py:92
+#, fuzzy
+msgid "Should a response force the end of the Routine (e.g end the trial)?"
+msgstr ""
+"آیا یک پاسخ باعث پایان دوره می شود (به عنوان مثال پایان دادن به محاکمه)؟"
+
+#: experiment/components/keyboard/__init__.py:100
+#, fuzzy
+msgid "Do you want to save the response as correct/incorrect?"
+msgstr "آیا میخواهید پاسخ را درست / نادرست ذخیره کنید؟"
+
+#: experiment/components/keyboard/__init__.py:109
+#, fuzzy
+msgid ""
+"What is the 'correct' key? Might be helpful to add a correctAns column and "
+"use $correctAns to compare to the key press."
+msgstr ""
+"کلید \"صحیح\" چیست؟ ممکن است مفید باشد برای اضافه کردن یک ستون درستAns و "
+"استفاده از $ correctAns برای مقایسه با کلید مطبوعات."
+
+#: experiment/components/keyboard/__init__.py:119
+#, fuzzy
+msgid ""
+"A reaction time to a visual stimulus should be based on when the screen "
+"flipped"
+msgstr ""
+"زمان واکنش به یک محرک بصری باید بر اساس زمانی که روی صفحه نمایش تلنگر شده "
+"باشد"
+
+#: experiment/components/microphone/__init__.py:18
+#, fuzzy
+msgid ""
+"Microphone: basic sound capture (fixed onset & duration), okay for spoken "
+"words"
+msgstr ""
+"میکروفون: ضبط صدا پایه (شروع و مدت زمان ثابت)، برای کلمات گفتاری مناسب است"
+
+#: experiment/components/microphone/__init__.py:21
+#, fuzzy
+msgid "Stereo"
+msgstr "استریو"
+
+#: experiment/components/microphone/__init__.py:44
+#, fuzzy
+msgid "Record two channels (stereo) or one (mono, smaller file)"
+msgstr "ضبط دو کانال (استریو) یا یک (یکپارچه، فایل کوچکتر)"
+
+#: experiment/components/microphone/__init__.py:53
+#, fuzzy
+msgid "The duration of the recording in seconds; blank = 0 sec"
+msgstr "مدت زمان ضبط در ثانیه؛ خالی = 0 ثانیه"
+
+#: experiment/components/mouse/__init__.py:17
+#, fuzzy
+msgid "Mouse: query mouse position and buttons"
+msgstr "موس: پرس و جو پرس و موقعیت و دکمه ها"
+
+#: experiment/components/mouse/__init__.py:20
+#, fuzzy
+msgid "Save mouse state"
+msgstr "ذخیره حالت موس"
+
+#: experiment/components/mouse/__init__.py:25
+#, fuzzy
+msgid "New clicks only"
+msgstr "فقط کلیک های جدید"
+
+#: experiment/components/mouse/__init__.py:59
+#, fuzzy
+msgid ""
+"How often should the mouse state (x,y,buttons) be stored? On every video "
+"frame, every click or just at the end of the Routine?"
+msgstr ""
+"حالت اغلب موشواره (x، y، buttons) باید ذخیره شود؟ در هر فریم فیلم، هر کلیک "
+"یا فقط در انتهای روال"
+
+#: experiment/components/mouse/__init__.py:81
+#, fuzzy
+msgid "What should the values of mouse.time should be relative to?"
+msgstr "ارزشهای mouse.time چه مقدار باید نسبت به آن داشته باشند؟"
+
+#: experiment/components/mouse/__init__.py:91
+#, fuzzy
+msgid ""
+"If the mouse button is already down when we startchecking then wait for it "
+"to be released beforerecording as a new click."
+msgstr ""
+"اگر دکمه ماوس در هنگام شروع به چک کردن پایین باشد، منتظر بمانید تا قبل از آن "
+"به عنوان یک کلیک جدید منتشر شود."
+
+#: experiment/components/mouse/__init__.py:110
+#, fuzzy
+msgid ""
+"The params (e.g. name, text), for which you want to store the current value, "
+"for the stimulus that was\"clicked\" by the mouse. Make sure that all the "
+"clickable objects have all these params."
+msgstr ""
+"پارامترها (به عنوان مثال، نام، متن)، برای آن شما می خواهید برای ذخیره مقدار "
+"فعلی، برای محرک هایی که \"کلیک\" شده توسط ماوس. اطمینان حاصل کنید که تمام "
+"اشیاء قابل کلیک همه این پارامترها را دارند."
+
+#: experiment/components/movie/__init__.py:16
+#, fuzzy
+msgid "Movie: play movie files"
+msgstr "فیلم: پخش فایل های فیلم"
+
+#: experiment/components/movie/__init__.py:19
+#, fuzzy
+msgid "Movie file"
+msgstr "فایل فیلم"
+
+#: experiment/components/movie/__init__.py:21
+#, fuzzy
+msgid "backend"
+msgstr "باطن"
+
+#: experiment/components/movie/__init__.py:22
+#, fuzzy
+msgid "No audio"
+msgstr "بی صدا"
+
+#: experiment/components/movie/__init__.py:51
+#: experiment/components/sound/__init__.py:50
+#, fuzzy
+msgid "When does the component end? (blank to use the duration of the media)"
+msgstr "وقتی جزء پایان می یابد؟ (خالی برای استفاده از مدت زمان رسانه)"
+
+#: experiment/components/movie/__init__.py:54
+#, fuzzy
+msgid "A filename for the movie (including path)"
+msgstr "نام فیلمی برای فیلم (از جمله مسیر)"
+
+#: experiment/components/movie/__init__.py:61
+#, fuzzy
+msgid "What underlying lib to use for loading movies"
+msgstr "برای استفاده از فیلم های بارگذاری شده برای استفاده از اساسی"
+
+#: experiment/components/movie/__init__.py:69
+#, fuzzy
+msgid ""
+"Prevent the audio stream from being loaded/processed (moviepy and opencv "
+"only)"
+msgstr "جلوگیری از بارگیری و پردازش جریان صوتی (فقط moviepy و opencv)"
+
+#: experiment/components/movie/__init__.py:76
+#, fuzzy
+msgid "Should the end of the movie cause the end of the routine (e.g. trial)?"
+msgstr "آیا پایان فیلم باعث پایان دادن به روال می شود (مانند محاکمه)؟"
+
+#: experiment/components/noise/__init__.py:17
+#, fuzzy
+msgid ""
+"Noise stimuli: generates a range of different types of random visual patterns"
+msgstr "محرک های نویز: طیف وسیعی از الگوهای بصری تصادفی را تولید می کند"
+
+#: experiment/components/noise/__init__.py:20
+#, fuzzy
+msgid "Image from which to derive noise spectrum"
+msgstr "تصویری که از آن برای تولید طیف سر و صدا استفاده می شود"
+
+#: experiment/components/noise/__init__.py:21 localization/__init__.py:168
+#, fuzzy
+msgid "Orientation"
+msgstr "جهت"
+
+#: experiment/components/noise/__init__.py:23
+#, fuzzy
+msgid "Final spatial frequency"
+msgstr "فرکانس فضایی نهایی"
+
+#: experiment/components/noise/__init__.py:25
+#, fuzzy
+msgid "Contrast"
+msgstr "کنتراست"
+
+#: experiment/components/noise/__init__.py:28
+#, fuzzy
+msgid "Type of noise"
+msgstr "نوع سر و صدا"
+
+#: experiment/components/noise/__init__.py:29
+#, fuzzy
+msgid "Noise element size for pixelated noise"
+msgstr "اندازه عنصر نویز برای نویز pixelated"
+
+#: experiment/components/noise/__init__.py:30
+#, fuzzy
+msgid "Skew in frequency spectrum"
+msgstr "پیچش در طیف فرکانس"
+
+#: experiment/components/noise/__init__.py:31
+#: experiment/components/noise/__init__.py:159
+#, fuzzy
+msgid "Base spatial frequency"
+msgstr "فرکانس فضایی پایه"
+
+#: experiment/components/noise/__init__.py:32
+#, fuzzy
+msgid "Spatial frequency bandwidth"
+msgstr "پهنای باند فرکانس فضایی"
+
+#: experiment/components/noise/__init__.py:33
+#, fuzzy
+msgid "Orientation bandwidth for Gabor noise"
+msgstr "پهنای باند جهت برای نویز گابور"
+
+#: experiment/components/noise/__init__.py:34
+#, fuzzy
+msgid "Order of filter"
+msgstr "سفارش فیلتر"
+
+#: experiment/components/noise/__init__.py:35
+#, fuzzy
+msgid "Upper cut off frequency"
+msgstr "فرکانس قطع بالا"
+
+#: experiment/components/noise/__init__.py:36
+#, fuzzy
+msgid "Lower cut off frequency"
+msgstr "فرکانس پایین قطع"
+
+#: experiment/components/noise/__init__.py:37
+#, fuzzy
+msgid "Number of standard deviations at which to clip noise"
+msgstr "تعداد انحرافات استاندارد که در آن کلیپ نویز"
+
+#: experiment/components/noise/__init__.py:38
+#, fuzzy
+msgid "How to update noise sample"
+msgstr "چگونه برای به روز رسانی نمونه سر و صدا"
+
+#: experiment/components/noise/__init__.py:39
+#, fuzzy
+msgid "When to update noise sample"
+msgstr "هنگامی که برای به روز رسانی نمونه سر و صدا"
+
+#: experiment/components/noise/__init__.py:74
+#, fuzzy
+msgid ""
+"An image from which to derive the frequency spectrum for the noise. Give "
+"filename (including path)"
+msgstr ""
+"یک تصویر از آن برای ایجاد طیف فرکانس برای نویز. نام فایل (از جمله مسیر)"
+
+#: experiment/components/noise/__init__.py:100
+#, fuzzy
+msgid "Michaelson contrast of the image"
+msgstr "مایکلزون کنتراست تصویر"
+
+#: experiment/components/noise/__init__.py:108
+#, fuzzy
+msgid ""
+"Final spatial frequency of image in 1 or 2 dimensions, e.g. 4 or [2,3] use "
+"None to set to 1 cycle per unit length or 1 cycle per image if units=pix"
+msgstr ""
+"فرکانس فضایی نهایی تصویر در 1 یا 2 ابعاد، به عنوان مثال 4 یا [2،3] استفاده "
+"کنید هیچکدام برای تنظیم به 1 سیکل در واحد طول یا 1 سیکل در هر تصویر اگر واحد "
+"= پیکس"
+
+#: experiment/components/noise/__init__.py:116
+#, fuzzy
+msgid "Spatial positioning of the image  (wraps in range 0-1.0)"
+msgstr "موقعیت مکانی تصویر (پیچ و تاب در محدوده 0-1.0)"
+
+#: experiment/components/noise/__init__.py:143
+#, fuzzy
+msgid ""
+"Type of noise (Binary, Normal, Gabor, Isotropic, White, Coloured, Filtered, "
+"Image)"
+msgstr ""
+"نوع سر و صدا (Binary، Normal، Gabor، Isotropic، White، Colored، Filtered، "
+"Image)"
+
+#: experiment/components/noise/__init__.py:151
+#, fuzzy
+msgid "(Binary, Normal an Uniform only) Size of noise elements"
+msgstr "(Dinary، Normal تنها یکنواخت) اندازه عناصر نویز"
+
+#: experiment/components/noise/__init__.py:167
+#, fuzzy
+msgid "Spatial frequency bandwidth in octaves - Full width half height"
+msgstr "پهنای باند فرکانس فضایی در اکتاو - عرض نیم عرض کامل"
+
+#: experiment/components/noise/__init__.py:175
+#, fuzzy
+msgid "Orientation bandwidth in degrees (Gabor only) - Full width half height"
+msgstr "پهنای باند جهت در درجه (فقط گابور) - عرض نیم عرض کامل"
+
+#: experiment/components/noise/__init__.py:183
+#, fuzzy
+msgid ""
+"Exponent for spectral slope (A=f^Exponent) of noise negative exponents look "
+"nice. -1='pink noise', 0='white noise' (changes the spatial frequency "
+"spectrum - does not make the noise colourful)"
+msgstr ""
+"شاخص برای شیب طیفی (A = f ^ Exponent) از شاخص های منفی نویز به نظر خوب است. "
+"-1 = 'سر و صدا صورتی'، 0 = 'نویز سفید' (تغییر طیف فرکانس فضایی - نویز رنگی "
+"را ایجاد نمی کند)"
+
+#: experiment/components/noise/__init__.py:191
+#, fuzzy
+msgid "Order of filter - higher = steeper fall off, zero = no filter"
+msgstr "سفارش فیلتر - بالاتر = تندتر سقوط، صفر = بدون فیلتر"
+
+#: experiment/components/noise/__init__.py:199
+#, fuzzy
+msgid "Upper cutoff frequency"
+msgstr "فرکانس قطع بالا"
+
+#: experiment/components/noise/__init__.py:207
+#, fuzzy
+msgid "Lower cutoff frequency"
+msgstr "فرکانس برش پایین"
+
+#: experiment/components/noise/__init__.py:215
+#, fuzzy
+msgid ""
+"Truncate high and low values beyond stated standard deviations from mean "
+"(not used for binary or uniform noise; scales rather than clips normal "
+"noise). The higher this is the lower the final RMS contrast. If low noise "
+"may appear binary"
+msgstr ""
+"مقادیر بالا و پایین مقادیر بیش از حد معیار انحراف معیار از میانگین (برای "
+"صدای باینری و یکنواخت استفاده نمی شود، بلکه مقیاس ها به جای کلیپ های صوتی "
+"طبیعی) استفاده می شود. هرچه این بالاتر باشد، کنتراست نهایی RMS پایین تر است. "
+"اگر سر و صدایی کم ممکن است باینری ظاهر شود"
+
+#: experiment/components/noise/__init__.py:223
+#, fuzzy
+msgid ""
+"How to update noise if not otherwise required by other changes (none, "
+"repeat, N-frames, Seconds)"
+msgstr ""
+"اگر نوبت به نوبه خود در تغییرات دیگر مورد نیاز باشد (نویز، تکرار، N-فریم، "
+"ثانیه)"
+
+#: experiment/components/noise/__init__.py:231
+#, fuzzy
+msgid ""
+"How often to update noise (in frames or seconds) - can be a variable, "
+"ignored if any noise characteristic is updating on every frame"
+msgstr ""
+"چقدر برای به روز رسانی نویز (در فریم یا ثانیه) - می تواند یک متغیر باشد، "
+"نادیده گرفته می شود در صورتی که هر ویژگی نویز بر روی هر فریم به روز شود"
+
+#: experiment/components/noise/__init__.py:239
+#, fuzzy
+msgid ""
+"OpenGL Blendmode [avg, add (avg is most common mode in PsychoPy, add is used "
+"if you want to generate the sum of two components)]"
+msgstr ""
+"OpenGL Blendmode [avg، add (avg شایع ترین حالت در PsychoPy است، اضافه کردن "
+"اگر شما می خواهید برای تولید مجموع دو جزء استفاده کنید)]"
+
+#: experiment/components/parallelOut/__init__.py:17
+#, fuzzy
+msgid "Parallel out: send signals from the parallel port"
+msgstr "به طور موازی: ارسال سیگنال از پورت موازی"
+
+#: experiment/components/parallelOut/__init__.py:20
+#, fuzzy
+msgid "Port address"
+msgstr "آدرس بندر"
+
+#: experiment/components/parallelOut/__init__.py:21
+#, fuzzy
+msgid "Start data"
+msgstr "داده ها را بساز"
+
+#: experiment/components/parallelOut/__init__.py:22
+#, fuzzy
+msgid "Stop data"
+msgstr "داده ها را متوقف کنید"
+
+#: experiment/components/parallelOut/__init__.py:23
+#: experiment/components/pump/__init__.py:26
+#, fuzzy
+msgid "Sync to screen"
+msgstr "همگام سازی روی صفحه نمایش"
+
+#: experiment/components/parallelOut/__init__.py:55
+#, fuzzy
+msgid ""
+"Parallel port to be used (you can change these options in "
+"preferences>general)"
+msgstr "پورت موازی (شما می توانید این گزینه ها را در تنظیمات> کلی تغییر دهید)"
+
+#: experiment/components/parallelOut/__init__.py:64
+#, fuzzy
+msgid "Data to be sent at 'start'"
+msgstr "داده های ارسال شده در 'شروع'"
+
+#: experiment/components/parallelOut/__init__.py:69
+#, fuzzy
+msgid "Data to be sent at 'end'"
+msgstr "داده های ارسال شده در پایان"
+
+#: experiment/components/parallelOut/__init__.py:72
+#, fuzzy
+msgid ""
+"If the parallel port data relates to visual stimuli then sync its pulse to "
+"the screen refresh"
+msgstr ""
+"اگر داده های مربوط به پورت موازی به محرک های بصری مرتبط باشد، پس پالس آن را "
+"به نوشتن صفحه همگام می کند"
+
+#: experiment/components/patch/__init__.py:16
+#, fuzzy
+msgid "Patch: present images (bmp, jpg, tif...) or textures like gratings"
+msgstr "پچ: تصاویر در حال حاضر (bmp، jpg، tif ...) یا بافت هایی مانند gratings"
+
+#: experiment/components/patch/__init__.py:20
+#, fuzzy
+msgid "Image/tex"
+msgstr "تصویر / متنی"
+
+#: experiment/components/patch/__init__.py:52
+#, fuzzy
+msgid ""
+"The image to be displayed - 'sin','sqr'... or a filename (including path)"
+msgstr ""
+"تصویر نمایش داده می شود - \"گناه\"، \"sqr\" ... یا نام فایل (از جمله مسیر)"
+
+#: experiment/components/patch/__init__.py:70
+#, fuzzy
+msgid "Spatial frequency of image repeats across the patch, e.g. 4 or [2,3]"
+msgstr "فرکانس فضایی تصویر در سراسر پچ تکرار می شود، مانند 4 یا [2،3]"
+
+#: experiment/components/patch/__init__.py:80
+#, fuzzy
+msgid "Spatial positioning of the image on the patch (in range 0-1.0)"
+msgstr "موقعیت مکانی تصویر بر روی پچ (در محدوده 0-1.0)"
+
+#: experiment/components/polygon/__init__.py:17
+#, fuzzy
+msgid "Polygon: any regular polygon (line, triangle, square...circle)"
+msgstr "چند ضلعی: هر چند ضلعی منظم (خط، مثلث، مربع ... دایره)"
+
+#: experiment/components/polygon/__init__.py:21
+#, fuzzy
+msgid "Num. vertices"
+msgstr "عدد رگه ها"
+
+#: experiment/components/polygon/__init__.py:22
+#, fuzzy
+msgid "Fill color-space"
+msgstr "رنگ فضا را پر کنید"
+
+#: experiment/components/polygon/__init__.py:23
+#, fuzzy
+msgid "Fill color"
+msgstr "رنگ را پر کنید"
+
+#: experiment/components/polygon/__init__.py:24
+#, fuzzy
+msgid "Line color-space"
+msgstr "خط رنگ فضا"
+
+#: experiment/components/polygon/__init__.py:25
+#, fuzzy
+msgid "Line color"
+msgstr "رنگ خط"
+
+#: experiment/components/polygon/__init__.py:26
+#, fuzzy
+msgid "Line width"
+msgstr "عرض خط"
+
+#: experiment/components/polygon/__init__.py:28 localization/__init__.py:169
+#, fuzzy
+msgid "Size [w,h]"
+msgstr "اندازه [w، h]"
+
+#: experiment/components/polygon/__init__.py:29
+#, fuzzy
+msgid "Shape"
+msgstr "شکل"
+
+#: experiment/components/polygon/__init__.py:66
+#, fuzzy
+msgid "How many vertices in your regular polygon?"
+msgstr "چند رأس در چند ضلعی منظمی شما چقدر است؟"
+
+#: experiment/components/polygon/__init__.py:74
+#, fuzzy
+msgid ""
+"What shape is this? With 'regular polygon...' you can set number of vertices"
+msgstr ""
+"این شکل چیست؟ با \"چند ضلعی منظم ...\" می توانید تعدادی از رأس ها را تنظیم "
+"کنید"
+
+#: experiment/components/polygon/__init__.py:85
+#: experiment/components/polygon/__init__.py:103
+#, fuzzy
+msgid "Choice of color space for the fill color (rgb, dkl, lms, hsv)"
+msgstr "انتخاب فضای رنگی برای رنگ پر رنگ (rgb، dkl، lms، hsv)"
+
+#: experiment/components/polygon/__init__.py:94
+#, fuzzy
+msgid ""
+"Fill color of this shape; Right-click to bring up a color-picker (rgb only)"
+msgstr "رنگ این شکل را پر کنید راست کلیک بر روی یک انتخاب رنگ (فقط RGB)"
+
+#: experiment/components/polygon/__init__.py:112
+#, fuzzy
+msgid ""
+"Line color of this shape; Right-click to bring up a color-picker (rgb only)"
+msgstr "رنگ خط این شکل؛ راست کلیک بر روی یک انتخاب رنگ (فقط RGB)"
+
+#: experiment/components/polygon/__init__.py:121
+#, fuzzy
+msgid ""
+"Width of the shape's line (always in pixels - this does NOT use 'units')"
+msgstr "عرض خط شکل (همیشه در پیکسل - این استفاده از \"واحد\" نیست)"
+
+#: experiment/components/polygon/__init__.py:139
+#, fuzzy
+msgid ""
+"Size of this stimulus [w,h]. Note that for a line only the first value is "
+"used, for triangle and rect the [w,h] is as expected,\n"
+" but for higher-order polygons it represents the [w,h] of the ellipse that "
+"the polygon sits on!! "
+msgstr ""
+"اندازه این محرک [w، h]. توجه داشته باشید که برای یک خط تنها مقدار اول "
+"استفاده می شود، برای مثلث و rect [w، h] همانطور که انتظار می رود، اما برای "
+"چند ضلعی های مرتبه بالاتر، آن را نشان می دهد [w، h] از بیضی که چند ضلعی "
+"نشسته است !!"
+
+#: experiment/components/pump/__init__.py:18
+#, fuzzy
+msgid "Pump: deliver liquid stimuli via a Cetoni neMESYS syringe pump"
+msgstr "پمپ: محرک های مایع را از طریق یک پمپ سرنگ Cetoni neMESYS تحویل دهید"
+
+#: experiment/components/pump/__init__.py:20
+#, fuzzy
+msgid "Pump index"
+msgstr "شاخص پمپ"
+
+#: experiment/components/pump/__init__.py:21
+#, fuzzy
+msgid "Syringe type"
+msgstr "نوع سرنگ"
+
+#: experiment/components/pump/__init__.py:22
+#, fuzzy
+msgid "Pump action"
+msgstr "عمل پمپ"
+
+#: experiment/components/pump/__init__.py:23
+#, fuzzy
+msgid "Flow rate"
+msgstr "نرخ جریان"
+
+#: experiment/components/pump/__init__.py:24
+#, fuzzy
+msgid "Flow rate unit"
+msgstr "واحد جریان جریان"
+
+#: experiment/components/pump/__init__.py:25
+#, fuzzy
+msgid "Switch valve after dosing"
+msgstr "سوپاپ بعد از دوز"
+
+#: experiment/components/pump/__init__.py:74
+#, fuzzy
+msgid "The index of the pump(s) (first pump is 0)."
+msgstr "شاخص پمپ (ها) (اولین پمپ 0) است."
+
+#: experiment/components/pump/__init__.py:81
+#, fuzzy
+msgid "Syringe type and dimensions"
+msgstr "نوع و ابعاد سرنگ"
+
+#: experiment/components/pump/__init__.py:88
+#, fuzzy
+msgid "Whether the syringe should be filled (aspirate) or emptied (dispense"
+msgstr "این که آیا سرنگ باید پر شود (آسپیراسیون) و یا تخلیه شود (تجویز"
+
+#: experiment/components/pump/__init__.py:108
+#, fuzzy
+msgid "Switch the valve after pump operation"
+msgstr "شیر را بعد از عملیات پمپ سوئیچ کنید"
+
+#: experiment/components/pump/__init__.py:114
+#, fuzzy
+msgid "Sync pump onset to the screen refresh"
+msgstr "همگام سازی پمپ شروع به تجدید صفحه می شود"
+
+#: experiment/components/ratingScale/__init__.py:21
+#, fuzzy
+msgid "Rating scale: obtain numerical or categorical responses"
+msgstr "مقیاس رتبه بندی: به دست آوردن پاسخ های عددی یا قطعی"
+
+#: experiment/components/ratingScale/__init__.py:25
+#, fuzzy
+msgid "Visual analog scale"
+msgstr "مقیاس آنالوگ ویژوال"
+
+#: experiment/components/ratingScale/__init__.py:26
+#: experiment/components/slider/__init__.py:25
+#, fuzzy
+msgid "Category choices"
+msgstr "انتخاب گروه"
+
+#: experiment/components/ratingScale/__init__.py:27
+#, fuzzy
+msgid "Scale description"
+msgstr "مقیاس توصیف"
+
+#: experiment/components/ratingScale/__init__.py:28
+#, fuzzy
+msgid "Lowest value"
+msgstr "کمترین مقدار"
+
+#: experiment/components/ratingScale/__init__.py:29
+#, fuzzy
+msgid "Highest value"
+msgstr "بالاترین ارزش"
+
+#: experiment/components/ratingScale/__init__.py:30
+#: experiment/components/slider/__init__.py:26
+#, fuzzy
+msgid "Labels"
+msgstr "برچسب ها"
+
+#: experiment/components/ratingScale/__init__.py:31
+#, fuzzy
+msgid "Marker type"
+msgstr "نوع نشانگر"
+
+#: experiment/components/ratingScale/__init__.py:32
+#, fuzzy
+msgid "Marker start"
+msgstr "آغازگر نشانگر"
+
+#: experiment/components/ratingScale/__init__.py:34
+#: experiment/components/slider/__init__.py:29 localization/__init__.py:167
+#, fuzzy
+msgid "Position [x,y]"
+msgstr "موقعیت [x، y]"
+
+#: experiment/components/ratingScale/__init__.py:35
+#, fuzzy
+msgid "Tick height"
+msgstr "ارتفاع تیک"
+
+#: experiment/components/ratingScale/__init__.py:36
+#, fuzzy
+msgid "Disappear"
+msgstr "ناپدید شدن"
+
+#: experiment/components/ratingScale/__init__.py:38
+#, fuzzy
+msgid "Show accept"
+msgstr "نمایش پذیرفتن"
+
+#: experiment/components/ratingScale/__init__.py:39
+#, fuzzy
+msgid "Single click"
+msgstr "تنها کلیک کنید"
+
+#: experiment/components/ratingScale/__init__.py:40
+#: experiment/components/slider/__init__.py:31
+#, fuzzy
+msgid "Store history"
+msgstr "تاریخ فروشگاه"
+
+#: experiment/components/ratingScale/__init__.py:41
+#: experiment/components/slider/__init__.py:32
+#, fuzzy
+msgid "Store rating"
+msgstr "رتبه فروشگاه"
+
+#: experiment/components/ratingScale/__init__.py:42
+#: experiment/components/slider/__init__.py:33
+#, fuzzy
+msgid "Store rating time"
+msgstr "ذخیره زمان رتبه بندی"
+
+#: experiment/components/ratingScale/__init__.py:43
+#, fuzzy
+msgid "Customize everything :"
+msgstr "همه چیز را سفارشی کنید:"
+
+#: experiment/components/ratingScale/__init__.py:91
+#, fuzzy
+msgid ""
+"Show a continuous visual analog scale; returns 0.00 to 1.00; takes "
+"precedence over numeric scale or categorical choices"
+msgstr ""
+"نمایش یک مقیاس آنالوگ بصری پیوسته بازده 0.00 به 1.00؛ در مقیاس عددی یا "
+"انتخاب های قطعی، مقدم بر آن است"
+
+#: experiment/components/ratingScale/__init__.py:98
+#, fuzzy
+msgid ""
+"A list of categories (non-numeric alternatives) to present, space or comma-"
+"separated; these take precedence over a numeric scale"
+msgstr ""
+"لیستی از دسته ها (جایگزین های غیر عددی) برای ارائه، فضای یا جدا سازی کاما؛ "
+"این مقوله در مقیاس عددی مقدم است"
+
+#: experiment/components/ratingScale/__init__.py:105
+#, fuzzy
+msgid ""
+"Brief instructions, such as a description of the scale numbers as seen by "
+"the subject."
+msgstr ""
+"دستورالعمل های مختصر، مانند شرح تعداد مقیاس به عنوان موضوع دیده می شود."
+
+#: experiment/components/ratingScale/__init__.py:111
+#, fuzzy
+msgid "Lowest rating (low end of the scale); not used for categories."
+msgstr "کمترین امتیاز (پایین پایان مقیاس)؛ برای دسته بندی ها استفاده نمی شود"
+
+#: experiment/components/ratingScale/__init__.py:117
+#, fuzzy
+msgid "Highest rating (top end of the scale); not used for categories."
+msgstr "بالاترین رتبه (بالا پایان مقیاس)؛ برای دسته بندی ها استفاده نمی شود"
+
+#: experiment/components/ratingScale/__init__.py:123
+#, fuzzy
+msgid "Labels for the ends of the scale, separated by commas"
+msgstr "برچسب برای پایان دادن به مقیاس، جدا شده توسط کاما"
+
+#: experiment/components/ratingScale/__init__.py:129
+#, fuzzy
+msgid "Style for the marker: triangle, circle, glow, slider, hover"
+msgstr "سبک برای نشانگر: مثلث، دایره، درخشش، کشویی، شناور"
+
+#: experiment/components/ratingScale/__init__.py:135
+#, fuzzy
+msgid "initial position for the marker"
+msgstr "موقعیت اولیه برای نشانگر"
+
+#: experiment/components/ratingScale/__init__.py:142
+#, fuzzy
+msgid ""
+"Should clicking the line accept that rating (without needing to confirm via "
+"'accept')?"
+msgstr ""
+"باید روی خط کلیک کنید که امتیاز (بدون نیاز به تأیید از طریق «پذیرش») قبول "
+"شود؟"
+
+#: experiment/components/ratingScale/__init__.py:148
+#, fuzzy
+msgid ""
+"Hide the scale when a rating has been accepted; False to remain on-screen"
+msgstr ""
+"پنهان کردن مقیاس زمانی که یک امتیاز پذیرفته شده است؛ اشتباه در روی صفحه "
+"نمایش باقی می ماند"
+
+#: experiment/components/ratingScale/__init__.py:154
+#, fuzzy
+msgid "Should the accept button by visible?"
+msgstr "آیا باید دکمه قبول قابل مشاهده باشد؟"
+
+#: experiment/components/ratingScale/__init__.py:159
+#: experiment/components/slider/__init__.py:177
+#, fuzzy
+msgid "store the rating"
+msgstr "امتیاز را ذخیره کنید"
+
+#: experiment/components/ratingScale/__init__.py:164
+#, fuzzy
+msgid "store the time taken to make the choice (in seconds)"
+msgstr "زمان را برای انتخاب انتخاب کنید (در ثانیه)"
+
+#: experiment/components/ratingScale/__init__.py:170
+#: experiment/components/slider/__init__.py:190
+#, fuzzy
+msgid "store the history of (selection, time)"
+msgstr "تاریخ (انتخاب، زمان) را ذخیره کنید"
+
+#: experiment/components/ratingScale/__init__.py:175
+#, fuzzy
+msgid "Should accepting a rating cause the end of the routine (e.g. trial)?"
+msgstr "آیا پذیرش یک امتیاز باعث پایان دادن به روال می شود (مانند محاکمه)؟"
+
+#: experiment/components/ratingScale/__init__.py:181
+#, fuzzy
+msgid ""
+"Relative size on the screen; size > 1 is larger than default; size < 1 is "
+"smaller"
+msgstr ""
+"اندازه نسبی روی صفحه نمایش؛ اندازه> 1 بزرگتر از پیش فرض است اندازه <1 کوچکتر "
+"است"
+
+#: experiment/components/ratingScale/__init__.py:187
+#, fuzzy
+msgid "height of tick marks (1 is upward, 0 is hidden, -1 is downward)"
+msgstr "ارتفاع علامت تیک (1 به بالا، 0 پنهان است، -1 پایین است)"
+
+#: experiment/components/ratingScale/__init__.py:193
+#: experiment/components/slider/__init__.py:124
+#, fuzzy
+msgid "x,y position on the screen"
+msgstr "x، y موقعیت روی صفحه نمایش"
+
+#: experiment/components/ratingScale/__init__.py:200
+#, fuzzy
+msgid ""
+"Use this text to create the rating scale as you would in a code component; "
+"overrides all dialog settings except time parameters, forceEndRoutine, "
+"storeRatingTime, storeRating"
+msgstr ""
+"از این متن برای ایجاد مقیاس رتبه بندی به عنوان شما در یک جزء کد استفاده "
+"کنید. تمام تنظیمات دیالوگ به جز پارامترهای زمان، forceEndRoutine، "
+"storeRatingTime، storeRating را لغو می کند"
+
+#: experiment/components/settings/__init__.py:40
+#, fuzzy
+msgid "Experiment name"
+msgstr "نام آزمایش"
+
+#: experiment/components/settings/__init__.py:41
+#, fuzzy
+msgid "Show info dialog"
+msgstr "نمایش گفتگوی اطلاعات"
+
+#: experiment/components/settings/__init__.py:42
+#, fuzzy
+msgid "Enable Escape key"
+msgstr "کلید Escape را فعال کنید"
+
+#: experiment/components/settings/__init__.py:43
+#, fuzzy
+msgid "Experiment info"
+msgstr "اطلاعات آزمایش"
+
+#: experiment/components/settings/__init__.py:44
+#, fuzzy
+msgid "Data filename"
+msgstr "نام فایل داده"
+
+#: experiment/components/settings/__init__.py:45
+#, fuzzy
+msgid "Full-screen window"
+msgstr "پنجره تمام صفحه"
+
+#: experiment/components/settings/__init__.py:46
+#, fuzzy
+msgid "Window size (pixels)"
+msgstr "اندازه پنجره (پیکسل)"
+
+#: experiment/components/settings/__init__.py:48
+#, fuzzy
+msgid "Monitor"
+msgstr "مانیتور"
+
+#: experiment/components/settings/__init__.py:49
+#: experiment/components/slider/__init__.py:154 localization/__init__.py:164
+#, fuzzy
+msgid "Color"
+msgstr "رنگ"
+
+#: experiment/components/settings/__init__.py:50 localization/__init__.py:165
+#, fuzzy
+msgid "Color space"
+msgstr "فضای رنگی"
+
+#: experiment/components/settings/__init__.py:51 localization/__init__.py:163
+#, fuzzy
+msgid "Units"
+msgstr "واحدها"
+
+#: experiment/components/settings/__init__.py:52
+#, fuzzy
+msgid "Blend mode"
+msgstr "حالت ترکیبی"
+
+#: experiment/components/settings/__init__.py:53
+#, fuzzy
+msgid "Show mouse"
+msgstr "نمایش ماوس"
+
+#: experiment/components/settings/__init__.py:54
+#, fuzzy
+msgid "Save log file"
+msgstr "ذخیره فایل ورودی"
+
+#: experiment/components/settings/__init__.py:56
+#, fuzzy
+msgid "Save csv file (trial-by-trial)"
+msgstr "ذخیره فایل CSV (trial-by-trial)"
+
+#: experiment/components/settings/__init__.py:57
+#, fuzzy
+msgid "Save csv file (summaries)"
+msgstr "ذخیره فایل CSV (خلاصه)"
+
+#: experiment/components/settings/__init__.py:58
+#, fuzzy
+msgid "Save excel file"
+msgstr "ذخیره فایل اکسل"
+
+#: experiment/components/settings/__init__.py:59
+#, fuzzy
+msgid "Save psydat file"
+msgstr "ذخیره فایل psydat"
+
+#: experiment/components/settings/__init__.py:60
+#, fuzzy
+msgid "Logging level"
+msgstr "سطح ورود"
+
+#: experiment/components/settings/__init__.py:61
+#, fuzzy
+msgid "Use PsychoPy version"
+msgstr "از نسخه PsychoPy استفاده کنید"
+
+#: experiment/components/settings/__init__.py:62
+#, fuzzy
+msgid "Completed URL"
+msgstr "نشانی اینترنتی تکمیل شده"
+
+#: experiment/components/settings/__init__.py:63
+#, fuzzy
+msgid "Incomplete URL"
+msgstr "URL ناقص"
+
+#: experiment/components/settings/__init__.py:64
+#, fuzzy
+msgid "Output path"
+msgstr "مسیر خروجی"
+
+#: experiment/components/settings/__init__.py:65
+#, fuzzy
+msgid "JS libs"
+msgstr "JS libs"
+
+#: experiment/components/settings/__init__.py:66
+#, fuzzy
+msgid "Force stereo"
+msgstr "تقویت استریو"
+
+#: experiment/components/settings/__init__.py:67
+#, fuzzy
+msgid "Export HTML"
+msgstr "صادرات HTML"
+
+#: experiment/components/settings/__init__.py:133
+#, fuzzy
+msgid ""
+"Name of the entire experiment (taken by default from the filename on save)"
+msgstr "نام کل آزمایش (گرفته شده به طور پیش فرض از نام فایل در ذخیره)"
+
+#: experiment/components/settings/__init__.py:138
+#, fuzzy
+msgid ""
+"Start the experiment with a dialog to set info (e.g.participant or condition)"
+msgstr ""
+"آزمایش را با یک گفتگوی شروع کنید تا اطلاعات را (مثلا شرکت کننده یا شرط)"
+
+#: experiment/components/settings/__init__.py:143
+#, fuzzy
+msgid ""
+"Enable the <esc> key, to allow subjects to quit / break out of the experiment"
+msgstr "فعال کردن <esc> کلید، اجازه دادن به افراد برای ترک / شکستن از آزمایش"
+
+#: experiment/components/settings/__init__.py:148
+#, fuzzy
+msgid ""
+"The info to present in a dialog box. Right-click to check syntax and preview "
+"the dialog box."
+msgstr ""
+"اطلاعاتی که در یک جعبه محاوره ارائه می شود. برای بررسی نحو و پیش نمایش کادر "
+"محاوره ای راست کلیک کنید."
+
+#: experiment/components/settings/__init__.py:157
+#, fuzzy
+msgid "The version of PsychoPy to use when running the experiment."
+msgstr "نسخه PsychoPy در هنگام اجرای آزمایش استفاده می شود."
+
+#: experiment/components/settings/__init__.py:162
+#, fuzzy
+msgid "Force audio to stereo (2-channel) output"
+msgstr "خروجی صدا را به استریو (2 کانال) وصل کنید"
+
+#: experiment/components/settings/__init__.py:168
+#, fuzzy
+msgid "Run the experiment full-screen (recommended)"
+msgstr "آزمایش کامل روی صفحه را انجام دهید (توصیه می شود)"
+
+#: experiment/components/settings/__init__.py:172
+#, fuzzy
+msgid "Size of window (if not fullscreen)"
+msgstr "اندازه پنجره (اگر نه تمام صفحه)"
+
+#: experiment/components/settings/__init__.py:176
+#, fuzzy
+msgid "Which physical screen to run on (1 or 2)"
+msgstr "کدام صفحه نمایش فیزیکی برای اجرای (1 یا 2)"
+
+#: experiment/components/settings/__init__.py:180
+#, fuzzy
+msgid ""
+"Name of the monitor (from Monitor Center). Right-click to go there, then "
+"copy & paste a monitor name here."
+msgstr ""
+"نام مانیتور (از مرکز مانیتور). برای رفتن به سمت راست، روی آن کلیک کنید، سپس "
+"یک نام مانیتور را در اینجا کپی کنید و بگذارید."
+
+#: experiment/components/settings/__init__.py:186
+#, fuzzy
+msgid ""
+"Color of the screen (e.g. black, $[1.0,1.0,1.0], $variable. Right-click to "
+"bring up a color-picker.)"
+msgstr ""
+"رنگ صفحه (به عنوان مثال سیاه و سفید، $ [1.0،1.0،1.0]، $ متغیر. کلیک راست "
+"کنید تا یک رنگ انتخاب کنید.)"
+
+#: experiment/components/settings/__init__.py:192
+#, fuzzy
+msgid ""
+"Needed if color is defined numerically (see PsychoPy documentation on color "
+"spaces)"
+msgstr ""
+"مورد نیاز اگر رنگ به صورت عددی تعریف شده باشد (به اسناد PsychoPy در فضاهای "
+"رنگی مراجعه کنید)"
+
+#: experiment/components/settings/__init__.py:200
+#, fuzzy
+msgid "Units to use for window/stimulus coordinates (e.g. cm, pix, deg)"
+msgstr "واحدها برای استفاده از مختصات پنجره / محرک (مانند cm، pix، deg)"
+
+#: experiment/components/settings/__init__.py:206
+#, fuzzy
+msgid ""
+"Should new stimuli be added or averaged with the stimuli that have been "
+"drawn already"
+msgstr ""
+"باید محرک های جدید اضافه شده یا به طور متوسط با محرک هایی که قبلا گرفته شده "
+"باشند"
+
+#: experiment/components/settings/__init__.py:211
+#, fuzzy
+msgid "Should the mouse be visible on screen?"
+msgstr "آیا موش روی صفحه نمایش قابل مشاهده است؟"
+
+#: experiment/components/settings/__init__.py:217
+#, fuzzy
+msgid ""
+"Code to create your custom file name base. Don't give a file extension - "
+"this will be added."
+msgstr ""
+"کد برای ایجاد نام پایگاه داده سفارشی خود را. یک پسوند فایل را ندهید - این "
+"اضافه خواهد شد."
+
+#: experiment/components/settings/__init__.py:222
+#, fuzzy
+msgid ""
+"Save a detailed log (more detailed than the excel/csv files) of the entire "
+"experiment"
+msgstr ""
+"یک گزارش دقیق (دقیق تر از فایلهای Excel / csv) را از کل آزمایش ذخیره کنید"
+
+#: experiment/components/settings/__init__.py:227
+#: experiment/components/settings/__init__.py:232
+#, fuzzy
+msgid ""
+"Save data from loops in comma-separated-value (.csv) format for maximum "
+"portability"
+msgstr ""
+"داده ها را از حلقه ها در فرمت علامت جدا شده با کاما (.csv) برای حداکثر قابل "
+"حمل ذخیره کنید"
+
+#: experiment/components/settings/__init__.py:237
+#, fuzzy
+msgid "Save data from loops in Excel (.xlsx) format"
+msgstr "ذخیره داده ها از حلقه ها در فرمت اکسل (.xlsx)"
+
+#: experiment/components/settings/__init__.py:241
+#, fuzzy
+msgid ""
+"Save data from loops in psydat format. This is useful for python programmers "
+"to generate analysis scripts."
+msgstr ""
+"ذخیره داده ها از حلقه ها در فرمت psydat. این برای برنامه نویسان پایتون برای "
+"تولید اسکریپت های تحلیل مفید است."
+
+#: experiment/components/settings/__init__.py:248
+#, fuzzy
+msgid ""
+"How much output do you want in the log files? ('error' is fewest messages, "
+"'debug' is most)"
+msgstr ""
+"چقدر خروجی در فایل های log وجود دارد؟ ('خطا' کمترین پیام است، 'اشکال زدایی' "
+"بیشتر است)"
+
+#: experiment/components/settings/__init__.py:259
+#, fuzzy
+msgid "Place the HTML files will be saved locally "
+msgstr "محل فایل های HTML محلی ذخیره می شود"
+
+#: experiment/components/settings/__init__.py:263
+#, fuzzy
+msgid ""
+"Should we package a copy of the JS libs or useremote copies (http:/www."
+"psychopy.org/js)?"
+msgstr ""
+"آیا باید کپی از نسخه های JS یا copies useremote (http: /www.psychopy.org/js) "
+"را کپی کنیم؟"
+
+#: experiment/components/settings/__init__.py:268
+#, fuzzy
+msgid ""
+"Where should participants be redirected after the experiment on completion\n"
+" INSERT COMPLETION URL E.G.?"
+msgstr ""
+"پس از تکمیل آزمایشی، شرکت کنندگان کجا باید هدایت شوند؟ کد URL را تکمیل کنید؟"
+
+#: experiment/components/settings/__init__.py:273
+#, fuzzy
+msgid ""
+"Where participants are redirected if they do not complete the task\n"
+" INSERT INCOMPLETION URL E.G.?"
+msgstr ""
+"جایی که شرکت کنندگان هدایت می شوند در صورتی که این کار را تکمیل نکنید INSERT "
+"INCOMPLETION URL URL؟"
+
+#: experiment/components/settings/__init__.py:281
+#, fuzzy
+msgid "When to export experiment to the HTML folder."
+msgstr "هنگامی که صادرات آزمایش به پوشه HTML"
+
+#: experiment/components/slider/__init__.py:21
+#, fuzzy
+msgid "Slider: A simple, flexible object for getting ratings"
+msgstr "لغزان: یک شی ساده و انعطاف پذیر برای گرفتن امتیازات"
+
+#: experiment/components/slider/__init__.py:27
+#, fuzzy
+msgid "Ticks"
+msgstr "محتوا"
+
+#: experiment/components/slider/__init__.py:95
+#, fuzzy
+msgid "Tick positions (numerical) on the scale, separated by commas"
+msgstr "علامت گذاری بر روی مقیاس، با کاما جدا شده"
+
+#: experiment/components/slider/__init__.py:102
+#, fuzzy
+msgid "Labels for the tick marks on the scale, separated by commas"
+msgstr "برچسب برای علامت تیک در مقیاس، جدا شده توسط کاما"
+
+#: experiment/components/slider/__init__.py:109
+#, fuzzy
+msgid ""
+"Specifies the minimum step size (0 for a continuous scale, 1 for integer "
+"rating scale)"
+msgstr ""
+"حداقل اندازه گام را تعیین می کند (0 برای یک مقیاس پیوسته، 1 برای مقیاس رتبه "
+"بندی صحیح)"
+
+#: experiment/components/slider/__init__.py:112
+#, fuzzy
+msgid "Granularity"
+msgstr "دانه دانه بودن"
+
+#: experiment/components/slider/__init__.py:116
+#, fuzzy
+msgid ""
+"Should setting a rating (releasing the mouse) cause the end of the routine "
+"(e.g. trial)?"
+msgstr ""
+"باید یک امتیاز (انتشار موشواره) باعث پایان دادن به روال (مانند آزمایش) شود؟"
+
+#: experiment/components/slider/__init__.py:132
+#, fuzzy
+msgid ""
+"Size on screen. e.g. (500,10) pix for horizontal,(10,500) pix for vertical"
+msgstr ""
+"اندازه روی صفحه به عنوان مثال (500، 10) پیکسل برای افقی، (10،500) پیکسل برای "
+"عمودی"
+
+#: experiment/components/slider/__init__.py:141
+#, fuzzy
+msgid ""
+"By default the labels will be on the bottom or left of the scale, but this "
+"can be flipped to the other side."
+msgstr ""
+"به طور پیش فرض برچسب ها در پایین یا سمت چپ مقیاس قرار می گیرند، اما این می "
+"تواند به طرف دیگر تلنگر شود."
+
+#: experiment/components/slider/__init__.py:144
+#, fuzzy
+msgid "Flip"
+msgstr "تلنگر"
+
+#: experiment/components/slider/__init__.py:152
+#, fuzzy
+msgid "Color of the lines and labels (might beoverridden by the style setting)"
+msgstr "رنگ خطوط و برچسب ها (ممکن است توسط تنظیم سبک باطل شود)"
+
+#: experiment/components/slider/__init__.py:161
+#, fuzzy
+msgid "Font for the labels"
+msgstr "قلم برای برچسب ها"
+
+#: experiment/components/slider/__init__.py:162
+#: experiment/components/text/__init__.py:20
+#, fuzzy
+msgid "Font"
+msgstr "فونت"
+
+#: experiment/components/slider/__init__.py:169
+#, fuzzy
+msgid "Styles determine the appearance of the slider"
+msgstr "سبک ها ظاهر لغزنده را تعیین می کنند"
+
+#: experiment/components/slider/__init__.py:170
+#, fuzzy
+msgid "Styles"
+msgstr "استایل ها"
+
+#: experiment/components/slider/__init__.py:183
+#, fuzzy
+msgid "Store the time taken to make the choice (in seconds)"
+msgstr "زمان صرف شده برای انتخاب (در ثانیه) را ذخیره کنید"
+
+#: experiment/components/sound/__init__.py:19
+#, fuzzy
+msgid "Sound: play recorded files or generated sounds"
+msgstr "صدا: پخش فایل های ضبط شده یا صداهای تولید شده"
+
+#: experiment/components/sound/__init__.py:22
+#, fuzzy
+msgid "Sound"
+msgstr "صدا"
+
+#: experiment/components/sound/__init__.py:23
+#, fuzzy
+msgid "Volume"
+msgstr "حجم"
+
+#: experiment/components/sound/__init__.py:48
+#, fuzzy
+msgid "The maximum duration of a sound in seconds"
+msgstr "حداکثر مدت یک صدا در ثانیه"
+
+#: experiment/components/sound/__init__.py:54
+#, fuzzy
+msgid ""
+"A sound can be a note name (e.g. A or Bf), a number to specify Hz (e.g. 440) "
+"or a filename"
+msgstr ""
+"صدا می تواند یک نام یادداشت (به عنوان مثال A یا Bf)، یک عدد برای تعیین Hz "
+"(به عنوان مثال 440) یا یک نام فایل"
+
+#: experiment/components/sound/__init__.py:65
+#, fuzzy
+msgid "The volume (in range 0 to 1)"
+msgstr "حجم (در محدوده 0 تا 1)"
+
+#: experiment/components/sound/__init__.py:68
+#, fuzzy
+msgid ""
+"A reaction time to a sound stimulus should be based on when the screen "
+"flipped"
+msgstr ""
+"زمان واکنش به یک محرک صوتی باید بر اساس زمانی که روی صفحه نمایش تلنگر شده "
+"باشد"
+
+#: experiment/components/static/__init__.py:21
+#, fuzzy
+msgid ""
+"Static: Static screen period (e.g. an ISI). Useful for pre-loading stimuli."
+msgstr ""
+"استاتیک: دوره صفحه نمایش استاتیک (به عنوان مثال ISI). مفید برای محرک های پیش "
+"بارگیری."
+
+#: experiment/components/static/__init__.py:23
+#, fuzzy
+msgid "Custom code"
+msgstr "کد سفارشی"
+
+#: experiment/components/static/__init__.py:44
+#, fuzzy
+msgid "Custom code to be run during the static period (after updates)"
+msgstr "کد سفارشی که در طول دوره استاتیک اجرا می شود (پس از به روز رسانی)"
+
+#: experiment/components/text/__init__.py:16
+#, fuzzy
+msgid "Text: present text stimuli"
+msgstr "متن: محرکهای متن ارائه شده"
+
+#: experiment/components/text/__init__.py:19
+#, fuzzy
+msgid "Text"
+msgstr "متن"
+
+#: experiment/components/text/__init__.py:21
+#, fuzzy
+msgid "Letter height"
+msgstr "ارتفاع نامه"
+
+#: experiment/components/text/__init__.py:22
+#, fuzzy
+msgid "Wrap width"
+msgstr "پوشیدن عرض"
+
+#: experiment/components/text/__init__.py:23
+#, fuzzy
+msgid "Flip (mirror)"
+msgstr "فلیپ (آینه)"
+
+#: experiment/components/text/__init__.py:24
+#, fuzzy
+msgid "Language style"
+msgstr "سبک زبان"
+
+#: experiment/components/text/__init__.py:35
+#, fuzzy
+msgid ""
+"Any text\n"
+"\n"
+"including line breaks"
+msgstr "هر متن از جمله شکست خط"
+
+#: experiment/components/text/__init__.py:63
+#, fuzzy
+msgid "The text to be displayed"
+msgstr "متن نمایش داده می شود"
+
+#: experiment/components/text/__init__.py:68
+#, fuzzy
+msgid "The font name (e.g. Comic Sans)"
+msgstr "نام فونت (به عنوان مثال Comic Sans)"
+
+#: experiment/components/text/__init__.py:74
+#, fuzzy
+msgid ""
+"Specifies the height of the letter (the width is then determined by the font)"
+msgstr "ارتفاع نامه را مشخص می کند (پس از آن فونت تعیین می شود)"
+
+#: experiment/components/text/__init__.py:81
+#, fuzzy
+msgid "How wide should the text get when it wraps? (in the specified units)"
+msgstr "متن چگونه می شود زمانی که آن را پیچیده؟ (در واحد های مشخص شده)"
+
+#: experiment/components/text/__init__.py:87
+#, fuzzy
+msgid "horiz = left-right reversed; vert = up-down reversed; $var = variable"
+msgstr "افق = چپ و راست معکوس؛ ارزش = بالا به پایین معکوس؛ $ var = متغیر"
+
+#: experiment/components/text/__init__.py:93
+#, fuzzy
+msgid "Handle right-to-left (RTL) languages and Arabic reshaping"
+msgstr "دست زدن به زبان های راست به چپ (RTL) و تغییر زبان عربی"
+
+#: experiment/components/unknown/__init__.py:14
+#, fuzzy
+msgid ""
+"Unknown: A component that is not known by the current installed version of "
+"PsychoPy\n"
+"(most likely from the future)"
+msgstr ""
+"نامعلوم: جزء است که توسط نسخه نصب شده فعلی PsychoPy شناخته نشده (احتمالا از "
+"آینده)"
+
+#: experiment/components/unknown/__init__.py:19
+#: experiment/components/variable/__init__.py:21 localization/__init__.py:154
+#: localization/__init__.py:172
+#, fuzzy
+msgid "Name"
+msgstr "نام"
+
+#: experiment/components/variable/__init__.py:18
+#, fuzzy
+msgid "Variable: create a new variable"
+msgstr "متغیر: ایجاد یک متغیر جدید"
+
+#: experiment/components/variable/__init__.py:22
+#, fuzzy
+msgid "Experiment start value"
+msgstr "مقدار شروع آزمایش"
+
+#: experiment/components/variable/__init__.py:23
+#, fuzzy
+msgid "Routine start value"
+msgstr "مقادیر شروع اولیه"
+
+#: experiment/components/variable/__init__.py:24
+#, fuzzy
+msgid "Frame start value"
+msgstr "مقدار شروع قاب"
+
+#: experiment/components/variable/__init__.py:25
+#, fuzzy
+msgid "Save exp start value"
+msgstr "صرفه جویی در مقدار شروع بهره"
+
+#: experiment/components/variable/__init__.py:26
+#, fuzzy
+msgid "Save routine start value"
+msgstr "صرفه جویی در مقدار اولیه شروع به کار"
+
+#: experiment/components/variable/__init__.py:27
+#, fuzzy
+msgid "Save frame value"
+msgstr "مقدار فریم را ذخیره کنید"
+
+#: experiment/components/variable/__init__.py:28
+#, fuzzy
+msgid "Save routine end value"
+msgstr "صرفه جویی در مقدار انتهایی روزمره"
+
+#: experiment/components/variable/__init__.py:29
+#, fuzzy
+msgid "Save exp end value"
+msgstr "صرفه جویی در ارزش پایان exp"
+
+#: experiment/components/variable/__init__.py:50
+#, fuzzy
+msgid "The start value. A variable can be set to any value."
+msgstr "ارزش شروع. متغیر می تواند به هر مقدار تنظیم شود."
+
+#: experiment/components/variable/__init__.py:55
+#, fuzzy
+msgid "Set the value for the beginning of each routine."
+msgstr "مقدار ابتدای هر روال را تنظیم کنید."
+
+#: experiment/components/variable/__init__.py:60
+#, fuzzy
+msgid "Set the value for the beginning of every screen refresh."
+msgstr "مقدار برای شروع هر تازه سازی صفحه را تنظیم کنید."
+
+#: experiment/components/variable/__init__.py:66
+#, fuzzy
+msgid "Save the experiment start value in data file."
+msgstr "مقدار شروع آزمایش را در فایل داده ذخیره کنید."
+
+#: experiment/components/variable/__init__.py:73
+#, fuzzy
+msgid "Save the experiment end value in data file."
+msgstr "ارزش پایانی آزمایش را در فایل داده ذخیره کنید."
+
+#: experiment/components/variable/__init__.py:80
+#, fuzzy
+msgid "Save the routine start value in data file."
+msgstr "مقدار شروع روال در فایل داده را ذخیره کنید."
+
+#: experiment/components/variable/__init__.py:87
+#, fuzzy
+msgid "Save the routine end value in data file."
+msgstr "صرفه جویی در پایان پایان روال در فایل داده."
+
+#: experiment/components/variable/__init__.py:94
+#, fuzzy
+msgid "Save choice of frame value in data file."
+msgstr "انتخاب فریم در فایل داده را ذخیره کنید."
+
+#: experiment/loops.py:60 experiment/loops.py:321 experiment/loops.py:466
+#, fuzzy
+msgid "Name of this loop"
+msgstr "نام این حلقه"
+
+#: experiment/loops.py:64
+#, fuzzy
+msgid "Number of repeats (for each condition)"
+msgstr "تعداد تکرار (برای هر شرایط)"
+
+#: experiment/loops.py:69
+#, fuzzy
+msgid "A list of dictionaries describing the parameters in each condition"
+msgstr "لیستی از لغت نامه ها که پارامترها را در هر شرایط مشخص می کنند"
+
+#: experiment/loops.py:74
+#, fuzzy
+msgid ""
+"Name of a file specifying the parameters for each condition (.csv, .xlsx, "
+"or .pkl). Browse to select a file. Right-click to preview file contents, or "
+"create a new file."
+msgstr ""
+"نام یک فایل مشخص کننده پارامترها برای هر شرایط (.csv، .xlsx یا .pkl). مرور "
+"یک فایل را انتخاب کنید برای پیش نمایش محتویات فایل راست کلیک کرده یا یک فایل "
+"جدید ایجاد کنید."
+
+#: experiment/loops.py:81
+#, fuzzy
+msgid "The start and end of the loop (see flow timeline)"
+msgstr "شروع و پایان حلقه (جدول زمانی جریان را ببینید)"
+
+#: experiment/loops.py:87
+#, fuzzy
+msgid ""
+"Select just a subset of rows from your condition file (the first is 0 not "
+"1!). Examples: 0, 0:5, 5:-1"
+msgstr ""
+"فقط یک زیر مجموعه از ردیف از پرونده وضعیت خود را انتخاب کنید (اول 0 است نه "
+"1!). مثالها: 0، 0: 5، 5: -1"
+
+#: experiment/loops.py:96
+#, fuzzy
+msgid "How should the next condition value(s) be chosen?"
+msgstr "چگونگی انتخاب شرط شرط بعدی باید چطور باشد؟"
+
+#: experiment/loops.py:101
+#, fuzzy
+msgid ""
+"To have a fixed random sequence provide an integer of your choosing here. "
+"Leave blank to have a new random sequence on each run of the experiment."
+msgstr ""
+"برای داشتن توالی تصادفی ثابت یک عدد صحیح از انتخاب شما در اینجا ارائه می "
+"شود. بگذارید خالی بگذارید تا یک دنباله تصادفی جدید در هر اجرا از آزمایش "
+"داشته باشید."
+
+#: experiment/loops.py:108 experiment/loops.py:382 experiment/loops.py:508
+#, fuzzy
+msgid ""
+"Indicates that this loop generates TRIALS, rather than BLOCKS of trials or "
+"stimuli within a trial. It alters how data files are output"
+msgstr ""
+"نشان می دهد که این حلقه، TRIALS را تولید می کند، نه BLOCKS محاکمات یا محرک "
+"ها در یک محاکمه. این تغییر نحوه خروجی فایل های داده را تغییر می دهد"
+
+#: experiment/loops.py:326
+#, fuzzy
+msgid "(Minimum) number of trials in the staircase"
+msgstr "(حداقل) تعداد آزمایشات در راه پله"
+
+#: experiment/loops.py:330
+#, fuzzy
+msgid "The initial value of the parameter"
+msgstr "مقدار اولیه پارامتر"
+
+#: experiment/loops.py:334
+#, fuzzy
+msgid "The maximum value the parameter can take"
+msgstr "حداکثر مقدار پارامتر می تواند باشد"
+
+#: experiment/loops.py:338
+#, fuzzy
+msgid "The minimum value the parameter can take"
+msgstr "حداقل مقدار پارامتر می تواند باشد"
+
+#: experiment/loops.py:342
+#, fuzzy
+msgid "The size of the jump at each step (can change on each 'reversal')"
+msgstr "اندازه پرش در هر مرحله (می تواند در هر معکوس تغییر کند)"
+
+#: experiment/loops.py:347
+#, fuzzy
+msgid ""
+"The units of the step size (e.g. 'linear' will add/subtract that value each "
+"step, whereas 'log' will ad that many log units)"
+msgstr ""
+"واحدهای اندازه گام (به عنوان مثال 'خطی' این مقدار را هر گام اضافه یا تفریق "
+"کند، در حالی که 'log' آگهی می دهد که بسیاری از واحد های ورودی)"
+
+#: experiment/loops.py:353
+#, fuzzy
+msgid "The number of 'incorrect' answers before the value goes up"
+msgstr "تعداد پاسخ های \"نادرست\" قبل از اینکه ارزش افزایش یابد"
+
+#: experiment/loops.py:358
+#, fuzzy
+msgid "The number of 'correct' answers before the value goes down"
+msgstr "تعداد پاسخهای صحیح قبل از اینکه مقدار آن کاهش یابد"
+
+#: experiment/loops.py:363
+#, fuzzy
+msgid ""
+"Minimum number of times the staircase must change direction before ending"
+msgstr "حداقل تعداد دفعاتی که راهپیمایی قبل از پایان باید مسیر را تغییر دهد"
+
+#: experiment/loops.py:372 experiment/loops.py:488
+#, fuzzy
+msgid "How should the next trial value(s) be chosen?"
+msgstr "چقدر ارزش محاکمه بعدی باید انتخاب شود؟"
+
+#: experiment/loops.py:377 experiment/loops.py:492
+#, fuzzy
+msgid "Where to loop from and to (see values currently shown in the flow view)"
+msgstr ""
+"کجا به حلقه از و (به مقادیر در حال حاضر در نمایش جریان نشان داده شده است)"
+
+#: experiment/loops.py:470
+#, fuzzy
+msgid "(Minimum) number of trials in *each* staircase"
+msgstr "(حداقل) تعداد آزمایشات در * هر * راه پله"
+
+#: experiment/loops.py:475 experiment/loops.py:480
+#, fuzzy
+msgid "How to select the next staircase to run"
+msgstr "نحوه انتخاب پله های بعدی برای اجرای"
+
+#: experiment/loops.py:498
+#, fuzzy
+msgid ""
+"A list of dictionaries describing the differences between each staircase"
+msgstr "لیستی از لغت نامه ها که تفاوت بین هر پله را توصیف می کنند"
+
+#: experiment/loops.py:503
+#, fuzzy
+msgid "An xlsx or csv file specifying the parameters for each condition"
+msgstr "یک فایل xlsx یا csv که پارامترهای هر شرایط را مشخص می کند"
+
+#: gui/qtgui.py:73
+#, fuzzy
+msgid "PsychoPy Dialog"
+msgstr "گفتگوی روانشناسی"
+
+#: gui/qtgui.py:476 gui/wxgui.py:334
+#, fuzzy
+msgid "Select file to save"
+msgstr "فایل را برای ذخیره ذخیره کنید"
+
+#: gui/qtgui.py:521
+#, fuzzy
+msgid "Select file to open"
+msgstr "فایل را برای باز کردن انتخاب کنید"
+
+#: gui/qtgui.py:571
+#, fuzzy
+msgid "Information"
+msgstr "اطلاعات"
+
+#: gui/qtgui.py:573 gui/qtgui.py:579 gui/qtgui.py:585 gui/qtgui.py:591
+#, fuzzy
+msgid "No details provided. ('prompt' value not set)."
+msgstr "جزئیات ارائه نشده است. (مقدار \"فوری\" تنظیم نشده است)."
+
+#: gui/qtgui.py:583
+#, fuzzy
+msgid "Critical"
+msgstr "بحرانی"
+
+#: gui/qtgui.py:589
+#, fuzzy
+msgid "About Experiment"
+msgstr "درباره آزمایش"
+
+#: gui/wxgui.py:68
+#, fuzzy
+msgid "PsychoPy dialogue"
+msgstr "گفتگوی روانپزشکی"
+
+#: gui/wxgui.py:385
+#, fuzzy
+msgid "Select file(s) to open"
+msgstr "فایل را انتخاب کنید تا باز شود"
+
+#: localization/__init__.py:155
+#, fuzzy
+msgid "start type"
+msgstr "شروع نوع"
+
+#: localization/__init__.py:156
+#, fuzzy
+msgid "stop type"
+msgstr "توقف نوع"
+
+#: localization/__init__.py:166
+#, fuzzy
+msgid "Opacity"
+msgstr "شفافیت"
+
+#: localization/__init__.py:173
+#, fuzzy
+msgid "nReps"
+msgstr "nReps"
+
+#: localization/__init__.py:174
+#, fuzzy
+msgid "Conditions"
+msgstr "شرایط"
+
+#: localization/__init__.py:175
+#, fuzzy
+msgid "endPoints"
+msgstr "نقطه پایان"
+
+#: localization/__init__.py:176
+#, fuzzy
+msgid "Selected rows"
+msgstr "ردیف های انتخاب شده"
+
+#: localization/__init__.py:177
+#, fuzzy
+msgid "loopType"
+msgstr "loopType"
+
+#: localization/__init__.py:178
+#, fuzzy
+msgid "random seed"
+msgstr "بذر تصادفی"
+
+#: localization/__init__.py:179
+#, fuzzy
+msgid "Is trials"
+msgstr "آزمایشات است"
+
+#: localization/__init__.py:180
+#, fuzzy
+msgid "min value"
+msgstr "مقدار حداقل"
+
+#: localization/__init__.py:181
+#, fuzzy
+msgid "N reversals"
+msgstr "معکوس N"
+
+#: localization/__init__.py:182
+#, fuzzy
+msgid "start value"
+msgstr "شروع ارزش"
+
+#: localization/__init__.py:183
+#, fuzzy
+msgid "N up"
+msgstr "N بالا"
+
+#: localization/__init__.py:184
+#, fuzzy
+msgid "max value"
+msgstr "حداکثر ارزش"
+
+#: localization/__init__.py:185
+#, fuzzy
+msgid "N down"
+msgstr "N پایین"
+
+#: localization/__init__.py:186
+#, fuzzy
+msgid "step type"
+msgstr "گام نوع"
+
+#: localization/__init__.py:187
+#, fuzzy
+msgid "step sizes"
+msgstr "گام اندازه"
+
+#: localization/__init__.py:188
+#, fuzzy
+msgid "stairType"
+msgstr "نوع پله"
+
+#: localization/__init__.py:189
+#, fuzzy
+msgid "switchMethod"
+msgstr "switchMethod"
+
+#: monitors/MonitorCenter.py:173 monitors/MonitorCenter.py:311
+#, fuzzy
+msgid "Monitor Info"
+msgstr "نظارت بر اطلاعات"
+
+#: monitors/MonitorCenter.py:182 monitors/MonitorCenter.py:377
+#, fuzzy
+msgid "Calibration"
+msgstr "کالیبراسیون"
+
+#: monitors/MonitorCenter.py:225
+#, fuzzy
+msgid "Save\tCtrl+S"
+msgstr "ذخیره Ctrl + S"
+
+#: monitors/MonitorCenter.py:226
+#, fuzzy
+msgid "Save the current monitor"
+msgstr "مانیتور فعلی را ذخیره کنید"
+
+#: monitors/MonitorCenter.py:229
+#, fuzzy
+msgid "Close Monitor Center (but not other PsychoPy windows)"
+msgstr "بستن مرکز مانیتور (اما دیگر پنجره های PsychoPy دیگر)"
+
+#: monitors/MonitorCenter.py:231
+#, fuzzy
+msgid "Close Monitor Center\tCtrl+W"
+msgstr "بستن مرکز مانیتور Ctrl + W"
+
+#: monitors/MonitorCenter.py:239
+#, fuzzy
+msgid "Copy the current monitor's name to clipboard"
+msgstr "نام مانیتور فعلی را به کلیپ بورد کپی کنید"
+
+#: monitors/MonitorCenter.py:240
+#, fuzzy
+msgid "Copy\tCtrl+C"
+msgstr "کپی Ctrl + C"
+
+#: monitors/MonitorCenter.py:248
+#, fuzzy
+msgid "Choose Monitor"
+msgstr "انتخاب مانیتور"
+
+#: monitors/MonitorCenter.py:260
+#, fuzzy
+msgid "New..."
+msgstr "جدید..."
+
+#: monitors/MonitorCenter.py:264
+#, fuzzy
+msgid "Create a new monitor"
+msgstr "یک مانیتور جدید ایجاد کنید"
+
+#: monitors/MonitorCenter.py:269
+#, fuzzy
+msgid "Save all calibrations for this monitor"
+msgstr "تمام کالیبراسیون ها را برای این مانیتور ذخیره کنید"
+
+#: monitors/MonitorCenter.py:273 monitors/MonitorCenter.py:294
+#, fuzzy
+msgid "Delete"
+msgstr "حذف"
+
+#: monitors/MonitorCenter.py:276
+#, fuzzy
+msgid "Delete this monitor entirely"
+msgstr "این مانیتور را به طور کامل حذف کنید"
+
+#: monitors/MonitorCenter.py:287
+#, fuzzy
+msgid "Copy..."
+msgstr "کپی..."
+
+#: monitors/MonitorCenter.py:290
+#, fuzzy
+msgid "Creates a new calibration entry for this monitor"
+msgstr "ورودی کالیبراسیون جدید را برای این مانیتور ایجاد می کند"
+
+#: monitors/MonitorCenter.py:297
+#, fuzzy
+msgid "Remove this calibration entry (finalized when monitor is saved)"
+msgstr "حذف این ورودی کالیبراسیون (نهایی زمانی که مانیتور ذخیره می شود)"
+
+#: monitors/MonitorCenter.py:317
+#, fuzzy
+msgid "Screen Distance (cm):"
+msgstr "فاصله صفحه (سانتی متر):"
+
+#: monitors/MonitorCenter.py:324
+#, fuzzy
+msgid "Screen Width (cm):"
+msgstr "عرض صفحه (سانتی متر):"
+
+#: monitors/MonitorCenter.py:330
+#, fuzzy
+msgid "Size (pixels; Horiz,Vert):"
+msgstr "اندازه (پیکسل؛ Horiz، Vert):"
+
+#: monitors/MonitorCenter.py:342
+#, fuzzy
+msgid "Calibration Date:"
+msgstr "تاریخ کالیبراسیون:"
+
+#: monitors/MonitorCenter.py:349
+#, fuzzy
+msgid "Notes:"
+msgstr "یادداشت:"
+
+#: monitors/MonitorCenter.py:357 monitors/MonitorCenter.py:1193
+#, fuzzy
+msgid "Use Bits++"
+msgstr "از بیت ++ استفاده کنید"
+
+#: monitors/MonitorCenter.py:391
+#, fuzzy
+msgid "Scan all ports"
+msgstr "اسکن تمام پورت ها"
+
+#: monitors/MonitorCenter.py:400
+#, fuzzy
+msgid "Get Photometer"
+msgstr "دریافت فوتومتر"
+
+#: monitors/MonitorCenter.py:406
+#, fuzzy
+msgid "Gamma Calibration..."
+msgstr "کالیبراسیون گاما ..."
+
+#: monitors/MonitorCenter.py:410
+#, fuzzy
+msgid "Gamma Test..."
+msgstr "آزمایش گاما ..."
+
+#: monitors/MonitorCenter.py:417
+#, fuzzy
+msgid "Chromatic Calibration..."
+msgstr "کالیبراسیون رنگی ..."
+
+#: monitors/MonitorCenter.py:422
+#, fuzzy
+msgid "Plot gamma"
+msgstr "قطعه گاما"
+
+#: monitors/MonitorCenter.py:426
+#, fuzzy
+msgid "Plot spectra"
+msgstr "طیف قطعه"
+
+#: monitors/MonitorCenter.py:438
+#, fuzzy
+msgid "Linearization"
+msgstr "خطی سازی"
+
+#: monitors/MonitorCenter.py:540
+#, fuzzy
+msgid "Save changes to monitor settings before quitting?"
+msgstr "ذخیره تغییرات برای نظارت بر تنظیمات قبل از ترک؟"
+
+#: monitors/MonitorCenter.py:561
+#, fuzzy
+msgid "Save changes to monitor?"
+msgstr "ذخیره تغییرات برای نظارت؟"
+
+#: monitors/MonitorCenter.py:655
+#, fuzzy, python-format
+msgid "Name of this calibration (for monitor \"%(name)s\") will be:)"
+msgstr "نام این کالیبراسیون (برای مانیتور \"٪ (name) s\") خواهد بود :)"
+
+#: monitors/MonitorCenter.py:659 monitors/MonitorCenter.py:674
+#, fuzzy
+msgid "Input text"
+msgstr "متن ورودی"
+
+#: monitors/MonitorCenter.py:673
+#, fuzzy
+msgid "New monitor name:"
+msgstr "نام مانیتور جدید:"
+
+#: monitors/MonitorCenter.py:688
+#, fuzzy, python-format
+msgid "Are you sure you want to delete all details for %s? (cannot be undone)"
+msgstr ""
+"آیا مطمئن هستید که میخواهید تمام جزئیات را برای٪ s حذف کنید؟ (قابل لغو نیست)"
+
+#: monitors/MonitorCenter.py:712
+#, fuzzy
+msgid "Are you sure you want to delete this calibration? (cannot be undone)"
+msgstr ""
+"آیا مطمئن هستید که می خواهید این کالیبراسیون را حذف کنید؟ (قابل لغو نیست)"
+
+#: monitors/MonitorCenter.py:968
+#, fuzzy
+msgid "Scanning ports..."
+msgstr "پورت اسکن ..."
+
+#: monitors/MonitorCenter.py:977
+#, fuzzy, python-format
+msgid "%(photomType)s found on %(photomPort)s"
+msgstr "٪ (photomType) در٪ (photomPort) s یافت می شود"
+
+#: monitors/MonitorCenter.py:982
+#, fuzzy
+msgid "No photometers found"
+msgstr "هیچ فوتومتر یافت نشد"
+
+#: monitors/MonitorCenter.py:991 monitors/MonitorCenter.py:996
+#, fuzzy
+msgid "Dark calibration of ColorCAL"
+msgstr "کالیبراسیون تیره رنگ Color"
+
+#: monitors/MonitorCenter.py:992
+#, fuzzy
+msgid ""
+"Your ColorCAL needs to be calibrated first. Please block all light from "
+"getting into the lens and press OK."
+msgstr ""
+"ColorCAL شما برای اولین بار باید کالیبراسیون شود. لطفا همه نور را از لنز "
+"وارد کنید و OK را فشار دهید."
+
+#: monitors/MonitorCenter.py:1009
+#, fuzzy
+msgid "Try again. Cover the lens fully and press OK"
+msgstr "دوباره امتحان کنید لنز را به طور کامل لمس کنید و OK را فشار دهید"
+
+#: monitors/MonitorCenter.py:1013
+#, fuzzy, python-format
+msgid "%(monName)s %(calibName)s Gamma Functions"
+msgstr "٪ (monName) s٪ (calibName) s توابع گاما"
+
+#: monitors/MonitorCenter.py:1078
+#, fuzzy, python-format
+msgid "%(monName)s %(calibName)s Spectra"
+msgstr "٪ (monName) s٪ (calibName) s Spectra"
+
+#: monitors/MonitorCenter.py:1104
+#, fuzzy
+msgid "Recorded luminance values"
+msgstr "مقادیر روشنایی ضبط شده"
+
+#: monitors/MonitorCenter.py:1130
+#, fuzzy
+msgid "Luminance Values"
+msgstr "ارزش های نورانی"
+
+#: monitors/MonitorCenter.py:1183
+#, fuzzy
+msgid "Gamma Calibration"
+msgstr "کالیبراسیون گاما"
+
+#: monitors/MonitorCenter.py:1196
+#, fuzzy
+msgid "Number of calibration points:"
+msgstr "تعداد نقاط کالیبراسیون:"
+
+#: monitors/MonitorCenter.py:1200
+#, fuzzy
+msgid "Screen number (primary is 1)"
+msgstr "شماره صفحه (اولیه 1) است"
+
+#: monitors/MonitorCenter.py:1204
+#, fuzzy
+msgid "Patch size (fraction of screen):"
+msgstr "اندازه پچ (کسری از صفحه نمایش):"
+
+#: monitors/MonitorCenter.py:1238
+#, fuzzy
+msgid "PsychoPy Monitor Center"
+msgstr "مرکز مانور PsychoPy"
+
+#: preferences/hints.py:13
+#, fuzzy
+msgid "which system to use as a backend for drawing"
+msgstr ""
+"کدام یک از سیستم ها برای استفاده به عنوان پشت صحنه برای طراحی استفاده می شود"
+
+#: preferences/hints.py:16
+#, fuzzy
+msgid "the default units for windows and visual stimuli"
+msgstr "واحد های پیش فرض برای ویندوز و محرک های بصری"
+
+#: preferences/hints.py:19
+#, fuzzy
+msgid "full screen is best for accurate timing"
+msgstr "صفحه نمایش کامل برای زمان بندی دقیق است"
+
+#: preferences/hints.py:22
+#, fuzzy
+msgid "enable subjects to use the mouse and GUIs during experiments"
+msgstr ""
+"افراد را قادر می سازد از موش و رابط گرافیکی در طول آزمایش ها استفاده کنند"
+
+#: preferences/hints.py:25
+#, fuzzy
+msgid "'version' is for internal usage, not for the user"
+msgstr "'نسخه' برای استفاده داخلی، نه برای کاربر است"
+
+#: preferences/hints.py:28
+#, fuzzy
+msgid "Add paths here to your custom Python modules"
+msgstr "این مسیرها را به ماژولهای سفارشی پایتون اضافه کنید"
+
+#: preferences/hints.py:31
+#, fuzzy
+msgid "choice of audio library"
+msgstr "انتخاب کتابخانه صوتی"
+
+#: preferences/hints.py:34
+#, fuzzy
+msgid "audio driver to use"
+msgstr "راننده صوتی برای استفاده"
+
+#: preferences/hints.py:37
+#, fuzzy
+msgid "audio device to use (if audioLib allows control)"
+msgstr "دستگاه صوتی برای استفاده (اگر audioLib اجازه می دهد تا کنترل)"
+
+#: preferences/hints.py:40
+#, fuzzy
+msgid "path to flac (lossless audio compression) on this operating system"
+msgstr "مسیر به فلاش (بدون فشرده سازی صوتی) در این سیستم عامل"
+
+#: preferences/hints.py:43
+#, fuzzy
+msgid "a list of parallel ports"
+msgstr "یک لیست از پورت های موازی"
+
+#: preferences/hints.py:46
+#, fuzzy
+msgid "Shutdown keys, following the pyglet naming scheme."
+msgstr "کلید های خاموش کردن، به دنبال طرح نامگذاری pyglet."
+
+#: preferences/hints.py:49
+#, fuzzy
+msgid "Modifier keys for shutdown keys"
+msgstr "کلید های اصلاح کننده برای کلید های خاموش"
+
+#: preferences/hints.py:52
+#, fuzzy
+msgid "display tips when starting PsychoPy"
+msgstr "راهنمایی های صفحه نمایش هنگام شروع PsychoPy"
+
+#: preferences/hints.py:55
+#, fuzzy
+msgid "size of icons in the Coder and Builder toolbars (top of window)"
+msgstr "اندازه آیکون ها در نوار ابزار Coder و Builder (بالای پنجره)"
+
+#: preferences/hints.py:58
+#, fuzzy
+msgid "what windows to display when PsychoPy starts"
+msgstr "چه پنجره ای برای نمایش وقتی PsychoPy شروع می شود"
+
+#: preferences/hints.py:61
+#, fuzzy
+msgid "reset preferences to defaults on next restart of PsychoPy"
+msgstr "بازنشانی تنظیمات پیش فرض در راه اندازی مجدد بعدی PsychoPy"
+
+#: preferences/hints.py:64
+#, fuzzy
+msgid "save any unsaved preferences before closing the window"
+msgstr "قبل از بستن پنجره، ترجیحات ذخیره نشده را ذخیره کنید"
+
+#: preferences/hints.py:67
+#, fuzzy
+msgid "enable features for debugging PsychoPy itself, including unit-tests"
+msgstr ""
+"ویژگی های خود را برای اشکال زدایی از خود PsychoPy فعال کنید، از جمله تست واحد"
+
+#: preferences/hints.py:70
+#, fuzzy
+msgid ""
+"language to use in menus etc; not all translations are available. Select a "
+"value, then restart the app."
+msgstr ""
+"زبان برای استفاده در منوها و غیره؛ همه ترجمه ها در دسترس نیست. یک مقدار را "
+"انتخاب کنید، سپس برنامه را مجددا راه اندازی کنید."
+
+#: preferences/hints.py:74
+#, fuzzy
+msgid ""
+"open Coder files as read-only (allows running without accidental changes)"
+msgstr ""
+"فایل های Coder را به عنوان فقط خواندنی باز کنید (اجازه می دهد بدون تغییرات "
+"تصادفی اجرا شود)"
+
+#: preferences/hints.py:77
+#, fuzzy
+msgid "a list of font names; the first one found on the system will be used"
+msgstr "لیستی از نام فونت؛ اولین مورد موجود در سیستم استفاده خواهد شد"
+
+#: preferences/hints.py:80
+#, fuzzy
+msgid "Font size (in pts) takes an integer between 6 and 24"
+msgstr "اندازه فونت (در pts) یک عدد صحیح بین 6 تا 24 را می گیرد"
+
+#: preferences/hints.py:83
+#, fuzzy
+msgid "activate the source assistant panel"
+msgstr "پانل دستیار منبع را فعال کنید"
+
+#: preferences/hints.py:86
+#, fuzzy
+msgid "activate the output and shell panels"
+msgstr "پانل خروجی و پوسته را فعال کنید"
+
+#: preferences/hints.py:89
+#, fuzzy
+msgid "reload previously opened files after start"
+msgstr "دوباره بارگذاری فایل های قبلا باز شده پس از شروع"
+
+#: preferences/hints.py:92
+#, fuzzy
+msgid "for coder shell window, which shell to use"
+msgstr "برای پنجره پوسته کدنویسی، که پوسته برای استفاده است"
+
+#: preferences/hints.py:95
+#, fuzzy
+msgid "whether to automatically reload a previously open experiment"
+msgstr "آیا به صورت خودکار مجددا آزمایش آزمایشی را دوباره بارگیری می کنید؟"
+
+#: preferences/hints.py:99
+#, fuzzy
+msgid ""
+"if False will create scripts with an 'easier' but more cluttered namespace"
+msgstr ""
+"اگر False، اسکریپت ها را با یک فضای نام ساده تر، اما پیچیده تر ایجاد کند"
+
+#: preferences/hints.py:102
+#, fuzzy
+msgid "folder names for custom components; expects a comma-separated list"
+msgstr "نام پوشه برای اجزای سفارشی انتظار یک لیست جدا شده با کاما دارد"
+
+#: preferences/hints.py:105
+#, fuzzy
+msgid "a list of components to hide (eg, because you never use them)"
+msgstr ""
+"یک لیست از اجزای مخفی (به عنوان مثال، زیرا شما هرگز از آنها استفاده نمی کنید)"
+
+#: preferences/hints.py:108
+#, fuzzy
+msgid "where the Builder demos are located on this computer (after unpacking)"
+msgstr "جایی که دموی سازنده در این رایانه قرار دارد (بعد از باز کردن)"
+
+#: preferences/hints.py:112
+#, fuzzy
+msgid ""
+"name of the folder where subject data should be saved (relative to the "
+"script)"
+msgstr "نام پوشه ای که اطلاعات موضوع باید ذخیره شود (نسبت به اسکریپت)"
+
+#: preferences/hints.py:115
+#, fuzzy
+msgid "Panels arrangement: topFlow = Flow on top, Components on left"
+msgstr "ترتیب پانل ها: topFlow = جریان در بالا، اجزای سمت چپ"
+
+#: preferences/hints.py:118
+#, fuzzy
+msgid "Display text in a floating window that describes the experiment"
+msgstr "نمایش متن در یک پنجره شناور که تجربی را توصیف می کند"
+
+#: preferences/hints.py:121
+#, fuzzy
+msgid "Upper limit on how many components can be in favorites"
+msgstr "حد بالايي در مورد تعدادي از اجزاء ميتواند در موارد دلخواه باشد"
+
+#: preferences/hints.py:124
+#, fuzzy
+msgid "the http proxy for usage stats and auto-updating; format is host: port"
+msgstr ""
+"پروکسی HTTP برای آمار استفاده و خودکار به روز رسانی؛ فرمت میزبان: پورت است"
+
+#: preferences/hints.py:128
+#, fuzzy
+msgid ""
+"override the above proxy settings with values found in the environment (if "
+"possible)"
+msgstr "تنظیمات پروکسی فوق را با مقادیر موجود در محیط (در صورت امکان)"
+
+#: preferences/hints.py:131
+#, fuzzy
+msgid ""
+"allow PsychoPy to send anonymous usage stats; please allow if possible, it "
+"helps PsychoPy's development"
+msgstr ""
+"اجازه PsychoPy به ارسال آمار استفاده ناشناس؛ لطفا اجازه دهید در صورت امکان، "
+"آن را به توسعه PsychoPy کمک می کند"
+
+#: preferences/hints.py:134
+#, fuzzy
+msgid "allow PsychoPy to check for new features and bug fixes"
+msgstr "به PsychoPy اجازه می دهد برای بررسی ویژگی های جدید و رفع اشکال"
+
+#: preferences/hints.py:137
+#, fuzzy
+msgid "max time to wait for a connection response"
+msgstr "حداکثر زمان انتظار پاسخ اتصال"
+
+#: preferences/hints.py:140
+#, fuzzy
+msgid "open an existing file"
+msgstr "یک فایل موجود باز کنید"
+
+#: preferences/hints.py:143
+#, fuzzy
+msgid "start a new experiment or script"
+msgstr "یک آزمایش یا اسکریپت جدید شروع کنید"
+
+#: preferences/hints.py:146
+#, fuzzy
+msgid "save a Builder or Coder file"
+msgstr "یک فایل Builder یا Coder را ذخیره کنید"
+
+#: preferences/hints.py:149
+#, fuzzy
+msgid "save a Builder or Coder file under a new name"
+msgstr "یک نام Builder یا Coder را با نام جدید ذخیره کنید"
+
+#: preferences/hints.py:152
+#, fuzzy
+msgid "Coder: print the file"
+msgstr "رمزگذار: فایل را چاپ کنید"
+
+#: preferences/hints.py:155
+#, fuzzy
+msgid "close the Builder or Coder window"
+msgstr "پنجره Builder یا Coder را ببندید"
+
+#: preferences/hints.py:158
+#, fuzzy
+msgid "end the application (PsychoPy)"
+msgstr "پایان برنامه (PsychoPy)"
+
+#: preferences/hints.py:161
+#, fuzzy
+msgid "open the preferences dialog"
+msgstr "گفتگوی تنظیمات را باز کنید"
+
+#: preferences/hints.py:164
+#, fuzzy
+msgid "export Builder experiment to HTML"
+msgstr "صادرات آزمایش ساز به HTML"
+
+#: preferences/hints.py:167
+#, fuzzy
+msgid "Coder: cut"
+msgstr "کادور: برش"
+
+#: preferences/hints.py:170
+#, fuzzy
+msgid "Coder: copy"
+msgstr "رمزگذار: کپی"
+
+#: preferences/hints.py:173
+#, fuzzy
+msgid "Coder: paste"
+msgstr "رمزگذار: چسباندن"
+
+#: preferences/hints.py:176
+#, fuzzy
+msgid "Coder: duplicate"
+msgstr "رمزگذار: تکراری"
+
+#: preferences/hints.py:179
+#, fuzzy
+msgid "Coder: indent code by one level (4 spaces)"
+msgstr "کدور: کد باز کردن یک سطح (4 فضای)"
+
+#: preferences/hints.py:182
+#, fuzzy
+msgid "Coder: reduce indentation by one level (4 spaces)"
+msgstr "Coder: کاهش دندانه در یک سطح (4 فضای)"
+
+#: preferences/hints.py:185
+#, fuzzy
+msgid "Coder: indent to fit python syntax"
+msgstr "Coder: برای ترکیب سنتاکس پایتون استفاده می شود"
+
+#: preferences/hints.py:188
+#, fuzzy
+msgid "Coder: find"
+msgstr "رمزگذار: پیدا کنید"
+
+#: preferences/hints.py:191
+#, fuzzy
+msgid "Coder: find again"
+msgstr "رمزگذار: دوباره پیدا کنید"
+
+#: preferences/hints.py:194
+#, fuzzy
+msgid "Coder: undo"
+msgstr "رمزگذار: بازگرداندن"
+
+#: preferences/hints.py:197
+#, fuzzy
+msgid "Coder: redo"
+msgstr "رمزگذار: مجددا"
+
+#: preferences/hints.py:200
+#, fuzzy
+msgid "Coder: add a # to the start of the line(s)"
+msgstr "Coder: اضافه کردن # به آغاز خط (ها)"
+
+#: preferences/hints.py:203
+#, fuzzy
+msgid "Coder: remove # from start of line(s)"
+msgstr "رمزگذار: حذف # از شروع خط (ها)"
+
+#: preferences/hints.py:206
+#, fuzzy
+msgid "Coder: add or remove # from start of line(s)"
+msgstr "رمزگذار: اضافه یا حذف # از شروع خط (ها)"
+
+#: preferences/hints.py:209
+#, fuzzy
+msgid "Coder: fold this block of code"
+msgstr "رمزگذار: این بلوک کد را بارگذاری کنید"
+
+#: preferences/hints.py:212
+#, fuzzy
+msgid "Coder: increase font size this block of code"
+msgstr "رمزگذار: افزایش اندازه فونت این بلوک کد"
+
+#: preferences/hints.py:215
+#, fuzzy
+msgid "Coder: decrease font size this block of code"
+msgstr "رمزگذار: کاهش اندازه فونت این بلوک کد"
+
+#: preferences/hints.py:218
+#, fuzzy
+msgid "Coder: check for basic syntax errors"
+msgstr "Coder: برای خطاهای پایه ی نحوی چک کنید"
+
+#: preferences/hints.py:222
+#, fuzzy
+msgid ""
+"convert a Builder .psyexp script into a python script and open it in the "
+"Coder"
+msgstr ""
+"تبدیل اسکریپت .psyexp Builder به یک اسکریپت پایتون و باز کردن آن در Coder"
+
+#: preferences/hints.py:225
+#, fuzzy
+msgid "launch a script, Builder or Coder, or run unit-tests"
+msgstr ""
+"یک اسکریپت، ساز یا کدور را راه اندازی کنید، یا آزمایشهای واحد انجام دهید"
+
+#: preferences/hints.py:228
+#, fuzzy
+msgid "attempt to interrupt and halt a running script"
+msgstr "تلاش برای قطع و توقف یک اسکریپت در حال اجرا"
+
+#: preferences/hints.py:231
+#, fuzzy
+msgid "Coder: show / hide white-space dots"
+msgstr "Coder: نشان دادن / مخفی کردن نقاط سفید-فضا"
+
+#: preferences/hints.py:234
+#, fuzzy
+msgid "Coder: show / hide end of line characters"
+msgstr "رمزگذار: نمایش / پنهان کردن پایان کاراکترهای خط"
+
+#: preferences/hints.py:237
+#, fuzzy
+msgid "Coder: show / hide indentation level lines"
+msgstr "Coder: نشان دادن / مخفی کردن سطوح سطح دندانه"
+
+#: preferences/hints.py:240
+#, fuzzy
+msgid "Builder: create a new routine"
+msgstr "Builder: یک روال جدید ایجاد کنید"
+
+#: preferences/hints.py:243
+#, fuzzy
+msgid "Builder: copy an existing routine"
+msgstr "سازنده: یک روال موجود را کپی کنید"
+
+#: preferences/hints.py:246
+#, fuzzy
+msgid "Builder: paste the copied routine"
+msgstr "سازنده: روت کپی شده را وارد کنید"
+
+#: preferences/hints.py:249
+#, fuzzy
+msgid "Builder: paste the copied component"
+msgstr "سازنده: کامپوننت کپی شده را کپی کنید"
+
+#: preferences/hints.py:252
+#, fuzzy
+msgid "Coder: show / hide the output panel"
+msgstr "Coder: پانل خروجی را نشان می دهد / پنهان می کند"
+
+#: preferences/hints.py:255
+#, fuzzy
+msgid "Builder: rename an existing routine"
+msgstr "سازنده: یک رویه موجود را تغییر نام دهید"
+
+#: preferences/hints.py:258
+#, fuzzy
+msgid "switch to Builder window from Coder"
+msgstr "به پنجره Builder از Coder بروید"
+
+#: preferences/hints.py:261
+#, fuzzy
+msgid "switch to Coder window from Builder"
+msgstr "پنجره Builder را به پنجره Coder تغییر دهید"
+
+#: preferences/hints.py:264
+#, fuzzy
+msgid "increase display size in Flow"
+msgstr "افزایش اندازه صفحه نمایش در جریان"
+
+#: preferences/hints.py:267
+#, fuzzy
+msgid "decrease display size in Flow"
+msgstr "اندازه صفحه نمایش را در جریان کاهش دهید"
+
+#: preferences/hints.py:270
+#, fuzzy
+msgid "increase display size of Routines"
+msgstr "اندازه صفحه نمایش روال را افزایش دهید"
+
+#: preferences/hints.py:273
+#, fuzzy
+msgid "decrease display size of Routines"
+msgstr "اندازه صفحه نمایش را کاهش دهید"
+
+#: preferences/hints.py:276
+#, fuzzy
+msgid "show or hide the readme (info) for this experiment if possible"
+msgstr ""
+"اگر این امکان را برای این آزمایش نشان می دهد یا پنهان می کند readme (info)"
+
+#: preferences/hints.py:279
+#, fuzzy
+msgid "Projects: Log in to pavlovia"
+msgstr "پروژه ها: ورود به pavlovia"
+
+#: preferences/hints.py:282
+#, fuzzy
+msgid "Projects: Log in to OSF"
+msgstr "پروژه ها: ورود به OSF"
+
+#: preferences/hints.py:285
+#, fuzzy
+msgid "Projects: Sync project"
+msgstr "پروژه ها: پروژه همگام سازی"
+
+#: preferences/hints.py:288
+#, fuzzy
+msgid "Projects: Find projects"
+msgstr "پروژه ها: پیدا کردن پروژه ها"
+
+#: preferences/hints.py:291
+#, fuzzy
+msgid "Projects: Open project"
+msgstr "پروژه ها: پروژه باز"
+
+#: preferences/hints.py:294
+#, fuzzy
+msgid "Projects: Create new project"
+msgstr "پروژه ها: ایجاد پروژه جدید"
+
+#: preferences/hints.py:297
+#, fuzzy
+msgid "Projects: Log in"
+msgstr "پروژه ها: ورود"
+
+#: projects/pavlovia.py:1091
+#, fuzzy
+msgid ""
+"We found a repository pointing to {} but no project was found there "
+"(deleted?)"
+msgstr "ما یک مخزن را به {} نشان دادیم اما هیچ پروژه ای یافت نشد (حذف شد؟)"
+
+#: projects/pavlovia.py:1094
+#, fuzzy
+msgid ""
+"We found a repository pointing to {} but no user is logged in for us to "
+"check it"
+msgstr ""
+"ما یک مخزن را با اشاره به {} پیدا کردیم اما هیچ کاربری برای ورود به آن وارد "
+"نشده است"
+
+#: tools/versionchooser.py:73
+#, fuzzy
+msgid ""
+"Please request a version before importing any PsychoPy modules. (Found: {})"
+msgstr ""
+"لطفا قبل از وارد کردن هر ماژول PsychoPy یک نسخه درخواست کنید. (یافت: {})"
+
+#: tools/versionchooser.py:82
+#, fuzzy
+msgid "Unknown version `{}`"
+msgstr "نسخه ناشناخته {{``"
+
+#: tools/versionchooser.py:94
+#, fuzzy
+msgid ""
+"Please request a version of PsychoPy that is compatible with Python 3. You "
+"can choose from the following versions: {}. Alternatively, run a Python 2 "
+"installation of PsychoPy < v1.9.0.\n"
+msgstr ""
+"لطفا یک نسخه از PsychoPy درخواست کنید که با Python 3. سازگار باشد. شما می "
+"توانید از نسخه های زیر انتخاب کنید: {}. به جای راه اندازی Python 2 از "
+"PsychoPy <v1.9.0."
+
+#: tools/versionchooser.py:103
+#, fuzzy
+msgid "Please install git; needed by useVersion()"
+msgstr "لطفا git را نصب کنید مورد نیاز توسط useVersion ()"
+
+#: tools/versionchooser.py:128
+#, fuzzy
+msgid "Required minimal version `{}` not met ({})."
+msgstr "حداقل نسخه مورد نیاز `{} 'met {{})."
+
+#: tools/versionchooser.py:164
+#, fuzzy
+msgid "'{}' is not a valid PsychoPy version."
+msgstr "'{}' یک نسخه معتبر PsychoPy نیست."
+
+#: tools/versionchooser.py:250
+#, fuzzy
+msgid ""
+"wx version: {}. Filtering versions of PsychoPy only compatible with wx >= "
+"version {}"
+msgstr ""
+"نسخه wx: {}. نسخه های فیلتر کردن PsychoPy تنها با wx> = version {} سازگار است"
+
+#: tools/versionchooser.py:342
+#, fuzzy
+msgid "Couldn't find version {} locally. Trying github..."
+msgstr "نسخه {} را در محلی یافت نشد تلاش گیتوب ..."
+
+#: tools/versionchooser.py:349
+#, fuzzy
+msgid "{} is not currently available."
+msgstr "{} در حال حاضر در دسترس نیست"
+
+#: tools/versionchooser.py:368
+#, fuzzy
+msgid "Downloading the PsychoPy Library from Github (may take a while)"
+msgstr "دانلود کتابخانه PsychoPy از Github (ممکن است کمی طول بکشد)"
+
+#: tools/wizard.py:35
+#, fuzzy
+msgid "Benchmark"
+msgstr "معیار"
+
+#: tools/wizard.py:36
+#, fuzzy
+msgid "benchmark version"
+msgstr "نسخه معیار"
+
+#: tools/wizard.py:38
+#, fuzzy
+msgid "dots_circle"
+msgstr "dots_circle"
+
+#: tools/wizard.py:39
+#, fuzzy
+msgid "dots_square"
+msgstr "dots_square"
+
+#: tools/wizard.py:40
+#, fuzzy
+msgid "available memory"
+msgstr "حافظه موجود"
+
+#: tools/wizard.py:41
+#, fuzzy
+msgid "python version"
+msgstr "نسخه پایتون"
+
+#: tools/wizard.py:43
+#, fuzzy
+msgid "Visual"
+msgstr "دیداری"
+
+#: tools/wizard.py:44
+#, fuzzy
+msgid "openGL version"
+msgstr "نسخه openGL"
+
+#: tools/wizard.py:45
+#, fuzzy
+msgid "openGL vendor"
+msgstr "فروشنده openGL"
+
+#: tools/wizard.py:46
+#, fuzzy
+msgid "screen size"
+msgstr "اندازه صفحه نمایش"
+
+#: tools/wizard.py:47
+#, fuzzy
+msgid "have shaders"
+msgstr "شیدرها دارند"
+
+#: tools/wizard.py:48
+#, fuzzy
+msgid "refresh stability (SD)"
+msgstr "بازده پایداری (SD)"
+
+#: tools/wizard.py:49
+#, fuzzy
+msgid "no dropped frames"
+msgstr "هیچ فریم رها نشده است"
+
+#: tools/wizard.py:50
+#, fuzzy
+msgid "pyglet avbin"
+msgstr "پگلت آبینن"
+
+#: tools/wizard.py:51
+#, fuzzy
+msgid "Audio"
+msgstr "صدا"
+
+#: tools/wizard.py:52
+#, fuzzy
+msgid "microphone latency"
+msgstr "تأخیر میکروفون"
+
+#: tools/wizard.py:53
+#, fuzzy
+msgid "microphone"
+msgstr "میکروفون"
+
+#: tools/wizard.py:54
+#, fuzzy
+msgid "speakers latency"
+msgstr "تاخیر بلندگو"
+
+#: tools/wizard.py:55
+#, fuzzy
+msgid "speakers"
+msgstr "سخنرانان"
+
+#: tools/wizard.py:56
+#, fuzzy
+msgid "Numeric"
+msgstr "عددی"
+
+#: tools/wizard.py:57
+#, fuzzy
+msgid "System"
+msgstr "سیستم"
+
+#: tools/wizard.py:58
+#, fuzzy
+msgid "platform"
+msgstr "سکو"
+
+#: tools/wizard.py:59
+#, fuzzy
+msgid "internet access"
+msgstr "دسترسی به اینترنت"
+
+#: tools/wizard.py:60
+#, fuzzy
+msgid "auto proxy"
+msgstr "پروکسی خودکار"
+
+#: tools/wizard.py:61
+#, fuzzy
+msgid "proxy setting"
+msgstr "تنظیم پروکسی"
+
+#: tools/wizard.py:62
+#, fuzzy
+msgid "background processes"
+msgstr "فرآیندهای پس زمینه"
+
+#: tools/wizard.py:63
+#, fuzzy
+msgid "CPU speed test"
+msgstr "تست سرعت CPU"
+
+#: tools/wizard.py:64
+#, fuzzy
+msgid "visual sync (refresh)"
+msgstr "همگام سازی بصری (بازخوانی)"
+
+#: tools/wizard.py:98
+#, fuzzy, python-format
+msgid "could not assess available physical RAM; total %s"
+msgstr "نمی توان رام فیزیکی موجود را ارزیابی کرد. کل٪ s"
+
+#: tools/wizard.py:103
+#, fuzzy, python-format
+msgid "physical RAM available for configuration test (of %.1fG total)"
+msgstr "RAM فیزیکی موجود برای تست پیکربندی (از مجموع٪ .1fG)"
+
+#: tools/wizard.py:108
+#, fuzzy, python-format
+msgid ""
+"Warning: low available physical RAM for configuration test (of %.1fG total)"
+msgstr "هشدار: حافظه فیزیکی موجود برای تست پیکربندی (مجموع٪ .1fG)"
+
+#: tools/wizard.py:119
+#, fuzzy
+msgid "avoid upgrading during an experiment"
+msgstr "اجتناب از ارتقاء در طول یک آزمایش"
+
+#: tools/wizard.py:122
+#, fuzzy
+msgid ""
+"can be set in <a href=\"http://www.psychopy.org/general/prefs."
+"html#application-settings-app\">Preferences -> App</a>"
+msgstr ""
+"می تواند در <a href=\"http://www.psychopy.org/general/prefs.html#application-"
+"settings-app\">تنظیمات -> برنامه تنظیم شود</a>"
+
+#: tools/wizard.py:130
+#, fuzzy
+msgid ""
+"Warning: python 2.7 or 3.6 are recommended; 2.6 and 3.5 might work. Others "
+"probably won't."
+msgstr ""
+"اخطار: پایتون 2.7 یا 3.6 توصیه می شود؛ 2.6 و 3.5 ممکن است کار کند. دیگران "
+"احتمالا نمی خواهند."
+
+#: tools/wizard.py:148
+#, fuzzy
+msgid "Warning: wx 2.8.10 or higher required"
+msgstr "هشدار: wx 2.8.10 یا بالاتر مورد نیاز است"
+
+#: tools/wizard.py:154
+#, fuzzy
+msgid "for high-priority threads"
+msgstr "برای موضوعات با وضوح بالا"
+
+#: tools/wizard.py:163
+#, fuzzy
+msgid ""
+"Warning: <a href=\"http://www.psychopy.org/general/timing/reducingFrameDrops."
+"html?highlight=OpenGL+2.0\">OpenGL 2.0 or higher is ideal</a>."
+msgstr ""
+"هشدار: <a href=\"http://www.psychopy.org/general/timing/reducingFrameDrops."
+"html?highlight=OpenGL+2.0\">OpenGL 2.0 یا بالاتر ایده آل است</a> ."
+
+#: tools/wizard.py:178
+#, fuzzy
+msgid ""
+"Warning: <a href=\"http://www.psychopy.org/general/timing/reducingFrameDrops."
+"html?highlight=shader\">Rendering of complex stimuli will be slow</a>."
+msgstr ""
+"هشدار: <a href=\"http://www.psychopy.org/general/timing/reducingFrameDrops."
+"html?highlight=shader\">ارائه محرک های پیچیده آهسته خواهد بود</a> ."
+
+#: tools/wizard.py:187
+#, fuzzy
+msgid ""
+"during the drifting <a href=\"http://www.psychopy.org/api/visual/gratingstim."
+"html\">GratingStim</a>"
+msgstr ""
+"در طول <a href=\"http://www.psychopy.org/api/visual/gratingstim.html"
+"\">GratingStim رانش</a>"
+
+#: tools/wizard.py:191
+#, fuzzy
+msgid ""
+"Warning: too fast? visual sync'ing with the monitor seems unlikely at 300+ Hz"
+msgstr "هشدار: خیلی سریع؟ همگام سازی تصویری با مانیتور در 300+ Hz بعید است"
+
+#: tools/wizard.py:196
+#, fuzzy
+msgid "SD &lt; 0.5 ms is ideal (want low variability)"
+msgstr "SD &lt;0.5 ms ایده آل است (می خواهیم متغیر کم)"
+
+#: tools/wizard.py:200
+#, fuzzy
+msgid ""
+"Warning: the refresh rate has high frame-to-frame variability (SD &gt; 0.5 "
+"ms)"
+msgstr "هشدار: میزان تجدید تغییرات بالا به قاب (SD&gt; 0.5 میلی ثانیه)"
+
+#: tools/wizard.py:219
+#, fuzzy
+msgid ""
+"during <a href=\"http://www.psychopy.org/api/visual/dotstim.html\">DotStim</"
+"a> with 100 random dots"
+msgstr ""
+"در طی <a href=\"http://www.psychopy.org/api/visual/dotstim.html\">DotStim</"
+"a> با 100 نقطه تصادفی"
+
+#: tools/wizard.py:227
+#, fuzzy
+msgid ""
+"Warning: could not keep up during <a href=\"http://www.psychopy.org/api/"
+"visual/dotstim.html\">DotStim</a> with 100 random dots."
+msgstr ""
+"هشدار: نمی توانستم در حین <a href=\"http://www.psychopy.org/api/visual/"
+"dotstim.html\">DotStim</a> با 100 نقطه تصادفی <a href=\"http://www.psychopy."
+"org/api/visual/dotstim.html\">پیگیری کنم</a> ."
+
+#: tools/wizard.py:255
+#, fuzzy
+msgid "Warning: pyo is needed for sound and microphone."
+msgstr "هشدار: pyo برای صدا و میکروفون مورد نیاز است."
+
+#: tools/wizard.py:257
+#, fuzzy
+msgid "(missing)"
+msgstr "(از دست داده)"
+
+#: tools/wizard.py:267
+#, fuzzy
+msgid "vector-based (fast) calculations"
+msgstr "محاسبات مبتنی بر بردار (سریع)"
+
+#: tools/wizard.py:269
+#, fuzzy
+msgid "scientific / numerical"
+msgstr "علمی / عددی"
+
+#: tools/wizard.py:271
+#, fuzzy
+msgid "plotting; fast contains(), overlaps()"
+msgstr "نقشه برداری؛ سریع شامل ()، همپوشانی ()"
+
+#: tools/wizard.py:277
+#, fuzzy
+msgid "for online help, usage statistics, software updates, and google-speech"
+msgstr "برای کمک آنلاین، آمار استفاده، به روز رسانی نرم افزار و گوگل سخنرانی"
+
+#: tools/wizard.py:282
+#, fuzzy
+msgid "Warning: could not connect (no proxy attempted)"
+msgstr "اخطار: نمی توانست وصل شود (هیچ پروکسی تلاش نکرد)"
+
+#: tools/wizard.py:290
+#, fuzzy
+msgid ""
+"try to auto-detect a proxy if needed; see <a href=\"http://www.psychopy.org/"
+"general/prefs.html#connection-settings-connections\">Preferences -> "
+"Connections</a>"
+msgstr ""
+"سعی کنید به صورت خودکار پروکسی را در صورت نیاز شناسایی کنید. به <a href="
+"\"http://www.psychopy.org/general/prefs.html#connection-settings-connections"
+"\">تنظیمات -> ارتباطات مراجعه کنید</a>"
+
+#: tools/wizard.py:300
+#, fuzzy
+msgid ""
+"current manual proxy setting from <a href=\"http://www.psychopy.org/general/"
+"prefs.html#connection-settings-connections\">Preferences -> Connections</a>"
+msgstr ""
+"تنظیمات فعلی دستی پروکسی از <a href=\"http://www.psychopy.org/general/prefs."
+"html#connection-settings-connections\">تنظیمات -> اتصالات</a>"
+
+#: tools/wizard.py:307
+#, fuzzy
+msgid "numpy.std() of 1,000,000 data points"
+msgstr "numpy.std () از 1000000 نقطه داده"
+
+#: tools/wizard.py:315
+#, fuzzy
+msgid "Python packages"
+msgstr "بسته پایتون"
+
+#: tools/wizard.py:351
+#, fuzzy, python-format
+msgid "could not import package %s"
+msgstr "بسته٪ s را نمیتوان وارد کرد"
+
+#: tools/wizard.py:369
+#, fuzzy
+msgid "video card drivers"
+msgstr "درایور کارت گرافیک"
+
+#: tools/wizard.py:400
+#, fuzzy, python-format
+msgid "This page was auto-generated by the PsychoPy configuration wizard on %s"
+msgstr "این صفحه توسط جادوگر پیکربندی PsychoPy در٪ s ساخته شده است"
+
+#: tools/wizard.py:410
+#, fuzzy
+msgid "Configuration problem"
+msgstr "مشکل پیکربندی"
+
+#: tools/wizard.py:413
+#, fuzzy
+msgid "Critical issue"
+msgstr "مسئله حیاتی"
+
+#: tools/wizard.py:418
+#, fuzzy
+msgid "Configuration report"
+msgstr "گزارش پیکربندی"
+
+#: tools/wizard.py:421
+#, fuzzy
+msgid ""
+"<p>All values seem reasonable (no warnings, but there might still be room "
+"for improvement).</p>\n"
+msgstr ""
+"<p style=\";text-align:right;direction:rtl\"> تمام ارزش ها به نظر منطقی "
+"هستند (بدون هشدار، اما ممکن است هنوز برای بهبود وجود داشته باشد). </p>"
+
+#: tools/wizard.py:425
+#, fuzzy, python-format
+msgid "1 suboptimal value was detected</font>, see details below (%s).</p>\n"
+msgstr "1 مقدار سوپرپتیما شناسایی شد، جزئیات زیر را ببینید (٪ s). </p>"
+
+#: tools/wizard.py:430
+#, fuzzy, python-format
+msgid ""
+"%(num)i suboptimal values were detected</font>, see details below (%(warn)s)."
+"</p>\n"
+msgstr ""
+"٪ (num) مقادیر زیرپتویمال شناسایی شد، جزئیات زیر را ببینید (٪ (warn) s). </p>"
+
+#: tools/wizard.py:452
+#, fuzzy
+msgid "Only show suboptimal values"
+msgstr "فقط مقادیر زیرعالی را نشان می دهد"
+
+#: tools/wizard.py:455
+#, fuzzy
+msgid "Show all information"
+msgstr "نمایش تمام اطلاعات"
+
+#: tools/wizard.py:456
+#, fuzzy
+msgid ""
+"<p>Resources:\n"
+"                | <a href=\"http://www.psychopy.org/documentation.html\">On-"
+"line documentation</a>\n"
+"                | Download <a href=\"http://www.psychopy.org/PsychoPyManual."
+"pdf\">PDF manual</a>\n"
+"                | <a href=\"http://groups.google.com/group/psychopy-users"
+"\">Search the user-group archives</a>\n"
+"                </p>"
+msgstr ""
+"<p style=\";text-align:right;direction:rtl\"> منابع: | <a href=\"http://www."
+"psychopy.org/documentation.html\">مستندات آنلاین</a> | دانلود کتاب <a href="
+"\"http://www.psychopy.org/PsychoPyManual.pdf\">PDF</a> | <a href=\"http://"
+"groups.google.com/group/psychopy-users\">آرشیوهای گروه کاربر را جستجو کنید</"
+"a> </p>"
+
+#: tools/wizard.py:463
+#, fuzzy
+msgid "Configuration test</strong> or setting"
+msgstr "تست پیکربندی یا تنظیمات"
+
+#: tools/wizard.py:464
+#, fuzzy
+msgid "Version or value"
+msgstr "نسخه یا ارزش"
+
+#: tools/wizard.py:466
+#, fuzzy
+msgid "Notes"
+msgstr "یادداشت ها"
+
+#: tools/wizard.py:507
+#, fuzzy
+msgid " Configuration Wizard"
+msgstr "جادوگر پیکربندی"
+
+#: tools/wizard.py:520
+#, fuzzy
+msgid "It looks like you are running PsychoPy for the first time."
+msgstr "به نظر می رسد که شما برای اولین بار از PsychoPy استفاده می کنید."
+
+#: tools/wizard.py:522
+#, fuzzy
+msgid "This wizard will help you get started quickly and smoothly."
+msgstr "این جادوگر به شما کمک می کند تا به سرعت و به آرامی شروع کنید."
+
+#: tools/wizard.py:525
+#, fuzzy
+msgid "Welcome to the configuration wizard."
+msgstr "به جادوگر پیکربندی خوش آمدید"
+
+#: tools/wizard.py:532
+#, fuzzy
+msgid "The first configuration check is your video card's drivers. The current"
+msgstr "اولین بررسی پیکربندی درایور کارت گرافیک شما است. جاری"
+
+#: tools/wizard.py:535
+#, fuzzy
+msgid "drivers cannot support PsychoPy, so you'll need to update the drivers."
+msgstr ""
+"رانندگان نمی توانند PsychoPy را پشتیبانی کنند، بنابراین شما باید رانندگان را "
+"به روز کنید."
+
+#: tools/wizard.py:538
+#, fuzzy, python-format
+msgid ""
+"<p>Critical issue:\n"
+"</p><p>Your video card (%(card)s) has drivers\n"
+"                that cannot support the high-performance features that "
+"PsychoPy depends on.\n"
+"                Fortunately, it's typically free and straightforward to get "
+"new drivers\n"
+"                directly from the manufacturer.</p>\n"
+"                <p><strong>To update the drivers:</strong>\n"
+"                <li> You'll need administrator privileges.\n"
+"                <li> On Windows, don't use the windows option to check for "
+"updates\n"
+"                  - it can report that there are no updates available.\n"
+"                <li> If your card is made by NVIDIA, go to\n"
+"                  <a href=\"http://www.nvidia.com/Drivers\">the NVIDIA "
+"website</a>\n"
+"                  and use the 'auto detect' option. Try here for\n"
+"                  <a href=\"http://support.amd.com/\">ATI / Radeon drivers</"
+"a>. Or try\n"
+"                  <a href=\"http://www.google.com/search?q=download+drivers+"
+"%(card2)s\">\n"
+"                  this google search</a> [google.com].\n"
+"                <li> Download and install the driver.\n"
+"                <li> Reboot the computer.\n"
+"                <li> Restart PsychoPy.</p>\n"
+"                <p>If you updated the drivers and still get this message, "
+"you'll\n"
+"                  need a different video card to use PsychoPy. Click\n"
+"                <a href=\"http://www.psychopy.org/installation."
+"html#recommended-hardware\">here\n"
+"                for more information</a> [psychopy.org].</p>\n"
+"            "
+msgstr ""
+"<p style=\";text-align:right;direction:rtl\"> مسئله حیاتی: </p><p style=\";"
+"text-align:right;direction:rtl\"> کارت ویدیویی شما (٪ (کارت) s) دارای "
+"درایورهایی است که نمیتوانند ویژگیهای عملکردی بالا را که PsychoPy به آن "
+"وابسته است پشتیبانی کند. خوشبختانه، به طور معمول آزاد و مستقیم برای دریافت "
+"رانندگان جدید به طور مستقیم از تولید کننده است. </p><p style=\";text-align:"
+"right;direction:rtl\"> <strong>برای به روز رسانی درایورها:</strong> <li "
+"style=\";text-align:right;direction:rtl\"> شما به امتیازات مدیر نیاز دارید "
+"<li style=\";text-align:right;direction:rtl\"> در ویندوز، از گزینه ویندوز "
+"برای بررسی به روز رسانی استفاده نکنید - می توانید گزارش دهید که هیچ نسخه ای "
+"در دسترس نیست. <li style=\";text-align:right;direction:rtl\"> اگر کارت شما "
+"توسط NVIDIA ساخته شده باشد، به <a href=\"http://www.nvidia.com/Drivers\">وب "
+"سایت NVIDIA بروید</a> و از گزینه «تشخیص خودکار» استفاده کنید. <a href="
+"\"http://support.amd.com/\">درایور ATI / Radeon</a> اینجا را امتحان کنید. یا "
+"<a href=\"http://www.google.com/search?q=download+drivers+%(card2)s\">این "
+"جستجو گوگل را</a> [google.com] امتحان کنید <li style=\";text-align:right;"
+"direction:rtl\"> راننده را دانلود و نصب کنید <li style=\";text-align:right;"
+"direction:rtl\"> راه اندازی مجدد کامپیوتر <li style=\";text-align:right;"
+"direction:rtl\"> راه اندازی مجدد PsychoPy </p><p style=\";text-align:right;"
+"direction:rtl\"> اگر شما درایورها را به روز کردید و هنوز هم این پیام را "
+"دریافت می کنید، برای استفاده از PsychoPy به یک کارت گرافیک دیگر نیاز خواهید "
+"داشت. <a href=\"http://www.psychopy.org/installation.html#recommended-"
+"hardware\">برای اطلاعات بیشتر اینجا را</a> کلیک <a href=\"http://www."
+"psychopy.org/installation.html#recommended-hardware\">کنید</a> [psychopy."
+"org]. </p>"
+
+#: tools/wizard.py:563
+#, fuzzy
+msgid ""
+"<p>Critical issue:\n"
+"</p>"
+msgstr "<p style=\";text-align:right;direction:rtl\"> مسئله حیاتی: </p>"
+
+#: tools/wizard.py:569
+#, fuzzy
+msgid "We'll go through a series of configuration checks in about 10 seconds. "
+msgstr ""
+"ما از طریق یک سری از بررسی های پیکربندی در حدود 10 ثانیه ادامه خواهیم داد."
+
+#: tools/wizard.py:573
+#, fuzzy
+msgid "Note: The display will switch to full-screen mode and will "
+msgstr "توجه: صفحه نمایش به حالت تمام صفحه تغییر خواهد کرد و خواهد شد"
+
+#: tools/wizard.py:575
+#, fuzzy
+msgid "then switch back. You don't need to do anything."
+msgstr "سپس برگشت. شما لازم نیست هر کاری انجام دهید."
+
+#: tools/wizard.py:577
+#, fuzzy
+msgid ""
+"Optional: For best results, please quit all email programs, web-browsers, "
+msgstr "اختیاری: برای بهترین نتایج، لطفا تمام برنامه های ایمیل، مرورگرهای وب،"
+
+#: tools/wizard.py:580
+#, fuzzy
+msgid "Dropbox, backup or sync services, and others."
+msgstr "خدمات Dropbox، پشتیبان گیری یا همگام سازی و دیگر موارد."
+
+#: tools/wizard.py:582
+#, fuzzy
+msgid "Click OK to start, or Cancel to skip."
+msgstr "روی OK کلیک کنید تا شروع شود، یا لغو برای جست و خیز."
+
+#: tools/wizard.py:584
+#, fuzzy
+msgid "Full details"
+msgstr "جزئیات کامل"
+
+#: tools/wizard.py:589
+#, fuzzy
+msgid "Click OK for more information, or Cancel to skip."
+msgstr "برای اطلاعات بیشتر روی OK کلیک کنید، یا برای لغو لغو لغو کلیک کنید."
+
+#: tools/wizard.py:618
+#, fuzzy
+msgid "Configuration testing complete!"
+msgstr "تست پیکربندی کامل"
+
+#: tools/wizard.py:622
+#, fuzzy
+msgid "All values seem reasonable (no warnings)."
+msgstr "همه ارزش ها به نظر منطقی (بدون هشدار) به نظر می رسد."
+
+#: tools/wizard.py:624
+#, fuzzy, python-format
+msgid "1 suboptimal value was detected (%s)"
+msgstr "1 مقدار سوپرپتیما شناسایی شد (٪ s)"
+
+#: tools/wizard.py:628
+#, fuzzy, python-format
+msgid "%(num)i suboptimal values were detected (%(warn)s, ...)"
+msgstr "٪ (num) مقادیر زیروپتیلامال شناسایی شد (٪ (هشدار)، ...)"
+
+#: tools/wizard.py:636
+#, fuzzy
+msgid "Click OK for full details (will open in a web-browser),"
+msgstr "برای جزئیات کامل روی OK کلیک کنید (در یک مرورگر وب باز می شود)"
+
+#: tools/wizard.py:637
+#, fuzzy
+msgid "or Cancel to stay in PsychoPy."
+msgstr "یا لغو برای اقامت در PsychoPy."
+
+#: tools/wizard.py:656
+#, fuzzy
+msgid " Benchmark Wizard"
+msgstr "معیار جادوگر"
+
+#: tools/wizard.py:660
+#, fuzzy
+msgid "Benchmarking takes ~20-30 seconds to gather"
+msgstr "معیار سنجش برای جمع آوری حدود 20-30 ثانیه طول می کشد"
+
+#: tools/wizard.py:661
+#, fuzzy
+msgid "configuration and performance data. Begin?"
+msgstr "پیکربندی و داده های عملکرد شروع؟"
+
+#: tools/wizard.py:683
+#, fuzzy
+msgid "dots &amp; configuration"
+msgstr "نقطه ها و پیکربندی"
+
+#: tools/wizard.py:685
+#, fuzzy
+msgid "visual window for drawing"
+msgstr "پنجره بصری برای نقاشی"
+
+#: tools/wizard.py:712
+#, fuzzy
+msgid "Benchmark complete! (See the Coder output window.)"
+msgstr "معیار کامل (پنجره خروجی Coder را ببینید.)"
+
+#: tools/wizard.py:721
+#, fuzzy
+msgid "Click OK to view full configuration and benchmark data."
+msgstr "برای مشاهده پیکربندی کامل و داده های معیار، روی OK کلیک کنید."
+
+#: tools/wizard.py:722
+#, fuzzy
+msgid "Click Cancel to stay in PsychoPy."
+msgstr "روی لغو کلیک کنید تا در PsychoPy بمانید"

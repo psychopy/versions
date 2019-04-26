@@ -177,7 +177,7 @@ class TrialHandler(object):
                     "        exec('{} = %(name)s[paramName]'.format(paramName))\n")
             buff.writeIndentedLines(code % {'name': self.thisName})
 
-    def writeLoopStartCodeJS(self, buff):
+    def writeLoopStartCodeJS(self, buff, modular):
         """Write the code to create and run a sequence of trials
         """
         # some useful variables
@@ -185,6 +185,9 @@ class TrialHandler(object):
         makeLoopIndex = self.exp.namespace.makeLoopIndex
         self.thisName = makeLoopIndex(self.params['name'].val)
 
+        # Convert filepath separator
+        conditionsFile = self.params['conditionsFile'].val
+        self.params['conditionsFile'].val = conditionsFile.replace('\\\\', '/').replace('\\', '/')
         # seed might be undefined
         seed = self.params['random seed'].val or 'undefined'
         if self.params['conditionsFile'].val in ['None', None, 'none', '']:
@@ -200,21 +203,37 @@ class TrialHandler(object):
         code = ("\nfunction {funName}LoopBegin(thisScheduler) {{\n"
                 "  // set up handler to look after randomisation of conditions etc\n"
                 "  {name} = new TrialHandler({{\n"
-                "    psychoJS,\n"
+                "    psychoJS: psychoJS,\n"
                 "    nReps: {params[nReps]}, method: TrialHandler.Method.{loopType},\n"
                 "    extraInfo: expInfo, originPath: undefined,\n"
                 "    trialList: {trialList},\n"
                 "    seed: {seed}, name: '{name}'}});\n"
-                "  psychoJS.experiment.addLoop({name}); // add the loop to the experiment\n\n"
-                .format(funName=self.params['name'].val,name=self.params['name'], loopType=(self.params['loopType'].val).upper(),
-                        params=self.params, thisName=self.thisName, trialList=trialList, seed=seed))
+                "  psychoJS.experiment.addLoop({name}); // add the loop to the experiment\n"
+                "  currentLoop = {name};  // we're now the current loop\n"
+                .format(funName=self.params['name'].val,
+                        name=self.params['name'],
+                        loopType=(self.params['loopType'].val).upper(),
+                        params=self.params,
+                        thisName=self.thisName,
+                        trialList=trialList,
+                        seed=seed))
         buff.writeIndentedLines(code)
         # for the scheduler
-        code = ("  // Schedule all the trials in the trialList:\n"
-                "  for (const {thisName} of {name}) {{\n"
-                "    thisScheduler.add(importConditions({name}));\n"
-                .format(name=self.params['name'], params=self.params, thisName=self.thisName, seed=seed))
-        buff.writeIndentedLines(code)
+        if modular:
+            code = ("\n  // Schedule all the trials in the trialList:\n"
+                    "  for (const {thisName} of {name}) {{\n"
+                    "    thisScheduler.add(importConditions({name}));\n")
+        else:
+            code = ("\n  // Schedule all the trials in the trialList:\n"
+                    "  trialIterator = {name}[Symbol.iterator]();\n"
+                    "  while(true) {{\n"
+                    "    let result = trialIterator.next();\n"
+                    "    if (result.done);\n"
+                    "      break;\n"
+                    "    let {thisName} = result.value;\n"
+                    "    thisScheduler.add(importConditions({name}));\n")
+        buff.writeIndentedLines(code.format(name=self.params['name'],
+                                            thisName=self.thisName))
         # then we need to include begin, eachFrame and end code for each entry within that loop
         loopDict = self.exp.flow.loopDict
         thisLoop = loopDict[self]  # dict containing lists of children
@@ -237,7 +256,8 @@ class TrialHandler(object):
                     .format(params=self.params, name=thisChild.params['name'].val)
                     )
         if self.params['isTrials'].val == True:
-            code += ("    thisScheduler.add(endLoopIteration({thisName}));\n").format(thisName=self.thisName)
+            code += ("    thisScheduler.add(endLoopIteration(thisScheduler, "
+                     "{thisName}));\n".format(thisName=self.thisName))
 
         code += ("  }\n"
                 "\n"
@@ -597,8 +617,8 @@ class LoopInitiator(object):
         # we are now the inner-most loop
         self.exp.flow._loopList.append(self.loop)
 
-    def writeMainCodeJS(self, buff):
-        self.loop.writeLoopStartCodeJS(buff)
+    def writeMainCodeJS(self, buff, modular):
+        self.loop.writeLoopStartCodeJS(buff, modular)
         # we are now the inner-most loop
         self.exp.flow._loopList.append(self.loop)
 
@@ -627,7 +647,7 @@ class LoopTerminator(object):
         # _loopList[-1] will now be the inner-most loop
         self.exp.flow._loopList.remove(self.loop)
 
-    def writeMainCodeJS(self, buff):
+    def writeMainCodeJS(self, buff, modular):
         self.loop.writeLoopEndCodeJS(buff)
         # _loopList[-1] will now be the inner-most loop
         self.exp.flow._loopList.remove(self.loop)

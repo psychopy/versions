@@ -496,11 +496,18 @@ class SettingsComponent(object):
         # create resources folder
         self.prepareResourcesJS()
         jsFilename = os.path.basename(os.path.splitext(self.exp.filename)[0])
+
+        # decide if we need anchored useVersion or leave plain
+        if self.params['Use version'].val not in ['', 'latest']:
+            versionStr = "-{}".format(self.params['Use version'])
+        else:
+            versionStr = ''
+
         # html header
         template = readTextFile("JS_htmlHeader.tmpl")
         header = template.format(
             name=jsFilename,
-            version=version,
+            version=versionStr,
             params=self.params)
         jsFile = self.exp.expPath
         folder = os.path.dirname(jsFile)
@@ -519,14 +526,14 @@ class SettingsComponent(object):
 
         # Write imports if modular
         if modular:
-            code = ("import {{ PsychoJS }} from './lib/core-{version}.js';\n"
-                    "import * as core from './lib/core-{version}.js';\n"
-                    "import {{ TrialHandler }} from './lib/data-{version}.js';\n"
-                    "import {{ Scheduler }} from './lib/util-{version}.js';\n"
-                    "import * as util from './lib/util-{version}.js';\n"
-                    "import * as visual from './lib/visual-{version}.js';\n"
-                    "import {{ Sound }} from './lib/sound-{version}.js';\n"
-                    "\n").format(version=version)
+            code = ("import {{ PsychoJS }} from 'https://pavlovia.org/lib/core{version}.js';\n"
+                    "import * as core from 'https://pavlovia.org/lib/core{version}.js';\n"
+                    "import {{ TrialHandler }} from 'https://pavlovia.org/lib/data{version}.js';\n"
+                    "import {{ Scheduler }} from 'https://pavlovia.org/lib/util{version}.js';\n"
+                    "import * as util from 'https://pavlovia.org/lib/util{version}.js';\n"
+                    "import * as visual from 'https://pavlovia.org/lib/visual{version}.js';\n"
+                    "import {{ Sound }} from 'https://pavlovia.org/lib/sound{version}.js';\n"
+                    "\n").format(version=versionStr)
             buff.writeIndentedLines(code)
 
         # Write window code
@@ -585,12 +592,21 @@ class SettingsComponent(object):
             code = ("expName = %s  # from the Builder filename that created"
                     " this script\n")
             buff.writeIndented(code % self.params['expName'])
+
+        if PY3:  # in Py3 dicts are chrono-sorted
+            sorting = "False"
+        else:  # in Py2, with no natural order, at least be alphabetical
+            sorting = "True"
         expInfoDict = self.getInfo()
         buff.writeIndented("expInfo = %s\n" % repr(expInfoDict))
         if self.params['Show info dlg'].val:
             buff.writeIndentedLines(
-                "dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)\n"
-                "if dlg.OK == False:\n    core.quit()  # user pressed cancel\n")
+                "dlg = gui.DlgFromDict(dictionary=expInfo, "
+                "sortKeys={}, title=expName)\n"
+                "if dlg.OK == False:\n"
+                "    core.quit()  # user pressed cancel\n"
+                .format(sorting)
+            )
         buff.writeIndentedLines(
             "expInfo['date'] = data.getDateStr()  # add a simple timestamp\n"
             "expInfo['expName'] = expName\n"
@@ -691,14 +707,17 @@ class SettingsComponent(object):
             screenNumber = requestedScreenNumber - 1
 
         size = self.params['Window size (pixels)']
-        code = ("win = visual.Window(\n    size=%s, fullscr=%s, screen=%s,"
-                "\n    allowGUI=%s, allowStencil=%s,\n")
-        vals = (size, fullScr, screenNumber, allowGUI, allowStencil)
+        winType = self.exp.prefsGeneral['winType']
+
+        code = ("win = visual.Window(\n    size=%s, fullscr=%s, screen=%s, "
+                "\n    winType='%s', allowGUI=%s, allowStencil=%s,\n")
+        vals = (size, fullScr, screenNumber, winType, allowGUI, allowStencil)
         buff.writeIndented(code % vals)
+
         code = ("    monitor=%(Monitor)s, color=%(color)s, "
                 "colorSpace=%(colorSpace)s,\n")
         if self.params['blendMode'].val:
-            code += "    blendMode=%(blendMode)s, useFBO=True,\n"
+            code += "    blendMode=%(blendMode)s, useFBO=True, \n"
 
         if self.params['Units'].val != 'use prefs':
             code += "    units=%(Units)s"
@@ -747,6 +766,11 @@ class SettingsComponent(object):
     def writeEndCode(self, buff):
         """Write code for end of experiment (e.g. close log file).
         """
+        code = ('\n# Flip one final time so any remaining win.callOnFlip() \n'
+                '# and win.timeOnFlip() tasks get executed before quitting\n'
+                'win.flip()\n\n')
+        buff.writeIndentedLines(code)
+
         buff.writeIndented("# these shouldn't be strictly necessary "
                            "(should auto-save)\n")
         if self.params['Save wide csv file'].val:
@@ -763,10 +787,13 @@ class SettingsComponent(object):
 
     def writeEndCodeJS(self, buff):
 
-        endLoopInteration = ("\nfunction endLoopIteration(thisTrial) {\n"
+        endLoopInteration = ("\nfunction endLoopIteration(thisScheduler, thisTrial) {\n"
                     "  // ------Prepare for next entry------\n"
                     "  return function () {\n"
-                    "    if (typeof thisTrial === 'undefined' || !('isTrials' in thisTrial) || thisTrial.isTrials) {\n"
+                    "    // ------Check if user ended loop early------\n"
+                    "    if (currentLoop.finished) {\n"
+                    "      thisScheduler.stop();\n"
+                    "    } else if (typeof thisTrial === 'undefined' || !('isTrials' in thisTrial) || thisTrial.isTrials) {\n"
                     "      psychoJS.experiment.nextEntry();\n"
                     "    }\n"
                     "  return Scheduler.Event.NEXT;\n"
@@ -785,7 +812,7 @@ class SettingsComponent(object):
         buff.writeIndentedLines(recordLoopIterationFunc)
         quitFunc = ("\nfunction quitPsychoJS(message, isCompleted) {\n"
                     "  psychoJS.window.close();\n"
-                    "  psychoJS.quit({message, isCompleted});\n\n"
+                    "  psychoJS.quit({message: message, isCompleted: isCompleted});\n\n"
                     "  return Scheduler.Event.QUIT;\n"
                     "}")
         buff.writeIndentedLines(quitFunc)
