@@ -15,41 +15,19 @@ PsychoPy 3.1
 
 We've improved timing, especially keyboard timing a great deal
 
-PsychoPy 3.1.1
-~~~~~~~~~~~~~~~~~~~~~~
-
-ADDED:
-
-- Added the loop playback parameter to Movie Components
-
-FIXED:
-
-- The new Keyboard class wasn't clearing all events when requested (e.g. at the beginning of stimulus onset) #2442
-- Microphone on windows failed if user didn't manually set pyo to be preferred lib. That isn't now needed #700b72cd69de2
-- pyo lib is now provided in the 64 bit Python3 Standalone (win)
-- Parallel port lib in the Windows 32-bit version wasn't working (installed a new dll)
-- OpenCV in Mac Standalone wasn't working (updated to be a package not a single file)
-- Sounds with variable duration didn't stop properly #2446
-- Fix to JS output when useVersion was set to something
-- Cedrus XID lib is now working on Python3 (although their offical one is yet to come)
-
 PsychoPy 3.1.0
 ~~~~~~~~~~~~~~~~~~~~~~
 
 NEW:
 
 - hardware.keyboard.Keyboard class, based on C code from the Psychtoolbox project (ported to Python by Mario Kleiner)
- - faster than `event.getKeys()` (polling is asynchronous with drawing loop and the calls go direct
+ - faster than `event.getKeys()` (polling is asynchronous with drawing loop and the calls go direct 
    to the USB rather than going via the operating system key calls)
  - supports keyDuration fields as well as `rt` for key down time
-- Form class for combining text items and responses (currently ratings and radio items) in a scrollable list (thanks to Anthony Haffey and David Bridges for their work on this)
-- Each Builder Component is now outputting its start/stop times in the data file by default (can be turned
-  off for each component separately)
+- Form class for combining text items and responses (currently ratings and radio items) in a scrollable list
+- each Builder Component is now outputting its start/stop times in the data file by default (can be turned
+  off for )
 
-FIXES:
-
-- many fixes to ioHub for compatibility with Python3 and 64bit windows
-- many additional minor fixes
 
 PsychoPy 3.0
 ----------------

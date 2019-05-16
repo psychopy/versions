@@ -711,7 +711,7 @@ class PavloviaProject(dict):
             -1 if project deleted on remote
         """
         if infoStream:
-            infoStream.write("\nPushing changes to remote...")
+            infoStream.write("\nPushing changes from remote...")
         try:
             info = self.repo.git.push(self.remoteWithToken, 'master')
             infoStream.write("\n{}".format(info))
