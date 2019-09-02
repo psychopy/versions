@@ -10,10 +10,42 @@ Changelog
 CHANGES, which are identified in this dark red text, typically indicate things that alter the PsychoPy behaviour in a way that could break compatibility. Be especially wary of those!
 
 
+PsychoPy 3.2
+----------------
+
+It's all about the new timing improvements!
+
+PsychoPy 3.2.0
+~~~~~~~~~~~~~~~~~~~~~~
+
+TIMING improvements:
+
+- **new Sound backend 'PTB' which is much faster** than any of the alternatives on all operating systems (using the C code from Psychtoolbox thanks to Mario Kleiner) :
+   - when combined with pre-scheduling (e.g. start playback on upcoming win.flip()) this can generate sub-ms precision and sub-ms lag!
+   - works with standard audio hardware
+- **better timing of visual stimuli** when timing by 'secs' (rather than frames):
+   - new feature to request info from the Window about next expected flip
+   - t in a Builder scripts is now time from first frame (so synched to visual stims)
+- **better timing on the keyboard responses** of the JavaScript experiments due to timestamping asynchronously with your script
+
+Also ADDED:
+
+- Standalone installations now provide an updated Cedrus library, pyxid2
+- Support for new LabHackers TTL2USB8 device (parallel port alternative)
+- Envelope grating now has exponent (power) option
+
+FIXED:
+
+- Long-standing issue with lots of print-statements (e.g. on every frame) crashing Builder scripts
+- Support for Pyglet 1.4 (although text scaling appears to have changed a little)
+- Some serial devices (photometers) were not compatible with Python3 string/bytes
+  conversion
+- Too many more to mention...!
+
 PsychoPy 3.1
 ----------------
 
-We've improved timing, especially keyboard timing, a great deal.
+We've improved keyboard timing a great deal.
 
 As of PsychoPy 3.1 we are now using the underlying code of the `kbQueue` calls in
 `Psychophysics Toolbox`. The C code from those calls was ported to a new Python
@@ -40,6 +72,9 @@ FIXED:
   provided since the switch to Python3)
 - fixed crash in the new Keyboard class caused by `psychtoolbox` lib incorrectly converting unicode characters in the
   device name (this was actually a fix in #kleinerm/Psychtoolbox-3@a5c37855a4a097) that needed repackaging
+- error with Variable Component trying to save start/stop times (that might not exist for that variable) #e1bca1bdc
+- some data could get orphaned (and not saved) by being collected in the outer section of a nested loop #8b7fda826
+- when using Mouse.getPos() with retina display and win.units=='pix' the mouse pos was double the expected value #a78d74420
 
 PsychoPy 3.1.3
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -119,6 +154,7 @@ PsychoPy 3.0.7
 ~~~~~~~~~~~~~~~~~~~~~~
 
 FIXED:
+
 - local project repeatedly asking to Create New Pavlovia project when one already exists #c3f0d203f
 - Fixed "No module named 'PyQt4'" on MacOS<10.10 caused by PyQt dropping support for Mac10.9 in PyQt5.9 #2375
 - don't allow movie->online to use units 'from experiment settings' #8cbaf8a713

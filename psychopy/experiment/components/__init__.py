@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2018 Jonathan Peirce
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Extensible set of components for the PsychoPy Builder view
@@ -219,7 +219,7 @@ def getInitVals(params, target="PsychoPy"):
             inits[name].val = 'white'
             inits[name].valType = 'str'
         elif name in ['ori', 'sf', 'size', 'height', 'letterHeight',
-                      'lineColor', 'fillColor',
+                      'lineColor', 'fillColor', 'lineWidth',
                       'phase', 'opacity',
                       'volume',  # sounds
                       'coherence', 'nDots', 'fieldSize', 'dotSize', 'dotLife',

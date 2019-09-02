@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2018 Jonathan Peirce
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """A Backend class defines the core low-level functions required by a Window
@@ -34,6 +34,13 @@ pyglet.options['debug_gl'] = False
 GL = pyglet.gl
 
 retinaContext = None  # it will be set to an actual context if needed
+
+# get the default display
+if pyglet.version < '1.4':
+    _default_display_ = pyglet.window.get_platform().get_default_display()
+else:
+    _default_display_ = pyglet.canvas.get_display()
+
 
 class PygletBackend(BaseBackend):
     """The pyglet backend is the most used backend. It has no dependencies
@@ -98,8 +105,11 @@ class PygletBackend(BaseBackend):
                            stereo=win.stereo,
                            vsync=vsync)
 
-        defDisp = pyglet.window.get_platform().get_default_display()
-        allScrs = defDisp.get_screens()
+        if pyglet.version < '1.4':
+            allScrs = _default_display_.get_screens()
+        else:
+            allScrs = _default_display_.get_screens()
+
         # Screen (from Exp Settings) is 1-indexed,
         # so the second screen is Screen 1
         if len(allScrs) < int(win.screen) + 1:
@@ -224,8 +234,15 @@ class PygletBackend(BaseBackend):
 
         # store properties of the system
         self._driver = pyglet.gl.gl_info.get_renderer()
-        self._origGammaRamp = self.getGammaRamp()
-        self._rampSize = getGammaRampSize(self.screenID, self.xDisplay)
+        self._gammaErrorPolicy = win.gammaErrorPolicy
+        try:
+            self._origGammaRamp = self.getGammaRamp()
+            self._rampSize = getGammaRampSize(
+                self.screenID, self.xDisplay, gammaErrorPolicy=self._gammaErrorPolicy
+            )
+        except OSError:
+            self.close()
+            raise
         self._TravisTesting = (os.environ.get('TRAVIS') == 'true')
 
 
@@ -269,36 +286,30 @@ class PygletBackend(BaseBackend):
         self.winHandle.set_mouse_visible(visibility)
 
     def setCurrent(self):
-        """Sets this window to be the current rendering target
+        """Sets this window to be the current rendering target.
 
-        :return: None
+        Returns
+        -------
+        bool
+            ``True`` if the context was switched from another. ``False`` is
+            returned if ``setCurrent`` was called on an already current window.
+
         """
         if self != globalVars.currWindow:
             self.winHandle.switch_to()
             globalVars.currWindow = self
 
-            win = self.win  # it's a weakref so faster to call just once
-            # if we are using an FBO, bind it
-            if hasattr(win, 'frameBuffer'):
-                GL.glBindFramebufferEXT(GL.GL_FRAMEBUFFER_EXT,
-                                        win.frameBuffer)
-                GL.glReadBuffer(GL.GL_COLOR_ATTACHMENT0_EXT)
-                GL.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0_EXT)
+            return True
 
-                # NB - check if we need these
-                GL.glActiveTexture(GL.GL_TEXTURE0)
-                GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-                # GL.glEnable(GL.GL_STENCIL_TEST)
-
-                GL.glViewport(0, 0, win.size[0], win.size[1])
-                GL.glScissor(0, 0, win.size[0], win.size[1])
+        return False
 
     def dispatchEvents(self):
         """Dispatch events to the event handler (typically called on each frame)
 
         :return:
         """
-        wins = pyglet.window.get_platform().get_default_display().get_windows()
+        wins = _default_display_.get_windows()
+
         for win in wins:
             win.dispatch_events()
 
@@ -314,7 +325,8 @@ class PygletBackend(BaseBackend):
                 newGamma=gamma,
                 rampSize=self._rampSize,
                 driver=self._driver,
-                xDisplay=self.xDisplay
+                xDisplay=self.xDisplay,
+                gammaErrorPolicy=self._gammaErrorPolicy
             )
 
     @attributeSetter
@@ -322,11 +334,18 @@ class PygletBackend(BaseBackend):
         """Gets the gamma ramp or sets it to a new value (an Nx3 or Nx1 array)
         """
         self.__dict__['gammaRamp'] = gammaRamp
-        setGammaRamp(self.screenID, gammaRamp, nAttempts=3,
-                     xDisplay=self.xDisplay)
+        setGammaRamp(
+            self.screenID,
+            gammaRamp,
+            nAttempts=3,
+            xDisplay=self.xDisplay,
+            gammaErrorPolicy=self._gammaErrorPolicy
+        )
 
     def getGammaRamp(self):
-        return getGammaRamp(self.screenID, self.xDisplay)
+        return getGammaRamp(
+            self.screenID, self.xDisplay, gammaErrorPolicy=self._gammaErrorPolicy
+        )
 
     @property
     def screenID(self):
@@ -370,7 +389,7 @@ class PygletBackend(BaseBackend):
             return
 
         # restore the gamma ramp that was active when window was opened
-        if not self._TravisTesting:
+        if hasattr(self, "_TravisTesting") and not self._TravisTesting:
             self.gammaRamp = self._origGammaRamp
 
         _hw_handle = None

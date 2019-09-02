@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2018 Jonathan Peirce
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Experiment classes:
@@ -536,11 +536,6 @@ class Experiment(object):
             # the current exp is already vaporized at this point, oops
             return
         self.psychopyVersion = root.get('version')
-        versionf = float(self.psychopyVersion.rsplit('.', 1)[0])
-        if versionf < 1.63:
-            msg = 'note: v%s was used to create %s ("%s")'
-            vals = (self.psychopyVersion, filenameBase, root.tag)
-            logging.warning(msg % vals)
 
         # Parse document nodes
         # first make sure we're empty

@@ -211,6 +211,28 @@ class SettingsComponent(object):
             hint=_translate("Should the mouse be visible on screen?"),
             label=_localized["Show mouse"], categ='Screen')
 
+        # sound params
+        self.params['Audio lib'] = Param(
+            'use prefs', valType='str',
+            allowedVals=['use prefs', 'ptb', 'pyo', 'sounddevice', 'pygame'],
+            hint=_translate("Which Python sound engine do you want to play your sounds?"),
+            label=_translate("Audio library"), categ='Audio')
+
+        audioLatencyLabels = [
+            _translate('use prefs'),
+            '0: ' + _translate('Latency not important'),
+            '1: ' + _translate('Share low-latency driver'),
+            '2: ' + _translate('Exclusive low-latency'),
+            '3: ' + _translate('Aggressive low-latency'),
+            '4: ' + _translate('Latency critical'),
+        ]
+        self.params['Audio latency priority'] = Param(
+            'use prefs', valType='str',
+            allowedVals=['use prefs', '0', '1', '2', '3', '4'],
+            allowedLabels=audioLatencyLabels,
+            hint=_translate("How important is audio latency for you? If essential then you may need to get all your sounds in correct formats."),
+            label=_translate("Audio latency priority"), categ='Audio')
+
         # data params
         self.params['Data filename'] = Param(
             filename, valType='code', allowedTypes=[],
@@ -363,15 +385,13 @@ class SettingsComponent(object):
             '"""\nThis experiment was created using PsychoPy3 Experiment '
             'Builder (v%s),\n'
             '    on %s\n' % (version, localDateTime) +
-            'If you publish work using this script please cite the PsychoPy '
-            'publications:\n'
-            '    Peirce, JW (2007) PsychoPy - Psychophysics software in '
-            'Python.\n'
-            '        Journal of Neuroscience Methods, 162(1-2), 8-13.\n'
-            '    Peirce, JW (2009) Generating stimuli for neuroscience using '
-            'PsychoPy.\n'
-            '        Frontiers in Neuroinformatics, 2:10. doi: 10.3389/'
-            'neuro.11.010.2008\n"""\n'
+            'If you publish work using this script the most relevant '
+            'publication is:\n\n'            
+            '    Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, '
+            'Kastman E, Lindeløv JK. (2019) \n'
+            '        PsychoPy2: Experiments in behavior made easy Behav Res 51: 195. \n'
+            '        https://doi.org/10.3758/s13428-018-01193-y\n'
+            '\n"""\n'
             "\nfrom __future__ import absolute_import, division\n")
 
         self.writeUseVersion(buff)
@@ -384,13 +404,25 @@ class SettingsComponent(object):
             else:
                 customImports.append(import_)
 
+        buff.writelines(
+            "\nfrom psychopy import locale_setup\n"
+            "from psychopy import prefs\n"
+        )
+        # adjust the prefs for this study if needed
+        if self.params['Audio lib'].val.lower() != 'use prefs':
+            buff.writelines(
+                "prefs.hardware['audioLib'] = {}\n".format(self.params['Audio lib'])
+            )
+        if self.params['Audio latency priority'].val.lower() != 'use prefs':
+            buff.writelines(
+                "prefs.hardware['audioLatencyMode'] = {}\n".format(self.params['Audio latency priority'])
+            )
         buff.write(
-            "from psychopy import locale_setup, "
-            "%s\n" % ', '.join(psychopyImports) +
+            "from psychopy import %s\n" % ', '.join(psychopyImports) +
             "from psychopy.constants import (NOT_STARTED, STARTED, PLAYING,"
             " PAUSED,\n"
             "                                STOPPED, FINISHED, PRESSED, "
-            "RELEASED, FOREVER)\n"
+            "RELEASED, FOREVER)\n\n"
             "import numpy as np  # whole numpy lib is available, "
             "prepend 'np.'\n"
             "from numpy import (%s,\n" % ', '.join(_numpyImports[:7]) +
@@ -610,7 +642,7 @@ class SettingsComponent(object):
         buff.writeIndentedLines(
             "expInfo['date'] = data.getDateStr()  # add a simple timestamp\n"
             "expInfo['expName'] = expName\n"
-            "expInfo['psychopyVersion'] = psychopyVersion")
+            "expInfo['psychopyVersion'] = psychopyVersion\n")
         level = self.params['logging level'].val.upper()
 
         saveToDir = self.getSaveDataDir()
@@ -671,6 +703,8 @@ class SettingsComponent(object):
         if self.exp.settings.params['Enable Escape'].val:
             buff.writeIndentedLines("\nendExpNow = False  # flag for 'escape'"
                                     " or other condition => quit the exp\n")
+
+        buff.writeIndented("frameTolerance = 0.001  # how close to onset before 'same' frame\n")
 
     def writeWindowCode(self, buff):
         """Setup the window code.
@@ -759,7 +793,8 @@ class SettingsComponent(object):
                 "psychoJS.openWindow({{\n"
                 "  fullscr: {fullScr},\n"
                 "  color: new util.Color({params[color]}),\n"
-                "  units: '{units}'\n"
+                "  units: '{units}',\n"
+                "  waitBlanking: true\n"
                 "}});\n").format(fullScr=str(self.params['Full-screen window']).lower(),
                                  params=self.params,
                                  units=units)
@@ -789,7 +824,7 @@ class SettingsComponent(object):
 
     def writeEndCodeJS(self, buff):
 
-        endLoopInteration = ("\nfunction endLoopIteration(thisScheduler, thisTrial) {\n"
+        endLoopInteration = ("\nfunction endLoopIteration({thisScheduler, isTrials=true}) {\n"
                     "  // ------Prepare for next entry------\n"
                     "  return function () {\n"
                     "    // ------Check if user ended loop early------\n"
@@ -799,7 +834,7 @@ class SettingsComponent(object):
                     "        psychoJS.experiment.nextEntry();\n"
                     "      }\n"
                     "      thisScheduler.stop();\n"
-                    "    } else if (typeof thisTrial === 'undefined' || !('isTrials' in thisTrial) || thisTrial.isTrials) {\n"
+                    "    } else if (isTrials) {\n"
                     "      psychoJS.experiment.nextEntry();\n"
                     "    }\n"
                     "  return Scheduler.Event.NEXT;\n"

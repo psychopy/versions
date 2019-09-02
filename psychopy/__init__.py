@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2018 Jonathan Peirce
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 # --------------------------------------------------------------------------
@@ -12,14 +12,14 @@
 import os
 import sys
 
-__version__ = '3.1.5'
+__version__ = '3.2.0'
 __license__ = 'GNU GPLv3 (or more recent equivalent)'
 __author__ = 'Jonathan Peirce'
 __author_email__ = 'jon.peirce@gmail.com'
 __maintainer_email__ = 'jon.peirce@gmail.com'
 __url__ = 'http://www.psychopy.org/'
 __download_url__ = 'https://github.com/psychopy/psychopy/releases/'
-__git_sha__ = 'ef0cb0385'
+__git_sha__ = 'f8a8fe72c'
 __build_platform__ = 'n/a'
 
 __all__ = ["gui", "misc", "visual", "core",
