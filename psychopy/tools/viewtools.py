@@ -8,9 +8,14 @@
 # Copyright (C) 2002-2018 Jonathan Peirce (C) 2019 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
-__all__ = ['Frustum', 'computeFrustum', 'generalizedPerspectiveProjection',
-           'orthoProjectionMatrix', 'perspectiveProjectionMatrix', 'lookAt',
-           'pointToNdc']
+__all__ = ['Frustum',
+           'computeFrustum',
+           'generalizedPerspectiveProjection',
+           'orthoProjectionMatrix',
+           'perspectiveProjectionMatrix',
+           'lookAt',
+           'pointToNdc',
+           'cursorToRay']
 
 import numpy as np
 from collections import namedtuple
@@ -176,7 +181,7 @@ def generalizedPerspectiveProjection(posBottomLeft,
     References
     ----------
     .. [1] Kooima, R. (2009). Generalized perspective projection. J. Sch.
-    Electron. Eng. Comput. Sci.
+       Electron. Eng. Comput. Sci.
 
     Examples
     --------
@@ -306,9 +311,9 @@ def orthoProjectionMatrix(left, right, bottom, top, nearClip, farClip,
     projMat[0, 0] = u / (right - left)
     projMat[1, 1] = u / (top - bottom)
     projMat[2, 2] = -u / (farClip - nearClip)
-    projMat[0, 3] = (right + left) / (right - left)
-    projMat[1, 3] = (top + bottom) / (top - bottom)
-    projMat[2, 3] = (farClip + nearClip) / (farClip - nearClip)
+    projMat[0, 3] = -((right + left) / (right - left))
+    projMat[1, 3] = -((top + bottom) / (top - bottom))
+    projMat[2, 3] = -((farClip + nearClip) / (farClip - nearClip))
     projMat[3, 3] = 1.0
 
     return projMat
@@ -528,3 +533,94 @@ def pointToNdc(wcsPos, viewMatrix, projectionMatrix, out=None, dtype=None):
     rtn[:, :] = wcsVec[:, :3] / wcsVec[:, 3:]  # xyz / w
 
     return toReturn
+
+
+def cursorToRay(cursorX, cursorY, winSize, viewport, projectionMatrix,
+                normalize=True, out=None, dtype=None):
+    """Convert a 2D mouse coordinate to a 3D ray.
+
+    Takes a 2D window/mouse coordinate and transforms it to a 3D direction
+    vector from the viewpoint in eye space (vector origin is [0, 0, 0]). The
+    center of the screen projects to vector [0, 0, -1].
+
+    Parameters
+    ----------
+    cursorX, cursorY :  float or int
+        Window coordinates. These need to be scaled if you are using a
+        framebuffer that does not have 1:1 pixel mapping (i.e. retina display).
+    winSize : array_like
+        Size of the window client area [w, h].
+    viewport : array_like
+        Viewport rectangle [x, y, w, h] being used.
+    projectionMatrix : ndarray
+        4x4 projection matrix being used.
+    normalize : bool
+        Normalize the resulting vector.
+    out : ndarray, optional
+        Optional output array. Must be same `shape` and `dtype` as the expected
+        output if `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
+        specified, the data type is inferred by `out`. If `out` is not provided,
+        the default is 'float64'.
+
+    Returns
+    -------
+    ndarray
+        Direction vector (x, y, z).
+
+    Examples
+    --------
+    Place a 3D stim at the mouse location 5.0 scene units (meters) away::
+
+        # define camera
+        camera = RigidBodyPose((-3.0, 5.0, 3.5))
+        camera.alignTo((0, 0, 0))
+
+        # in the render loop
+
+        dist = 5.0
+        mouseRay = vt.cursorToRay(x, y, win.size, win.viewport, win.projectionMatrix)
+        mouseRay *= dist  # scale the vector
+
+        # set the sphere position by transforming vector to world space
+        sphere.thePose.pos = camera.transform(mouseRay)
+
+    """
+    if out is None:
+        dtype = np.float64 if dtype is None else np.dtype(dtype).type
+    else:
+        dtype = np.dtype(out.dtype).type
+
+    toReturn = np.zeros((3,), dtype=dtype) if out is None else out
+
+    projectionMatrix = np.asarray(projectionMatrix, dtype=dtype)
+
+    # compute the inverse model/view and projection matrix
+    invPM = np.linalg.inv(projectionMatrix)
+
+    # transform psychopy mouse coordinates to viewport coordinates
+    cursorX = cursorX + (winSize[0] / 2.0)
+    cursorY = cursorY + (winSize[1] / 2.0)
+
+    # get the NDC coordinates of the
+    projX = 2. * (cursorX - viewport[0]) / viewport[2] - 1.0
+    projY = 2. * (cursorY - viewport[1]) / viewport[3] - 1.0
+
+    vecNear = np.array((projX, projY, 0.0, 1.0), dtype=dtype)
+    vecFar = np.array((projX, projY, 1.0, 1.0), dtype=dtype)
+
+    vecNear[:] = vecNear.dot(invPM.T)
+    vecFar[:] = vecFar.dot(invPM.T)
+
+    vecNear /= vecNear[3]
+    vecFar /= vecFar[3]
+
+    # direction vector
+    toReturn[:] = (vecFar - vecNear)[:3]
+
+    if normalize:
+        mt.normalize(toReturn, out=toReturn)
+
+    return toReturn
+

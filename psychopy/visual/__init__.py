@@ -75,6 +75,7 @@ from psychopy.visual.shape import ShapeStim
 from psychopy.visual.line import Line
 from psychopy.visual.polygon import Polygon
 from psychopy.visual.rect import Rect
+from psychopy.visual.pie import Pie
 
 # stimuli derived from Polygon
 from psychopy.visual.circle import Circle
@@ -83,6 +84,18 @@ from psychopy.visual.textbox import TextBox
 
 # rift support 
 from psychopy.visual.rift import Rift
+
+# 3D stimuli support
+from psychopy.visual.stim3d import LightSource
+from psychopy.visual.stim3d import SceneSkybox
+from psychopy.visual.stim3d import BlinnPhongMaterial
+from psychopy.visual.stim3d import RigidBodyPose
+from psychopy.visual.stim3d import BoundingBox
+from psychopy.visual.stim3d import SphereStim
+from psychopy.visual.stim3d import BoxStim
+from psychopy.visual.stim3d import PlaneStim
+from psychopy.visual.stim3d import ObjMeshStim
+
 """
 try:
     from psychopy.contrib.lazy_import import lazy_import

@@ -12,14 +12,14 @@
 import os
 import sys
 
-__version__ = '3.2.4'
+__version__ = '2020.1.1'
 __license__ = 'GNU GPLv3 (or more recent equivalent)'
 __author__ = 'Jonathan Peirce'
 __author_email__ = 'jon.peirce@gmail.com'
 __maintainer_email__ = 'jon.peirce@gmail.com'
 __url__ = 'http://www.psychopy.org/'
 __download_url__ = 'https://github.com/psychopy/psychopy/releases/'
-__git_sha__ = '7d6b1a878'
+__git_sha__ = '038d908de'
 __build_platform__ = 'n/a'
 
 __all__ = ["gui", "misc", "visual", "core",
@@ -28,12 +28,12 @@ __all__ = ["gui", "misc", "visual", "core",
 # for developers the following allows access to the current git sha from
 # their repository
 if __git_sha__ == 'n/a':
-    import subprocess
+    from subprocess import check_output, PIPE
     # see if we're in a git repo and fetch from there
     try:
         thisFileLoc = os.path.split(__file__)[0]
-        output = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'],
-                                         cwd=thisFileLoc, stderr=subprocess.PIPE)
+        output = check_output(['git', 'rev-parse', '--short', 'HEAD'],
+                              cwd=thisFileLoc, stderr=PIPE)
     except Exception:
         output = False
     if output:
@@ -44,6 +44,13 @@ if 'installing' not in locals():
     from psychopy.preferences import prefs
     for pathName in prefs.general['paths']:
         sys.path.append(pathName)
-    
+
     from psychopy.tools.versionchooser import useVersion, ensureMinimal
+
+# import readline here to get around an issue with sounddevice
+# issues GH-2230 GH-2344 GH-2662
+try:
+    import readline
+except ImportError:
+    pass  # all that will happen is the stderr/stdout might get redirected
 

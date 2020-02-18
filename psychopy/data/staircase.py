@@ -121,11 +121,6 @@ class StairHandler(_BaseTrialHandler):
                 :func:`~psychopy.data.StairHandler.saveAsPickle` or
                 :func:`~psychopy.data.StairHandler.saveAsText` methods.
 
-            stepType:
-                specifies whether each step will be a jump of the given
-                size in 'db', 'log' or 'lin' units ('lin' means this
-                intensity will be added/subtracted)
-
             method:
                 Not used and may be deprecated in future releases.
 
@@ -466,7 +461,7 @@ class StairHandler(_BaseTrialHandler):
 
         # create the file or send to stdout
         f = openOutputFile(
-            fileName, append=False, delim=delim,
+            fileName, append=False, 
             fileCollisionMethod=fileCollisionMethod, encoding=encoding)
 
         # write the data
@@ -697,13 +692,18 @@ class QuestHandler(StairHandler):
     Measures threshold using a Weibull psychometric function. Currently, it is
     not possible to use a different psychometric function.
 
-    Threshold 't' is measured on an abstract 'intensity' scale, which
-    usually corresponds to log10 contrast.
+    The Weibull psychometric function is given by the formula
+    
+    :math:`\Psi(x) = \delta \gamma + (1 - \delta) [1 - (1 - \gamma)\, \exp(-10^{\beta (x - T + \epsilon)})]`
 
-    The Weibull psychometric function:
-
-    _e = -10**(beta * (x2 + xThreshold))
-    p2 = delta * gamma + (1-delta) * (1 - (1 - gamma) * exp(_e))
+    Here, :math:`x` is an intensity or a contrast (in log10 units), and :math:`T` is estimated threshold.
+    
+    Quest internally shifts the psychometric function such that intensity at the user-specified
+    threshold performance level ``pThreshold`` (e.g., 50% in a yes-no or 75% in a 2-AFC task) is euqal to 0.
+    The parameter :math:`\epsilon` is responsible for this shift, and is determined automatically based on the
+    specified ``pThreshold`` value. It is the parameter Watson & Pelli (1983) introduced to perform measurements
+    at the "optimal sweat factor". Assuming your ``QuestHandler`` instance is called ``q``, you can retrieve this
+    value via ``q.epsilon``.
 
     **Example**::
 
@@ -889,6 +889,9 @@ class QuestHandler(StairHandler):
     @property
     def delta(self):
         return self._quest.delta
+    @property
+    def epsilon(self):
+        return self._quest.xThreshold
 
     @property
     def grain(self):
@@ -1330,7 +1333,8 @@ class QuestPlusHandler(StairHandler):
                  nTrials,
                  intensityVals, thresholdVals, slopeVals,
                  lowerAsymptoteVals, lapseRateVals,
-                 responseVals=('Yes', 'No'), startIntensity=None,
+                 responseVals=('Yes', 'No'), prior=None,
+                 startIntensity=None,
                  psychometricFunc='weibull', stimScale='log10',
                  stimSelectionMethod='minEntropy',
                  stimSelectionOptions=None, paramEstimationMethod='mean',
@@ -1385,6 +1389,11 @@ class QuestPlusHandler(StairHandler):
             `['Correct', 'Incorrect']`; or, alternatively, the less verbose
             `[1, 0]` in both cases.
 
+        prior : dict of floats
+            The prior probabilities to assign to the parameter values. The
+            dictionary keys correspond to the respective parameters:
+            ``threshold``, ``slope``, ``lowerAsymptote``, ``lapseRate``.
+
         startIntensity : float
             The very first intensity (or stimulus level) to present.
 
@@ -1419,7 +1428,9 @@ class QuestPlusHandler(StairHandler):
             For exmaple, to randomly pick a stimulus from those which will
             produce the 4 smallest expected entropies, and to allow the same
             stimulus to be presented on two consecutive trials max, use
-            `stimSelectionDuration=dict(N=4, maxConsecutiveReps=2)`.
+            `stimSelectionOptions=dict(N=4, maxConsecutiveReps=2)`.
+            To achieve reproducible results, you may pass a seed to the
+            random number generator via the `randomSeed` key.
 
         paramEstimationMethod : {'mean', 'mode'}
             How to calculate the final parameter estimate. `mean` returns the
@@ -1504,14 +1515,53 @@ class QuestPlusHandler(StairHandler):
         self.stimSelectionMethod = stimSelectionMethod
         self.stimSelectionOptions = stimSelectionOptions
         self.paramEstimationMethod = paramEstimationMethod
+        self._prior = prior
 
-        # questplus uses different parameters.
+        # questplus uses different parameter names.
         if self.stimSelectionMethod == 'minEntropy':
             stimSelectionMethod_ = 'min_entropy'
         elif self.stimSelectionMethod == 'minNEntropy':
             stimSelectionMethod_ = 'min_n_entropy'
         else:
             raise ValueError('Unknown stimSelectionMethod requested.')
+
+        if self.stimSelectionOptions is not None:
+            valid = ('N', 'maxConsecutiveReps', 'randomSeed')
+            if any([o not in valid for o in self.stimSelectionOptions]):
+                msg = ('Unknown stimSelectionOptions requested. '
+                       'Valid options are: %s' % ', '.join(valid))
+                raise ValueError(msg)
+
+            stimSelectionOptions_ = dict()
+
+            if 'N' in self.stimSelectionOptions:
+                stimSelectionOptions_['n'] = self.stimSelectionOptions['N']
+            if 'maxConsecutiveReps' in self.stimSelectionOptions:
+                stimSelectionOptions_['max_consecutive_reps'] = self.stimSelectionOptions['maxConsecutiveReps']
+            if 'randomSeed' in self.stimSelectionOptions:
+                stimSelectionOptions_['random_seed'] = self.stimSelectionOptions['randomSeed']
+        else:
+            stimSelectionOptions_ = self.stimSelectionOptions
+
+        if self._prior is not None:
+            valid = ('threshold', 'slope', 'lapseRate', 'lowerAsymptote')
+            if any([p not in valid for p in self._prior]):
+                msg = ('Invalid prior parameter(s) specified. '
+                       'Valid parameter names are: %s' % ', '.join(valid))
+                raise ValueError(msg)
+
+            prior_ = dict()
+
+            if 'threshold' in self._prior:
+                prior_['threshold'] = self._prior['threshold']
+            if 'slope' in self._prior:
+                prior_['slope'] = self._prior['slope']
+            if 'lapseRate' in self._prior:
+                prior_['lapse_rate'] = self._prior['lapseRate']
+            if 'lowerAsymptote' in self._prior:
+                prior_['lower_asymptote'] = self._prior['lowerAsymptote']
+        else:
+            prior_ = self._prior
 
         if self.psychometricFunc == 'weibull':
             self._qp = qp.QuestPlusWeibull(
@@ -1520,10 +1570,11 @@ class QuestPlusHandler(StairHandler):
                 slopes=self.slopeVals,
                 lower_asymptotes=self.lowerAsymptoteVals,
                 lapse_rates=self.lapseRateVals,
+                prior=prior_,
                 responses=self.responseVals,
                 stim_scale=self.stimScale,
                 stim_selection_method=stimSelectionMethod_,
-                stim_selection_options=self.stimSelectionOptions,
+                stim_selection_options=stimSelectionOptions_,
                 param_estimation_method=self.paramEstimationMethod)
         else:
             msg = ('Currently only the Weibull psychometric function is '
@@ -1603,6 +1654,30 @@ class QuestPlusHandler(StairHandler):
         return estimate
 
     @property
+    def prior(self):
+        """
+        The marginal prior distributions.
+
+        Returns
+        -------
+        dict of np.ndarrays
+            A dictionary whose keys correspond to the names of the parameters.
+
+        """
+        qp_prior = self._qp.prior
+
+        threshold = qp_prior.sum(dim=('slope', 'lower_asymptote', 'lapse_rate'))
+        slope = qp_prior.sum(dim=('threshold', 'lower_asymptote', 'lapse_rate'))
+        lowerAsymptote = qp_prior.sum(dim=('threshold', 'slope', 'lapse_rate'))
+        lapseRate = qp_prior.sum(dim=('threshold', 'slope', 'lower_asymptote'))
+
+        qp_prior = dict(threshold=threshold.values,
+                        slope=slope.values,
+                        lowerAsymptote=lowerAsymptote.values,
+                        lapseRate=lapseRate.values)
+        return qp_prior
+
+    @property
     def posterior(self):
         """
         The marginal posterior distributions.
@@ -1651,8 +1726,8 @@ class QuestPlusHandler(StairHandler):
 class MultiStairHandler(_BaseTrialHandler):
 
     def __init__(self, stairType='simple', method='random',
-                 conditions=None, nTrials=50, originPath=None,
-                 name='', autoLog=True):
+                 conditions=None, nTrials=50, randomSeed=None,
+                 originPath=None, name='', autoLog=True):
         """A Handler to allow easy interleaved staircase procedures
         (simple or QUEST).
 
@@ -1676,10 +1751,14 @@ class MultiStairHandler(_BaseTrialHandler):
                 Use a :class:`StairHandler`, a :class:`QuestHandler`, or a
                  :class:`QuestPlusHandler`.
 
-            method: 'random' or 'sequential'
-                The stairs are shuffled in each repeat but not randomised
-                more than that (so you can't have 3 repeats of the same
-                staircase in a row unless it's the only one still running)
+            method: 'random', 'fullRandom', or 'sequential'
+                If `random`, stairs are shuffled in each repeat but not
+                randomized more than that (so you can't have 3 repeats of the
+                same staircase in a row unless it's the only one still
+                running). If `fullRandom`, the staircase order is "fully"
+                randomized, meaning that, theoretically, a large number of
+                subsequent trials could invoke the same staircase repeatedly.
+                If `sequential`, don't perform any randomization.
 
             conditions: a list of dictionaries specifying conditions
                 Can be used to control parameters for the different staicases.
@@ -1695,6 +1774,11 @@ class MultiStairHandler(_BaseTrialHandler):
                 Minimum trials to run (but may take more if the staircase
                 hasn't also met its minimal reversals.
                 See :class:`~psychopy.data.StairHandler`
+
+            randomSeed : int or None
+                The seed with which to initialize the random number generator
+                (RNG). If `None` (default), do not initialize the RNG with
+                a specific value.
 
         Example usage::
 
@@ -1717,11 +1801,19 @@ class MultiStairHandler(_BaseTrialHandler):
             stairs.saveDataAsExcel(fileName)  # easy to browse
             stairs.saveAsPickle(fileName)  # contains more info
 
+        Raises
+        ------
+            ValueError
+                If an unknown randomiation option was passed via the `method`
+                keyword argument.
+
         """
         self.name = name
         self.autoLog = autoLog
         self.type = stairType
-        self.method = method  # 'random' or 'sequential'
+        self.method = method
+        self.randomSeed = randomSeed
+        self._rng = np.random.RandomState(seed=randomSeed)
         self.conditions = conditions
         self.nTrials = nTrials
         self.finished = False
@@ -1877,9 +1969,21 @@ class MultiStairHandler(_BaseTrialHandler):
         This is not normally needed by the user - it gets called at __init__
         and every time that next() runs out of trials for this pass.
         """
-        self.thisPassRemaining = copy.copy(self.runningStaircases)
-        if self.method == 'random':
-            np.random.shuffle(self.thisPassRemaining)
+        if self.method == 'sequential':
+            self.thisPassRemaining = copy.copy(self.runningStaircases)
+        elif self.method == 'random':
+            # np.random.shuffle() works in-place!
+            self.thisPassRemaining = copy.copy(self.runningStaircases)
+            self._rng.shuffle(self.thisPassRemaining)
+        elif self.method == 'fullRandom':
+            n = len(self.runningStaircases)
+            self.thisPassRemaining = self._rng.choice(self.runningStaircases,
+                                                      size=n, replace=True)
+            # np.random.choice() returns an ndarray, so convert back to a list
+            # again.
+            self.thisPassRemaining = list(self.thisPassRemaining)
+        else:
+            raise ValueError('Unknown randomization method requested.')
 
     def addResponse(self, result, intensity=None):
         """Add a 1 or 0 to signify a correct / detected or

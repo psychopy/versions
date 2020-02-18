@@ -8,15 +8,51 @@
 # Copyright (C) 2002-2018 Jonathan Peirce (C) 2019 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
-__all__ = ['normalize', 'lerp', 'slerp', 'multQuat', 'quatFromAxisAngle',
-           'quatToMatrix', 'scaleMatrix', 'rotationMatrix', 'transform',
-           'translationMatrix', 'concatenate', 'applyMatrix', 'invertQuat',
-           'quatToAxisAngle', 'posOriToMatrix', 'applyQuat', 'orthogonalize',
-           'reflect', 'cross', 'distance', 'dot', 'quatMagnitude', 'length',
-           'project', 'surfaceNormal', 'invertMatrix', 'angleTo',
-           'surfaceBitangent', 'surfaceTangent', 'vertexNormal', 'isOrthogonal',
-           'isAffine', 'perp', 'ortho3Dto2D', 'intersectRayPlane',
-           'matrixToQuat']
+__all__ = ['normalize',
+           'lerp',
+           'slerp',
+           'multQuat',
+           'quatFromAxisAngle',
+           'quatToMatrix',
+           'scaleMatrix',
+           'rotationMatrix',
+           'transform',
+           'translationMatrix',
+           'concatenate',
+           'applyMatrix',
+           'invertQuat',
+           'quatToAxisAngle',
+           'posOriToMatrix',
+           'applyQuat',
+           'orthogonalize',
+           'reflect',
+           'cross',
+           'distance',
+           'dot',
+           'quatMagnitude',
+           'length',
+           'project',
+           'bisector',
+           'surfaceNormal',
+           'invertMatrix',
+           'angleTo',
+           'surfaceBitangent',
+           'surfaceTangent',
+           'vertexNormal',
+           'isOrthogonal',
+           'isAffine',
+           'perp',
+           'ortho3Dto2D',
+           'intersectRayPlane',
+           'matrixToQuat',
+           'lensCorrection',
+           'matrixFromEulerAngles',
+           'alignTo',
+           'quatYawPitchRoll',
+           'intersectRaySphere',
+           'intersectRayAABB',
+           'intersectRayOBB',
+           'intersectRayTriangle']
 
 import numpy as np
 import functools
@@ -41,8 +77,8 @@ def length(v, squared=False, out=None, dtype=None):
         output if `out` was not specified.
     dtype : dtype or str, optional
         Data type for computations can either be 'float32' or 'float64'. If
-        `None` is specified, the data type of `out` is used. If `out` is not
-        provided, 'float64' is used by default.
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -82,14 +118,15 @@ def normalize(v, out=None, dtype=None):
 
     v : array_like
         Vector to normalize, can be Nx2, Nx3, or Nx4. If a 2D array is
-        specified, rows are treated as separate vectors.
+        specified, rows are treated as separate vectors. All vectors should have
+        nonzero length.
     out : ndarray, optional
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -98,8 +135,8 @@ def normalize(v, out=None, dtype=None):
 
     Notes
     -----
-    * If the vector is degenerate (length is zero), a vector of all zeros is
-      returned.
+    * If the vector has length is zero, a vector of all zeros is returned after
+      normalization.
 
     Examples
     --------
@@ -152,9 +189,9 @@ def orthogonalize(v, n, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -205,9 +242,9 @@ def reflect(v, n, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -259,9 +296,9 @@ def dot(v0, v1, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -312,9 +349,9 @@ def cross(v0, v1, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -348,9 +385,8 @@ def cross(v0, v1, out=None, dtype=None):
         cross(a, b, out=cprod)
 
     If a 1D and 2D vector are specified, the cross product of each row of the
-    2D array and the 1D array is returned::
+    2D array and the 1D array is returned as a 2D array::
 
-        # create two 6x3 arrays with random numbers
         a = normalize([1, 2, 3])
         b = normalize(np.random.uniform(-1.0, 1.0, (6, 3,)))
         cprod = np.zeros(a.shape)
@@ -426,9 +462,9 @@ def project(v0, v1, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -476,9 +512,9 @@ def lerp(v0, v1, t, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -533,9 +569,9 @@ def distance(v0, v1, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -580,9 +616,9 @@ def perp(v, n, norm=True, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -625,6 +661,57 @@ def perp(v, n, norm=True, out=None, dtype=None):
     return toReturn
 
 
+def bisector(v0, v1, norm=False, out=None, dtype=None):
+    """Get the angle bisector.
+
+    Computes a vector which bisects the angle between `v0` and `v1`. Input
+    vectors `v0` and `v1` must be non-zero.
+
+    Parameters
+    ----------
+    v0, v1 : array_like
+        Vectors to bisect [x, y, z]. Must be non-zero in length and have the
+        same shape. Inputs can be Nx3 where the bisector for corresponding
+        rows will be returned.
+    norm : bool, optional
+        Normalize the resulting bisector. Default is `False`.
+    out : ndarray, optional
+        Optional output array. Must be same `shape` and `dtype` as the expected
+        output if `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    ndarray
+        Bisecting vector [x, y, z].
+
+    """
+    if out is None:
+        dtype = np.float64 if dtype is None else np.dtype(dtype).type
+    else:
+        dtype = np.dtype(out.dtype).type
+
+    v0 = np.asarray(v0, dtype=dtype)
+    v1 = np.asarray(v1, dtype=dtype)
+
+    assert v0.shape == v1.shape
+
+    toReturn = np.zeros_like(v0, dtype=dtype) if out is None else out
+
+    v02d, v12d, r2d = np.atleast_2d(v0, v1, toReturn)
+
+    r2d[:, :] = v02d * length(v12d, dtype=dtype)[:, np.newaxis] + \
+                v12d * length(v02d, dtype=dtype)[:, np.newaxis]
+
+    if norm:
+        normalize(r2d, out=r2d)
+
+    return toReturn
+
+
 def angleTo(v, point, degrees=True, out=None, dtype=None):
     """Get the relative angle to a point from a vector.
 
@@ -650,9 +737,9 @@ def angleTo(v, point, degrees=True, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -703,9 +790,9 @@ def surfaceNormal(tri, norm=True, out=None, dtype=None):
         Optional output array. Must have one fewer dimensions than `tri`. The
         shape of the last dimension must be 3.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -762,11 +849,11 @@ def surfaceNormal(tri, norm=True, out=None, dtype=None):
 def surfaceBitangent(tri, uv, norm=True, out=None, dtype=None):
     """Compute the bitangent vector of a given triangle.
 
-     This function can be used to generate bitangent vertex
-    attributes for normal mapping. After computing bitangents, one may
-    orthogonalize them with vertex normals using the :func:`orthogonalize`
-    function, or within the fragment shader. Uses texture coordinates at each
-    triangle vertex to determine the direction of the vector.
+    This function can be used to generate bitangent vertex attributes for normal
+    mapping. After computing bitangents, one may orthogonalize them with vertex
+    normals using the :func:`orthogonalize` function, or within the fragment
+    shader. Uses texture coordinates at each triangle vertex to determine the
+    direction of the vector.
 
     Parameters
     ----------
@@ -785,9 +872,9 @@ def surfaceBitangent(tri, uv, norm=True, out=None, dtype=None):
         Optional output array. Must have one fewer dimensions than `tri`. The
         shape of the last dimension must be 3.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -858,11 +945,11 @@ def surfaceBitangent(tri, uv, norm=True, out=None, dtype=None):
 def surfaceTangent(tri, uv, norm=True, out=None, dtype=None):
     """Compute the tangent vector of a given triangle.
 
-    This function can be used to generate tangent vertex
-    attributes for normal mapping. After computing tangents, one may
-    orthogonalize them with vertex normals using the :func:`orthogonalize`
-    function, or within the fragment shader. Uses texture coordinates at each
-    triangle vertex to determine the direction of the vector.
+    This function can be used to generate tangent vertex attributes for normal
+    mapping. After computing tangents, one may orthogonalize them with vertex
+    normals using the :func:`orthogonalize` function, or within the fragment
+    shader. Uses texture coordinates at each triangle vertex to determine the
+    direction of the vector.
 
     Parameters
     ----------
@@ -882,9 +969,9 @@ def surfaceTangent(tri, uv, norm=True, out=None, dtype=None):
         Optional output array. Must have one fewer dimensions than `tri`. The
         shape of the last dimension must be 3.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -984,9 +1071,9 @@ def vertexNormal(faceNorms, norm=True, out=None, dtype=None):
     out : ndarray, optional
         Optional output array.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1030,24 +1117,29 @@ def vertexNormal(faceNorms, norm=True, out=None, dtype=None):
 # Collision Detection and Interaction
 #
 
-def intersectRayPlane(orig, dir, planeOrig, planeNormal):
+def intersectRayPlane(rayOrig, rayDir, planeOrig, planeNormal, dtype=None):
     """Get the point which a ray intersects a plane.
 
     Parameters
     ----------
-    orig : array_like
+    rayOrig : array_like
         Origin of the line in space [x, y, z].
-    dir : array_like
+    rayDir : array_like
         Direction vector of the line [x, y, z].
     planeOrig : array_like
         Origin of the plane to test [x, y, z].
     planeNormal : array_like
         Normal vector of the plane [x, y, z].
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
-    ndarray
-        Position in space which the line intersects the plane. `None` is
+    tuple or None
+        Position (`ndarray`) in space which the line intersects the plane and
+        the distance the intersect occurs from the origin (`float`). `None` is
         returned if the line does not intersect the plane at a single point or
         at all.
 
@@ -1064,29 +1156,354 @@ def intersectRayPlane(orig, dir, planeOrig, planeNormal):
         rayDir = [0, 0, -1]
         rayOrigin = [0, 0, 5]
 
-        # get the intersect in 3D world space
-        pnt = intersectRayPlane(rayOrigin, rayDir, planeOrigin, planeNormal)
+        # get the intersect and distance in 3D world space
+        pnt, dist = intersectRayPlane(rayOrigin, rayDir, planeOrigin, planeNormal)
 
     """
-    # based off the method from GLM
-    orig = np.asarray(orig)
-    dir = np.asarray(dir)
-    planeOrig = np.asarray(planeOrig)
-    planeNormal = np.asarray(planeNormal)
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
 
-    denom = dot(dir, planeNormal)
+    # based off the method from GLM
+    rayOrig = np.asarray(rayOrig, dtype=dtype)
+    rayDir = np.asarray(rayDir, dtype=dtype)
+    planeOrig = np.asarray(planeOrig, dtype=dtype)
+    planeNormal = np.asarray(planeNormal, dtype=dtype)
+
+    denom = dot(rayDir, planeNormal, dtype=dtype)
     if denom == 0.0:
         return None
 
-    dist = dot((planeOrig - orig), planeNormal) / denom  # distance to collision
-    intersect = dist * dir + orig
+    # distance to collision
+    dist = dot((planeOrig - rayOrig), planeNormal, dtype=dtype) / denom
+    intersect = dist * rayDir + rayOrig
 
-    return intersect
+    return intersect, dist
 
 
-def ortho3Dto2D(p, orig, normal, up):
+def intersectRaySphere(rayOrig, rayDir, sphereOrig=(0., 0., 0.), sphereRadius=1.0,
+                       dtype=None):
+    """Calculate the points which a ray/line intersects a sphere (if any).
+
+    Get the 3D coordinate of the point which the ray intersects the sphere and
+    the distance to the point from `orig`. The nearest point is returned if
+    the line intersects the sphere at multiple locations. All coordinates should
+    be in world/scene units.
+
+    Parameters
+    ----------
+    rayOrig : array_like
+        Origin of the ray in space [x, y, z].
+    rayDir : array_like
+        Direction vector of the ray [x, y, z], should be normalized.
+    sphereOrig : array_like
+        Origin of the sphere to test [x, y, z].
+    sphereRadius : float
+        Sphere radius to test in scene units.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    tuple
+        Coordinate in world space of the intersection and distance in scene
+        units from `orig`. Returns `None` if there is no intersection.
+
+    """
+    # based off example from http://antongerdelan.net/opengl/raycasting.html
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
+
+    rayOrig = np.asarray(rayOrig, dtype=dtype)
+    rayDir = np.asarray(rayDir, dtype=dtype)
+    sphereOrig = np.asarray(sphereOrig, dtype=dtype)
+    sphereRadius = np.asarray(sphereRadius, dtype=dtype)
+
+    d = rayOrig - sphereOrig
+    b = np.dot(rayDir, d)
+    c = np.dot(d, d) - np.square(sphereRadius)
+    b2mc = np.square(b) - c  # determinant
+
+    if b2mc < 0.0:  # no roots, ray does not intersect sphere
+        return None
+
+    u = np.sqrt(b2mc)
+    nearestDist = np.minimum(-b + u, -b - u)
+    pos = (rayDir * nearestDist) + rayOrig
+
+    return pos, nearestDist
+
+
+def intersectRayAABB(rayOrig, rayDir, boundsOffset, boundsExtents, dtype=None):
+    """Find the point a ray intersects an axis-aligned bounding box (AABB).
+
+    Parameters
+    ----------
+    rayOrig : array_like
+        Origin of the ray in space [x, y, z].
+    rayDir : array_like
+        Direction vector of the ray [x, y, z], should be normalized.
+    boundsOffset : array_like
+        Offset of the bounding box in the scene [x, y, z].
+    boundsExtents : array_like
+        Minimum and maximum extents of the bounding box.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    tuple
+        Coordinate in world space of the intersection and distance in scene
+        units from `rayOrig`. Returns `None` if there is no intersection.
+
+    Examples
+    --------
+    Get the point on an axis-aligned bounding box that the cursor is over and
+    place a 3D stimulus there. The eye location is defined by `RigidBodyPose`
+    object `camera`::
+
+        # get the mouse position on-screen
+        mx, my = mouse.getPos()
+
+        # find the point which the ray intersects on the box
+        result = intersectRayAABB(
+            camera.pos,
+            camera.transformNormal(win.coordToRay((mx, my))),
+            myStim.pos,
+            myStim.thePose.bounds.extents)
+
+        # if the ray intersects, set the position of the cursor object to it
+        if result is not None:
+            cursorModel.thePose.pos = result[0]
+            cursorModel.draw()  # don't draw anything if there is no intersect
+
+    Note that if the model is rotated, the bounding box may not be aligned
+    anymore with the axes. Use `intersectRayOBB` if your model rotates.
+
+    """
+    # based of the example provided here:
+    # https://www.scratchapixel.com/lessons/3d-basic-rendering/
+    # minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
+
+    rayOrig = np.asarray(rayOrig, dtype=dtype)
+    rayDir = np.asarray(rayDir, dtype=dtype)
+    boundsOffset = np.asarray(boundsOffset, dtype=dtype)
+    extents = np.asarray(boundsExtents, dtype=dtype) + boundsOffset
+
+    invDir = 1.0 / rayDir
+    sign = np.zeros((3,), dtype=np.int)
+    sign[invDir < 0.0] = 1
+
+    tmin = (extents[sign[0], 0] - rayOrig[0]) * invDir[0]
+    tmax = (extents[1 - sign[0], 0] - rayOrig[0]) * invDir[0]
+    tymin = (extents[sign[1], 1] - rayOrig[1]) * invDir[1]
+    tymax = (extents[1 - sign[1], 1] - rayOrig[1]) * invDir[1]
+
+    if tmin > tymax or tymin > tmax:
+        return None
+
+    if tymin > tmin:
+        tmin = tymin
+
+    if tymax < tmax:
+        tmax = tymax
+
+    tzmin = (extents[sign[2], 2] - rayOrig[2]) * invDir[2]
+    tzmax = (extents[1 - sign[2], 2] - rayOrig[2]) * invDir[2]
+
+    if tmin > tzmax or tzmin > tmax:
+        return None
+
+    if tzmin > tmin:
+        tmin = tzmin
+
+    if tzmax < tmax:
+        tmax = tzmax
+
+    if tmin < 0:
+        if tmax < 0:
+            return None
+
+    return (rayDir * tmin) + rayOrig, tmin
+
+
+def intersectRayOBB(rayOrig, rayDir, modelMatrix, boundsExtents, dtype=None):
+    """Find the point a ray intersects an oriented bounding box (OBB).
+
+    Parameters
+    ----------
+    rayOrig : array_like
+        Origin of the ray in space [x, y, z].
+    rayDir : array_like
+        Direction vector of the ray [x, y, z], should be normalized.
+    modelMatrix : array_like
+        4x4 model matrix of the object and bounding box.
+    boundsExtents : array_like
+        Minimum and maximum extents of the bounding box.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    tuple
+        Coordinate in world space of the intersection and distance in scene
+        units from `rayOrig`. Returns `None` if there is no intersection.
+
+    Examples
+    --------
+    Get the point on an oriented bounding box that the cursor is over and place
+    a 3D stimulus there. The eye location is defined by `RigidBodyPose` object
+    `camera`::
+
+        # get the mouse position on-screen
+        mx, my = mouse.getPos()
+
+        # find the point which the ray intersects on the box
+        result = intersectRayOBB(
+            camera.pos,
+            camera.transformNormal(win.coordToRay((mx, my))),
+            myStim.thePose.getModelMatrix(),
+            myStim.thePose.bounds.extents)
+
+        # if the ray intersects, set the position of the cursor object to it
+        if result is not None:
+            cursorModel.thePose.pos = result[0]
+            cursorModel.draw()  # don't draw anything if there is no intersect
+
+    """
+    # based off algorithm:
+    # http://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/
+    # picking-with-custom-ray-obb-function/
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
+
+    rayOrig = np.asarray(rayOrig, dtype=dtype)
+    rayDir = np.asarray(rayDir, dtype=dtype)
+    modelMatrix = np.asarray(modelMatrix, dtype=dtype)
+    boundsOffset = np.asarray(modelMatrix[:3, 3], dtype=dtype)
+    extents = np.asarray(boundsExtents, dtype=dtype)
+
+    tmin = 0.0
+    tmax = np.finfo(dtype).max
+    d = boundsOffset - rayOrig
+
+    # solve intersects for each pair of planes along each axis
+    for i in range(3):
+        axis = modelMatrix[:3, i]
+        e = np.dot(axis, d)
+        f = np.dot(rayDir, axis)
+
+        if np.fabs(f) > 1e-5:
+            t1 = (e + extents[0, i]) / f
+            t2 = (e + extents[1, i]) / f
+
+            if t1 > t2:
+                temp = t1
+                t1 = t2
+                t2 = temp
+
+            if t2 < tmax:
+                tmax = t2
+
+            if t1 > tmin:
+                tmin = t1
+
+            if tmin > tmax:
+                return None
+
+        else:
+            # very close to parallel with the face
+            if -e + extents[0, i] > 0.0 or -e + extents[1, i] < 0.0:
+                return None
+
+    return (rayDir * tmin) + rayOrig, tmin
+
+
+def intersectRayTriangle(rayOrig, rayDir, tri, dtype=None):
+    """Get the intersection of a ray and signle triangle.
+
+    Parameters
+    ----------
+    rayOrig : array_like
+        Origin of the ray in space [x, y, z].
+    rayDir : array_like
+        Direction vector of the ray [x, y, z], should be normalized.
+    tri : array_like
+        Triangle vertices as 2D (3x3) array [p0, p1, p2] where each vertex is a
+        length 3 array [vx, xy, vz]. The input array can be 3D (Nx3x3) to
+        specify multiple triangles.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    tuple
+        Coordinate in world space of the intersection, distance in scene
+        units from `rayOrig`, and the barycentric coordinates on the triangle
+        [x, y]. Returns `None` if there is no intersection.
+
+    """
+    # based off `intersectRayTriangle` from GLM (https://glm.g-truc.net)
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
+
+    rayOrig = np.asarray(rayOrig, dtype=dtype)
+    rayDir = np.asarray(rayDir, dtype=dtype)
+    triVerts = np.asarray(tri, dtype=dtype)
+
+    edge1 = triVerts[1, :] - triVerts[0, :]
+    edge2 = triVerts[2, :] - triVerts[0, :]
+
+    baryPos = np.zeros((2,), dtype=dtype)
+
+    p = np.cross(rayDir, edge2)
+    det = np.dot(edge1, p)
+
+    if det > np.finfo(dtype).eps:
+        dist = rayOrig - triVerts[0, :]
+
+        baryPos[0] = np.dot(dist, p)
+        if baryPos[0] < 0.0 or baryPos[0] > det:
+            return None
+
+        ortho = np.cross(dist, edge1)
+
+        baryPos[1] = np.dot(rayDir, ortho)
+        if baryPos[1] < 0.0 or baryPos[0] + baryPos[1] > det:
+            return None
+
+    elif det < -np.finfo(dtype).eps:
+        dist = rayOrig - triVerts[0, :]
+
+        baryPos[0] = np.dot(dist, p)
+        if baryPos[0] > 0.0 or baryPos[0] < det:
+            return None
+
+        ortho = np.cross(dist, edge1)
+
+        baryPos[1] = np.dot(rayDir, ortho)
+        if baryPos[1] > 0.0 or baryPos[0] + baryPos[1] < det:
+            return None
+    else:
+        return None
+
+    invDet = 1.0 / det
+    dist = np.dot(edge2, ortho) * invDet
+    baryPos *= invDet
+
+    return (rayDir * dist) + rayOrig, dist, baryPos
+
+
+def ortho3Dto2D(p, orig, normal, up, right=None, dtype=None):
     """Get the planar coordinates of an orthogonal projection of a 3D point onto
     a 2D plane.
+
+    This function gets the nearest point on the plane which a 3D point falls on
+    the plane.
 
     Parameters
     ----------
@@ -1099,6 +1516,13 @@ def ortho3Dto2D(p, orig, normal, up):
     up : array_like
         Normalized up (+Y) direction of the plane's coordinate system. Must be
         perpendicular to `normal`.
+    right : array_like, optional
+        Perpendicular right (+X) axis. If not provided, the axis will be
+        computed via the cross product between `normal` and `up`.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1127,15 +1551,22 @@ def ortho3Dto2D(p, orig, normal, up):
         planeX, planeY = ortho3Dto2D(pnt, planeOrigin, planeNormal, planeUpAxis)
 
     """
-    p = np.asarray(p)
-    orig = np.asarray(orig)
-    normal = np.asarray(normal)
-    up = np.asarray(up)
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
+
+    p = np.asarray(p, dtype=dtype)
+    orig = np.asarray(orig, dtype=dtype)
+    normal = np.asarray(normal, dtype=dtype)
+    up = np.asarray(up, dtype=dtype)
 
     toReturn = np.zeros((2,))
 
     offset = p - orig
-    toReturn[0] = dot(offset, cross(normal, up))  # derive +X axis with cross
+    if right is None:
+        # derive X axis with cross product
+        toReturn[0] = dot(offset, cross(normal, up, dtype=dtype), dtype=dtype)
+    else:
+        toReturn[0] = dot(offset, np.asarray(right, dtype=dtype), dtype=dtype)
+
     toReturn[1] = dot(offset, up)
 
     return toReturn
@@ -1173,9 +1604,9 @@ def slerp(q0, q1, t, shortest=True, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1260,9 +1691,9 @@ def quatToAxisAngle(q, degrees=True, dtype=None):
         Indicate `angle` is to be returned in degrees, otherwise `angle` will be
         returned in radians.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1291,8 +1722,15 @@ def quatToAxisAngle(q, degrees=True, dtype=None):
     dtype = np.float64 if dtype is None else np.dtype(dtype).type
     q = normalize(q, dtype=dtype)  # returns ndarray
     v = np.sqrt(np.sum(np.square(q[:3])))
-    axis = q[:3] / v
-    angle = dtype(2.0) * np.arctan2(v, q[3])
+
+    if np.count_nonzero(q[:3]):
+        axis = q[:3] / v
+        angle = dtype(2.0) * np.arctan2(v, q[3])
+    else:
+        axis = np.zeros((3,), dtype=dtype)
+        axis[0] = 1.
+        angle = 0.0
+
     axis += 0.0
 
     return axis, np.degrees(angle) if degrees else angle
@@ -1313,8 +1751,9 @@ def quatFromAxisAngle(axis, angle, degrees=True, dtype=None):
         Indicate `angle` is in degrees, otherwise `angle` will be treated as
         radians.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, 'float64' is used.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1349,6 +1788,66 @@ def quatFromAxisAngle(axis, angle, degrees=True, dtype=None):
     return toReturn
 
 
+def quatYawPitchRoll(q, degrees=True, out=None, dtype=None):
+    """Get the yaw, pitch, and roll of a quaternion's orientation relative to
+    the world -Z axis.
+
+    You can multiply the quaternion by the inverse of some other one to make the
+    returned values referenced to a local coordinate system.
+
+    Parameters
+    ----------
+    q : tuple, list or ndarray of float
+        Quaternion in form [x, y, z, w] where w is real and x, y, z
+        are imaginary components.
+    degrees : bool, optional
+        Indicate angles are to be returned in degrees, otherwise they will be
+        returned in radians.
+    out : ndarray
+        Optional output array. Must have same `shape` and `dtype` as what is
+        expected to be returned by this function of `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    ndarray
+        Yaw, pitch and roll [yaw, pitch, roll] of quaternion `q`.
+
+    """
+    # based off code found here:
+    # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    # Yields the same results as PsychXR's LibOVRPose.getYawPitchRoll method.
+    dtype = np.float64 if dtype is None else np.dtype(dtype).type
+    q = np.asarray(q, dtype=dtype)
+
+    toReturn = np.zeros((3,), dtype=dtype) if out is None else out
+
+    sinRcosP = 2.0 * (q[3] * q[0] + q[1] * q[2])
+    cosRcosP = 1.0 - 2.0 * (q[0] * q[0] + q[1] * q[1])
+
+    toReturn[0] = np.arctan2(sinRcosP, cosRcosP)
+
+    sinp = 2.0 * (q[3] * q[1] - q[2] * q[0])
+
+    if np.fabs(sinp) >= 1.:
+        toReturn[1] = np.copysign(np.pi / 2., sinp)
+    else:
+        toReturn[1] = np.arcsin(sinp)
+
+    sinYcosP = 2.0 * (q[3] * q[2] + q[0] * q[1])
+    cosYcosP = 1.0 - 2.0 * (q[1] * q[1] + q[2] * q[2])
+
+    toReturn[2] = np.arctan2(sinYcosP, cosYcosP)
+
+    if degrees:
+        toReturn[:] = np.degrees(toReturn[:])
+
+    return toReturn
+
+
 def quatMagnitude(q, squared=False, out=None, dtype=None):
     """Get the magnitude of a quaternion.
 
@@ -1367,9 +1866,9 @@ def quatMagnitude(q, squared=False, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1418,9 +1917,9 @@ def multQuat(q0, q1, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1481,9 +1980,9 @@ def invertQuat(q, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1539,16 +2038,16 @@ def applyQuat(q, points, out=None, dtype=None):
         Quaternion to invert in form [x, y, z, w] where w is real and x, y, z
         are imaginary components.
     points : array_like
-        2D array of points/coordinates to transform, where each row is a single
+        2D array of vectors or points to transform, where each row is a single
         point. Only the x, y, and z components (the first three columns) are
         rotated. Additional columns are copied.
     out : ndarray, optional
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not
-        provided, the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1588,11 +2087,14 @@ def applyQuat(q, points, out=None, dtype=None):
     if out is None:
         dtype = np.float64 if dtype is None else np.dtype(dtype).type
     else:
-        assert points.shape == out.shape
         dtype = np.dtype(out.dtype).type
 
     qin = np.asarray(q, dtype=dtype)
     points = np.asarray(points, dtype=dtype)
+
+    if out is not None:
+        assert points.shape == out.shape
+
     toReturn = np.zeros(points.shape, dtype=dtype) if out is None else out
     pin, pout = np.atleast_2d(points, toReturn)
     pout[:, :] = pin[:, :]  # copy values into output array
@@ -1621,10 +2123,105 @@ def applyQuat(q, points, out=None, dtype=None):
     return toReturn
 
 
-def matrixToQuat(m, out=None, dtype=None):
-    """Convert a 3x3 rotation matrix to a quaternion.
+def alignTo(v, t, out=None, dtype=None):
+    """Compute a quaternion which rotates one vector to align with another.
 
-    Input matrix must be orthogonal and define a pure rotation.
+    Parameters
+    ----------
+    v : array_like
+        Vector [x, y, z] to rotate. Can be Nx3, but must have the same shape as
+        `t`.
+    t : array_like
+        Target [x, y, z] vector to align to. Can be Nx3, but must have the same
+        shape as `v`.
+    out : ndarray, optional
+        Optional output array. Must be same `shape` and `dtype` as the expected
+        output if `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    ndarray
+        Quaternion which rotates `v` to `t`.
+
+    Examples
+    --------
+    Rotate some vectors to align with other vectors, inputs should be
+    normalized::
+
+        vec = [[1, 0, 0], [0, 1, 0], [1, 0, 0]]
+        targets = [[0, 1, 0], [0, -1, 0], [-1, 0, 0]]
+
+        qr = alignTo(vec, targets)
+        vecRotated = applyQuat(qr, vec)
+
+        numpy.allclose(vecRotated, targets)  # True
+
+    Get matrix which orients vertices towards a point::
+
+        point = [5, 6, 7]
+        vec = [0, 0, -1]  # initial facing is -Z (forward in GL)
+
+        targetVec = normalize(point - vec)
+        qr = alignTo(vec, targetVec)  # get rotation to align
+
+        M = quatToMatrix(qr)  # 4x4 transformation matrix
+
+    """
+    # based off Quaternion::align from Quaternion.hpp from OpenMP
+    if out is None:
+        dtype = np.float64 if dtype is None else np.dtype(dtype).type
+    else:
+        dtype = np.dtype(out.dtype).type
+
+    v = normalize(v, dtype=dtype)
+    t = normalize(t, dtype=dtype)
+
+    if out is None:
+        if v.ndim == 1:
+            toReturn = np.zeros((4,), dtype=dtype)
+        else:
+            toReturn = np.zeros((v.shape[0], 4), dtype=dtype)
+    else:
+        toReturn = out
+
+    qr, v2d, t2d = np.atleast_2d(toReturn, v,t)
+
+    b = bisector(v2d, t2d, norm=True, dtype=dtype)
+    cosHalfAngle = dot(v2d, b, dtype=dtype)
+
+    nonparallel = cosHalfAngle > 0.0 # rotation is not 180 degrees
+    qr[nonparallel, :3] = cross(v2d[nonparallel], b[nonparallel], dtype=dtype)
+    qr[nonparallel, 3] = cosHalfAngle[nonparallel]
+
+    if np.alltrue(nonparallel):  # don't bother handling special cases
+        return toReturn + 0.0
+
+    # deal with cases where the vectors are facing exact opposite directions
+    ry = np.logical_and(np.abs(v2d[:, 0]) >= np.abs(v2d[:, 1]), ~nonparallel)
+    rx = np.logical_and(~ry, ~nonparallel)
+
+    getLength = lambda x, y: np.sqrt(x * x + y * y)
+    if not np.alltrue(rx):
+        invLength = getLength(v2d[ry, 0], v2d[ry, 2])
+        invLength = np.where(invLength > 0.0, 1.0 / invLength, invLength)  # avoid x / 0
+        qr[ry, 0] = -v2d[ry, 2] * invLength
+        qr[ry, 2] = v2d[ry, 0] * invLength
+
+    if not np.alltrue(ry):  # skip if all the same edge case
+        invLength = getLength(v2d[rx, 1], v2d[rx, 2])
+        invLength = np.where(invLength > 0.0, 1.0 / invLength, invLength)
+        qr[rx, 1] = v2d[rx, 2] * invLength
+        qr[rx, 2] = -v2d[rx, 1] * invLength
+
+    return toReturn + 0.0
+
+
+def matrixToQuat(m, out=None, dtype=None):
+    """Convert a rotation matrix to a quaternion.
 
     Parameters
     ----------
@@ -1636,14 +2233,50 @@ def matrixToQuat(m, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not
-        provided, the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
     ndarray
         Rotation quaternion.
+
+    Notes
+    -----
+    * Depending on the input, returned quaternions may not be exactly the same
+      as the one used to construct the rotation matrix (i.e. by calling
+      `quatToMatrix`), typically when a large rotation angle is used. However,
+      the returned quaternion should result in the same rotation when applied to
+      points.
+
+    Examples
+    --------
+    Converting a rotation matrix from the OpenGL matrix stack to a quaternion::
+
+        glRotatef(45., -1, 0, 0)
+
+        m = np.zeros((4, 4), dtype='float32')  # store the matrix
+        GL.glGetFloatv(
+            GL.GL_MODELVIEW_MATRIX,
+            m.ctypes.data_as(ctypes.POINTER(ctypes.c_float)))
+
+        qr = matrixToQuat(m.T)  # must be transposed
+
+    Interpolation between two 4x4 transformation matrices::
+
+        interpWeight = 0.5
+
+        posStart = mStart[:3, 3]
+        oriStart = matrixToQuat(mStart)
+
+        posEnd = mEnd[:3, 3]
+        oriEnd = matrixToQuat(mEnd)
+
+        oriInterp = slerp(qStart, qEnd, interpWeight)
+        posInterp = lerp(posStart, posEnd, interpWeight)
+
+        mInterp = posOriToMatrix(posInterp, oriInterp)
 
     """
     # based off example `Maths - Conversion Matrix to Quaternion` from
@@ -1677,7 +2310,7 @@ def matrixToQuat(m, out=None, dtype=None):
         toReturn[0] = dtype(0.25) * s
         toReturn[1] = (m[0, 1] + m[1, 0]) / s
         toReturn[2] = (m[0, 2] + m[2, 0]) / s
-    elif m[0, 0] > m[2, 2]:
+    elif m[1, 1] > m[2, 2]:
         s = np.sqrt(dtype(1.0) + m[1, 1] - m[0, 0] - m[2, 2]) * dtype(2.0)
         toReturn[3] = (m[0, 2] - m[2, 0]) / s
         toReturn[0] = (m[0, 1] + m[1, 0]) / s
@@ -1709,9 +2342,9 @@ def quatToMatrix(q, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1788,9 +2421,9 @@ def scaleMatrix(s, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1803,7 +2436,7 @@ def scaleMatrix(s, out=None, dtype=None):
         dtype = np.float64 if dtype is None else np.dtype(dtype).type
         S = np.zeros((4, 4,), dtype=dtype)
     else:
-        dtype = out.dtype
+        dtype = np.dtype(out.dtype).type
         S = out
         S.fill(0.0)
 
@@ -1835,9 +2468,9 @@ def rotationMatrix(angle, axis=(0., 0., -1.), out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1854,7 +2487,7 @@ def rotationMatrix(angle, axis=(0., 0., -1.), out=None, dtype=None):
         dtype = np.float64 if dtype is None else np.dtype(dtype).type
         R = np.zeros((4, 4,), dtype=dtype)
     else:
-        dtype = out.dtype
+        dtype = np.dtype(out.dtype).type
         R = out
         R.fill(0.0)
 
@@ -1902,9 +2535,9 @@ def translationMatrix(t, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1917,7 +2550,7 @@ def translationMatrix(t, out=None, dtype=None):
         dtype = np.float64 if dtype is None else np.dtype(dtype).type
         T = np.identity(4, dtype=dtype)
     else:
-        dtype = out.dtype
+        dtype = np.dtype(out.dtype).type
         T = out
         T.fill(0.0)
         np.fill_diagonal(T, 1.0)
@@ -1936,15 +2569,15 @@ def invertMatrix(m, homogeneous=False, out=None, dtype=None):
         4x4 matrix to invert.
     homogeneous : bool, optional
         Set as ``True`` if the input matrix specifies affine (homogeneous)
-        transformations (scale, rotation, and translation). This will use a
-        faster inverse method which handles such cases. Default is ``False``.
+        transformations (rotation and translation only). This will use a faster
+        inverse method which handles such cases. Default is ``False``.
     out : ndarray, optional
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not
-        specified, the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -1964,7 +2597,7 @@ def invertMatrix(m, homogeneous=False, out=None, dtype=None):
     assert m.shape == (4, 4,)
 
     if not homogeneous:
-        if not isOrthogonal(m):
+        if not isOrthogonal(m[:3, :3]):
             toReturn[:, :] = np.linalg.inv(m)
         else:
             toReturn[:, :] = m.T
@@ -2001,9 +2634,9 @@ def concatenate(matrices, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -2030,7 +2663,7 @@ def concatenate(matrices, out=None, dtype=None):
     orientation (quaternion) and position (vector). The resulting matrix will
     transform model-space coordinates to eye-space::
 
-        # stimulus pose as quaternion and vector
+        # eye pose as quaternion and vector
         stimOri = quatFromAxisAngle([0., 0., -1.], -45.0)
         stimPos = [0., 1.5, -5.]
 
@@ -2095,6 +2728,87 @@ def concatenate(matrices, out=None, dtype=None):
     return toReturn
 
 
+def matrixFromEulerAngles(rx, ry, rz, degrees=True, out=None, dtype=None):
+    """Construct a 4x4 rotation matrix from Euler angles.
+
+    Rotations are combined by first rotating about the X axis, then Y, and
+    finally Z.
+
+    Parameters
+    ----------
+    rx, ry, rz : float
+        Rotation angles (pitch, yaw, and roll).
+    degrees : bool, optional
+        Rotation angles are specified in degrees. If `False`, they will be
+        assumed as radians. Default is `True`.
+    out : ndarray, optional
+        Optional output array. Must be same `shape` and `dtype` as the expected
+        output if `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    ndarray
+        4x4 rotation matrix.
+
+    Examples
+    --------
+    Demonstration of how a combination of axis-angle rotations is equivalent
+    to a single call of `matrixFromEulerAngles`::
+
+        m1 = matrixFromEulerAngles(90., 45., 135.))
+
+        # construct rotation matrix from 3 orthogonal rotations
+        rx = rotationMatrix(90., (1, 0, 0))  # x-axis
+        ry = rotationMatrix(45., (0, 1, 0))  # y-axis
+        rz = rotationMatrix(135., (0, 0, 1))  # z-axis
+        m2 = concatenate([rz, ry, rx])  # note the order
+
+        print(numpy.allclose(m1, m2))  # True
+
+    Not only does `matrixFromEulerAngles` require less code, it also is
+    considerably more efficient than constructing and multiplying multiple
+    matrices.
+
+    """
+    # from http://www.j3d.org/matrix_faq/matrfaq_latest.html
+    if out is None:
+        dtype = np.float64 if dtype is None else np.dtype(dtype).type
+        toReturn = np.zeros((4, 4,), dtype=dtype)
+    else:
+        dtype = np.dtype(dtype).type
+        toReturn = out
+        toReturn.fill(0.0)
+
+    angles = np.asarray([rx, ry, rz], dtype=dtype)
+    if degrees:
+        angles = np.radians(angles)
+
+    a, c, e = np.cos(angles)
+    b, d, f = np.sin(angles)
+    ad = a * d
+    bd = b * d
+
+    toReturn[0, 0] = c * e
+    toReturn[0, 1] = -c * f
+    toReturn[0, 2] = d
+    toReturn[1, 0] = bd * e + a * f
+    toReturn[1, 1] = -bd * f + a * e
+    toReturn[1, 2] = -b * c
+    toReturn[2, 0] = -ad * e + b * f
+    toReturn[2, 1] = ad * f + b * e
+    toReturn[2, 2] = a * c
+    toReturn[3, 3] = 1.0
+
+    # very small, make zero
+    toReturn[np.abs(toReturn) <= np.finfo(dtype).eps] = 0.0
+
+    return toReturn
+
+
 def isOrthogonal(m):
     """Check if a square matrix is orthogonal.
 
@@ -2113,16 +2827,15 @@ def isOrthogonal(m):
         `True` if the matrix is orthogonal.
 
     """
-    assert 2 <= m.shape[0] <= 4
-    assert m.shape[0] == m.shape[1]
-
     if not isinstance(m, (np.ndarray,)):
         m = np.asarray(m)
 
+    assert 2 <= m.shape[0] <= 4
+    assert m.shape[0] == m.shape[1]
+
     dtype = np.dtype(m.dtype).type
-    eps = np.finfo(dtype).eps
-    return np.all(
-        np.abs(np.matmul(m, m.T) - np.identity(m.shape[0], dtype)) < eps)
+    return np.allclose(np.matmul(m.T, m, dtype=dtype),
+                       np.identity(m.shape[0], dtype))
 
 
 def isAffine(m):
@@ -2139,7 +2852,6 @@ def isAffine(m):
         `True` if the matrix is affine.
 
     """
-    assert 2 <= m.shape[0] <= 4
     assert m.shape[0] == m.shape[1]
 
     if not isinstance(m, (np.ndarray,)):
@@ -2177,9 +2889,9 @@ def applyMatrix(m, points, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -2311,9 +3023,9 @@ def posOriToMatrix(pos, ori, out=None, dtype=None):
         Optional output array. Must be same `shape` and `dtype` as the expected
         output if `out` was not specified.
     dtype : dtype or str, optional
-        Data type for arrays, can either be 'float32' or 'float64'. If `None` is
-        specified, the data type is inferred by `out`. If `out` is not provided,
-        the default is 'float64'.
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -2331,7 +3043,7 @@ def posOriToMatrix(pos, ori, out=None, dtype=None):
     transMat = translationMatrix(pos, dtype=dtype)
     rotMat = quatToMatrix(ori, dtype=dtype)
 
-    return np.matmul(rotMat, transMat, out=toReturn)
+    return np.matmul(transMat, rotMat, out=toReturn)
 
 
 def transform(pos, ori, points, out=None, dtype=None):
@@ -2352,8 +3064,8 @@ def transform(pos, ori, points, out=None, dtype=None):
         output if `out` was not specified.
     dtype : dtype or str, optional
         Data type for computations can either be 'float32' or 'float64'. If
-        `None` is specified, the data type of `out` is used. If `out` is not
-        provided, 'float64' is used by default.
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
 
     Returns
     -------
@@ -2421,3 +3133,89 @@ def transform(pos, ori, points, out=None, dtype=None):
     pout[:, 2] += pos2d[:, 2]
 
     return toReturn
+
+
+# ------------------------------------------------------------------------------
+# Misc. Math Functions
+#
+
+def lensCorrection(xys, coefK=(1.0,), distCenter=(0., 0.), out=None, dtype=None):
+    """Lens correction (or distortion) using the division model with even
+    polynomial terms.
+
+    Calculate new vertex positions or texture coordinates to apply radial
+    warping, such as 'pincushion' and 'barrel' distortion. This is to compensate
+    for optical distortion introduced by lenses placed in the optical path of
+    the viewer and the display (such as in an HMD).
+
+    Parameters
+    ----------
+    xys : array_like
+        Nx2 list of vertex positions or texture coordinates to distort. Works
+        correctly only if input values range between -1.0 and 1.0.
+    coefK : array_like or float
+        Distortion coefficients K_n. Specifying multiple values will add more
+        polynomial terms to the distortion formula. Positive values will produce
+        'barrel' distortion, whereas negative will produce 'pincushion'
+        distortion. In most cases, two or three coefficients are adequate,
+        depending on the degree of distortion.
+    distCenter : array_like, optional
+        X and Y coordinate of the distortion center (eg. (0.2, -0.4)).
+    out : ndarray, optional
+        Optional output array. Must be same `shape` and `dtype` as the expected
+        output if `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    ndarray
+        Array of distorted vertices.
+
+    Notes
+    -----
+    * At this time tangential distortion (i.e. due to a slant in the display)
+      cannot be corrected for.
+
+    References
+    ----------
+    .. [1] Fitzgibbon, W. (2001). Simultaneous linear estimation of multiple
+       view geometry and lens distortion. Proceedings of the 2001 IEEE Computer
+       Society Conference on Computer Vision and Pattern Recognition (CVPR).
+       IEEE.
+
+    Examples
+    --------
+    Creating a lens correction mesh with barrel distortion (eg. for HMDs)::
+
+        vertices, textureCoords, normals, faces = gltools.createMeshGrid(
+            subdiv=11, tessMode='center')
+
+        # recompute vertex positions
+        vertices[:, :2] = mt.lensCorrection(vertices[:, :2], coefK=(5., 5.))
+
+    """
+    if out is None:
+        dtype = np.float64 if dtype is None else np.dtype(dtype).type
+    else:
+        dtype = np.dtype(dtype).type
+
+    if isinstance(coefK, (float, int,)):
+        coefK = (coefK,)
+
+    xys = np.asarray(xys, dtype=dtype)
+    coefK = np.asarray(coefK, dtype=dtype)
+
+    d_minus_c = xys - np.asarray(distCenter, dtype=dtype)
+    r = np.power(length(d_minus_c, dtype=dtype)[:, np.newaxis],
+                 np.arange(len(coefK), dtype=dtype) * 2. + 2.)
+
+    toReturn = np.zeros_like(xys, dtype=dtype) if out is None else out
+
+    denom = dtype(1.0) + dot(coefK, r, dtype=dtype)
+    toReturn[:, :] = xys + (d_minus_c / denom[:, np.newaxis])
+
+    return toReturn
+
