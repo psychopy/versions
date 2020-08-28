@@ -190,6 +190,8 @@ class Experiment(object):
                 self_copy._currentRoutine = entry
                 if hasattr(entry, 'writeRunOnceInitCode'):
                     entry.writeRunOnceInitCode(script)
+                if hasattr(entry, 'writePreCode'):
+                    entry.writePreCode(script)
             script.write("\n\n")
 
             # present info, make logfile
@@ -831,6 +833,17 @@ class Experiment(object):
                         # then check if it's a valid path
                         if thisFile:
                             resources.append(thisFile)
+
+        # Add files from additional resources box
+        val = self.settings.params['Resources'].val
+        for thisEntry in val:
+            thisFile = getPaths(thisEntry)
+            if thisFile:
+                resources.append(thisFile)
+        # Check for any resources not in experiment path
+        for res in resources:
+            if srcRoot not in res['abs']:
+                psychopy.logging.warning("{} is not in the experiment path and so will not be copied to Pavlovia".format(res['rel']))
 
         return resources
 

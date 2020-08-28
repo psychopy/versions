@@ -257,6 +257,7 @@ class MovieComponent(BaseVisualComponent):
         self.writeStartTestCodeJS(buff)
 
         buff.writeIndentedLines("{name}.setAutoDraw(true);\n".format(**self.params))
+        buff.writeIndentedLines("{name}.play();\n".format(**self.params))
         # because of the 'if' statement of the time test
         buff.setIndentLevel(-1, relative=True)
         buff.writeIndented("}\n\n")
@@ -284,3 +285,11 @@ class MovieComponent(BaseVisualComponent):
                     "    continueRoutine = false;\n"
                     "}}\n".format(**self.params))
             buff.writeIndentedLines(code)
+
+    def writeRoutineEndCode(self, buff):
+        # always stop at the end of the routine. (should this be a param?)
+        buff.writeIndentedLines("{name}.stop()\n".format(**self.params))
+
+    def writeRoutineEndCodeJS(self, buff):
+        # always stop at the end of the routine. (should this be a param?)
+        buff.writeIndentedLines("{name}.stop();\n".format(**self.params))

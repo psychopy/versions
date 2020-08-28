@@ -152,7 +152,7 @@ class Param(object):
                 return "%i" % self.val  # int and float -> str(int)
             except TypeError:
                 return "{}".format(self.val)  # try array of float instead?
-        elif self.valType == 'str':
+        elif self.valType in ['extendedStr','str']:
             # at least 1 non-escaped '$' anywhere --> code wanted
             # return str if code wanted
             # return repr if str wanted; this neatly handles "it's" and 'He
@@ -197,8 +197,13 @@ class Param(object):
             return "%s" %(toList(self.val))
         elif self.valType == 'fixedList':
             return "{}".format(self.val)
+        elif self.valType == 'fileList':
+            return "{}".format(self.val)
         elif self.valType == 'bool':
-            return "%s" % self.val
+            if utils.scriptTarget == "PsychoJS":
+                return ("%s" % self.val).lower()  # make True -> "true"
+            else:
+                return "%s" % self.val
         else:
             raise TypeError("Can't represent a Param of type %s" %
                             self.valType)
@@ -247,6 +252,8 @@ def toList(val):
     -------
     A list of entries in the string value
     """
+    if type(val) == list:
+        return val  # already a list. Nothing to do
     # we really just need to check if they need parentheses
     stripped = val.strip()
     if utils.scriptTarget == "PsychoJS":
