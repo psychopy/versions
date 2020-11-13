@@ -415,32 +415,32 @@ class MouseComponent(BaseComponent):
         # write param checking code
         if (self.params['saveMouseState'].val == 'on click'
                 or forceEnd in ['any click', 'valid click']):
-            code = ("let buttons = %(name)s.getPressed();\n")
+            code = ("_mouseButtons = %(name)s.getPressed();\n")
             buff.writeIndentedLines(code % self.params)
             # buff.setIndentLevel(1, relative=True)
             # dedentAtEnd += 1
-            code = "if (!buttons.every( (e,i,) => (e == prevButtonState[i]) )) { // button state changed?\n"
+            code = "if (!_mouseButtons.every( (e,i,) => (e == prevButtonState[i]) )) { // button state changed?\n"
             buff.writeIndented(code)
             buff.setIndentLevel(1, relative=True)
             dedentAtEnd += 1
-            buff.writeIndented("prevButtonState = buttons;\n")
-            code = ("if (buttons.reduce( (e, acc) => (e+acc) ) > 0) { // state changed to a new click\n")
+            buff.writeIndented("prevButtonState = _mouseButtons;\n")
+            code = ("if (_mouseButtons.reduce( (e, acc) => (e+acc) ) > 0) { // state changed to a new click\n")
             buff.writeIndentedLines(code % self.params)
             buff.setIndentLevel(1, relative=True)
             dedentAtEnd += 1
 
         elif self.params['saveMouseState'].val == 'every frame':
-            code = "let buttons = %(name)s.getPressed();\n" % self.params
+            code = "_mouseButtons = %(name)s.getPressed();\n" % self.params
             buff.writeIndented(code)
 
         # only do this if buttons were pressed
         if self.params['saveMouseState'].val in ['on click', 'every frame']:
-            code = ("const xys = %(name)s.getPos();\n"
-                    "%(name)s.x.push(xys[0]);\n"
-                    "%(name)s.y.push(xys[1]);\n"
-                    "%(name)s.leftButton.push(buttons[0]);\n"
-                    "%(name)s.midButton.push(buttons[1]);\n"
-                    "%(name)s.rightButton.push(buttons[2]);\n" %
+            code = ("_mouseXYs = %(name)s.getPos();\n"
+                    "%(name)s.x.push(_mouseXYs[0]);\n"
+                    "%(name)s.y.push(_mouseXYs[1]);\n"
+                    "%(name)s.leftButton.push(_mouseButtons[0]);\n"
+                    "%(name)s.midButton.push(_mouseButtons[1]);\n"
+                    "%(name)s.rightButton.push(_mouseButtons[2]);\n" %
                     self.params)
             code += ("%s.time.push(%s.getTime());\n" % (self.params['name'], self.clockStr))
             buff.writeIndentedLines(code)
@@ -584,16 +584,16 @@ class MouseComponent(BaseComponent):
 
         if store == 'final':
 
-            code = ("const xys = {name}.getPos();\n"
-                    "const buttons = {name}.getPressed();\n")
+            code = ("_mouseXYs = {name}.getPos();\n"
+                    "_mouseButtons = {name}.getPressed();\n")
 
             if currLoop.type != 'StairHandler':
                 code += (
-                    "psychoJS.experiment.addData('{name}.x', xys[0]);\n"
-                    "psychoJS.experiment.addData('{name}.y', xys[1]);\n"
-                    "psychoJS.experiment.addData('{name}.leftButton', buttons[0]);\n"
-                    "psychoJS.experiment.addData('{name}.midButton', buttons[1]);\n"
-                    "psychoJS.experiment.addData('{name}.rightButton', buttons[2]);\n"
+                    "psychoJS.experiment.addData('{name}.x', _mouseXYs[0]);\n"
+                    "psychoJS.experiment.addData('{name}.y', _mouseXYs[1]);\n"
+                    "psychoJS.experiment.addData('{name}.leftButton', _mouseButtons[0]);\n"
+                    "psychoJS.experiment.addData('{name}.midButton', _mouseButtons[1]);\n"
+                    "psychoJS.experiment.addData('{name}.rightButton', _mouseButtons[2]);\n"
                 )
                 buff.writeIndentedLines(code.format(name=name))
 

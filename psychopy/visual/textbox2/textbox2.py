@@ -131,12 +131,14 @@ class TextBox2(BaseVisualStim, ContainerMixin, ColorMixin):
         self.opacity = opacity
         self.onTextCallback = onTextCallback
 
+        if units=='norm':
+            raise NotImplemented("TextBox2 doesn't support 'norm' units at the "
+                                 "moment. Use 'height' units instead")
         # first set params needed to create font (letter sizes etc)
         if letterHeight is None:
             self.letterHeight = defaultLetterHeight[self.units]
         else:
             self.letterHeight = letterHeight
-
         # self._pixLetterHeight helps get font size right but not final layout
         if 'deg' in self.units:  # treat deg, degFlat or degFlatPos the same
             scaleUnits = 'deg'  # scale units are just for font resolution
@@ -152,7 +154,7 @@ class TextBox2(BaseVisualStim, ContainerMixin, ColorMixin):
         self.italic = italic
         self.lineSpacing = lineSpacing
         if padding is None:
-            padding = letterHeight / 2.0
+            padding = self.letterHeight / 2.0
         self.padding = padding
         self.glFont = None  # will be set by the self.font attribute setter
         self.font = font
@@ -207,7 +209,7 @@ class TextBox2(BaseVisualStim, ContainerMixin, ColorMixin):
                 'fillRGB': self.box.fillRGB
         }
         # then layout the text (setting text triggers _layout())
-        self.text = text
+        self.text = text if text is not None else ""
 
         # caret
         self.editable = editable
