@@ -218,7 +218,7 @@ class CodeSnippetValidator(BaseValidator):
                             eval(code)
                         except NameError as e:
                             _highlightParamVal(parent, True)
-                            msg = _translate("Looks like your variable '{code}' in '{displayName}' should be set to update.")
+                            msg = _translate(f"Looks like your variable '{code}' in '{self.displayName}' should be set to update.")
                             msg = msg.format(code=code, displayName=self.displayName)
                         except SyntaxError as e:
                             msg = ''
@@ -240,7 +240,7 @@ class CodeSnippetValidator(BaseValidator):
 
                     for newName in names:
                         namespace = parent.frame.exp.namespace
-                        if newName in namespace.user or newName in namespace.builder:
+                        if newName in [*namespace.user, *namespace.builder, *namespace.constants]:
                             continue
                         used = namespace.exists(newName)
                         sameAsOldName = bool(newName == parent.params['name'].val)
