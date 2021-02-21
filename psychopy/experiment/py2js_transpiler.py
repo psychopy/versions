@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2020 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import ast
@@ -244,7 +244,7 @@ def transformPsychoJsCode(psychoJsCode, addons):
         """
 
     if 'pad' in addons:
-        transformedPsychoJSCode += """
+        transformedPsychoJSCode += r"""
         // add-on: pad(n: number, width: number): string
         function pad(n, width) {
             width = width || 2;

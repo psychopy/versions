@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2020 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import, print_function
@@ -17,6 +17,8 @@ from os import path
 from psychopy.constants import PY3
 from psychopy.experiment.components import BaseComponent, Param, _translate
 from psychopy.experiment import CodeGenerationException, valid_var_re
+from psychopy.localization import _localized as __localized
+_localized = __localized.copy()
 from pkgutil import find_loader
 
 # Check for psychtoolbox
@@ -28,13 +30,13 @@ iconFile = path.join(thisFolder, 'keyboard.png')
 tooltip = _translate('Keyboard: check and record keypresses')
 
 # only use _localized values for label values, nothing functional:
-_localized = {'allowedKeys': _translate('Allowed keys'),
-              'discard previous': _translate('Discard previous'),
-              'store': _translate('Store'),
-              'forceEndRoutine': _translate('Force end of Routine'),
-              'storeCorrect': _translate('Store correct'),
-              'correctAns': _translate('Correct answer'),
-              'syncScreenRefresh': _translate('Sync timing with screen')}
+_localized.update({'allowedKeys': _translate('Allowed keys'),
+                   'discard previous': _translate('Discard previous'),
+                   'store': _translate('Store'),
+                   'forceEndRoutine': _translate('Force end of Routine'),
+                   'storeCorrect': _translate('Store correct'),
+                   'correctAns': _translate('Correct answer'),
+                   'syncScreenRefresh': _translate('Sync timing with screen')})
 
 
 class KeyboardComponent(BaseComponent):
@@ -58,20 +60,22 @@ class KeyboardComponent(BaseComponent):
             startEstim=startEstim, durationEstim=durationEstim)
 
         self.type = 'Keyboard'
-        self.url = "http://www.psychopy.org/builder/components/keyboard.html"
+        self.url = "https://www.psychopy.org/builder/components/keyboard.html"
         self.exp.requirePsychopyLibs(['gui'])
 
         # params
 
         # NB name and timing params always come 1st
-        self.order = ['forceEndRoutine', 'allowedKeys', 'store',
-                      'storeCorrect', 'correctAns']
+        self.order += ['forceEndRoutine',  # Basic tab
+                       'allowedKeys', 'store', 'storeCorrect', 'correctAns'  # Data tab
+                       ]
 
         msg = _translate(
             "A comma-separated list of keys (with quotes), such as "
             "'q','right','space','left'")
         self.params['allowedKeys'] = Param(
-            allowedKeys, valType='code', allowedTypes=[],
+            allowedKeys, valType='list', inputType="single", allowedTypes=[],
+            categ='Basic',
             updates='constant',
             allowedUpdates=['constant', 'set every repeat'],
             hint=(msg),
@@ -82,7 +86,7 @@ class KeyboardComponent(BaseComponent):
         msg = _translate("Do you want to discard all responses occuring "
                          "before the onset of this component?")
         self.params['discard previous'] = Param(
-            discardPrev, valType='bool', allowedTypes=[],
+            discardPrev, valType='bool', inputType="bool", allowedTypes=[], categ='Data',
             updates='constant',
             hint=msg,
             label=_localized['discard previous'])
@@ -90,7 +94,7 @@ class KeyboardComponent(BaseComponent):
         msg = _translate("Choose which (if any) responses to store at the "
                          "end of a trial")
         self.params['store'] = Param(
-            store, valType='str', allowedTypes=[],
+            store, valType='str', inputType="choice", allowedTypes=[], categ='Data',
             allowedVals=['last key', 'first key', 'all keys', 'nothing'],
             updates='constant',
             hint=msg,
@@ -99,7 +103,7 @@ class KeyboardComponent(BaseComponent):
         msg = _translate("Should a response force the end of the Routine "
                          "(e.g end the trial)?")
         self.params['forceEndRoutine'] = Param(
-            forceEndRoutine, valType='bool', allowedTypes=[],
+            forceEndRoutine, valType='bool', inputType="bool", allowedTypes=[], categ='Basic',
             updates='constant',
             hint=msg,
             label=_localized['forceEndRoutine'])
@@ -107,7 +111,7 @@ class KeyboardComponent(BaseComponent):
         msg = _translate("Do you want to save the response as "
                          "correct/incorrect?")
         self.params['storeCorrect'] = Param(
-            storeCorrect, valType='bool', allowedTypes=[],
+            storeCorrect, valType='bool', inputType="bool", allowedTypes=[], categ='Data',
             updates='constant',
             hint=msg,
             label=_localized['storeCorrect'])
@@ -117,7 +121,7 @@ class KeyboardComponent(BaseComponent):
             "correctAns column and use $correctAns to compare to the key "
             "press.")
         self.params['correctAns'] = Param(
-            correctAns, valType='str', allowedTypes=[],
+            correctAns, valType='list', inputType="single", allowedTypes=[], categ='Data',
             updates='constant',
             hint=msg,
             label=_localized['correctAns'])
@@ -126,7 +130,7 @@ class KeyboardComponent(BaseComponent):
             "A reaction time to a visual stimulus should be based on when "
             "the screen flipped")
         self.params['syncScreenRefresh'] = Param(
-            syncScreenRefresh, valType='bool',
+            syncScreenRefresh, valType='bool', inputType="bool", categ='Data',
             updates='constant',
             hint=msg,
             label=_localized['syncScreenRefresh'])
@@ -158,7 +162,7 @@ class KeyboardComponent(BaseComponent):
         store = self.params['store'].val
         storeCorr = self.params['storeCorrect'].val
         forceEnd = self.params['forceEndRoutine'].val
-        allowedKeys = self.params['allowedKeys'].val.strip()
+        allowedKeys = str(self.params['allowedKeys'])
         visualSync = self.params['syncScreenRefresh'].val
 
         buff.writeIndented("\n")

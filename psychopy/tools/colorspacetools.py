@@ -2,15 +2,24 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2020 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
-"""Functions and classes related to color space conversion.
+"""Tools related to working with various color spaces.
+
+The routines provided in the module are used to transform color coordinates
+between spaces. Most of the functions here are *vectorized*, allowing for array
+inputs to convert multiple color values at once.
+
+**As of version 2021.0 of PsychoPy**, users ought to use the
+:class:`~psychopy.colors.Color` class for working with color coordinate values.
+
 """
 from __future__ import absolute_import, division, print_function
 
 __all__ = ['srgbTF', 'rec709TF', 'cielab2rgb', 'cielch2rgb', 'dkl2rgb',
-           'dklCart2rgb', 'rgb2dklCart', 'hsv2rgb', 'rgb2lms', 'lms2rgb']
+           'dklCart2rgb', 'rgb2dklCart', 'hsv2rgb', 'rgb2lms', 'lms2rgb',
+           'rgb2hsv', 'rescaleColor']
 
 from past.utils import old_div
 import numpy
@@ -54,6 +63,69 @@ def unpackColors(colors):  # used internally, not exported by __all__
             "Invalid input dimensions or shape for input colors.")
 
     return colors, orig_shape, orig_dim
+
+
+def rescaleColor(rgb, convertTo='signed', clip=False):
+    """Rescale RGB colors.
+
+    This function can be used to convert RGB value triplets from the PsychoPy
+    signed color format to the normalized OpenGL format.
+
+    PsychoPy represents colors using values between -1 and 1. However, colors
+    are commonly represented using values between 0 and 1 when working with
+    OpenGL and various other contexts. This function simply rescales values to
+    switch between these formats.
+
+    Parameters
+    ----------
+    rgb : `array_like`
+        1-, 2-, 3-D vector of RGB coordinates to convert. The last dimension
+        should be length-3 in all cases, specifying a single coordinate.
+    convertTo : `str`
+        If 'signed', this function will assume `rgb` is in OpenGL format [0:1]
+        and rescale them to PsychoPy's format [-1:1]. If 'unsigned', input
+        values are treated as OpenGL format and will be rescaled to use
+        PsychoPy's. Default is 'signed'.
+    clip : bool
+        Clip values to the range that can be represented on a display. This is
+        an optional step. Default is `False`.
+
+    Returns
+    -------
+    ndarray
+        Rescaled values with the same shape as `rgb`.
+
+    Notes
+    -----
+    The `convertTo` argument also accepts strings 'opengl' and 'psychopy'
+    as substitutes for 'signed' and 'unsigned', respectively. This might be more
+    explicit in some contexts.
+
+    Examples
+    --------
+    Convert a signed RGB value to unsigned format::
+
+        rgb_signed = [-1, 0, 1]
+        rgb_unsigned = rescaleColor(rgb_signed, convertTo='unsigned')
+
+    """
+    # While pretty simple, this operation is done often enough to justify having
+    # its own function to avoid writing it out all the time. It also explicitly
+    # shows the direction of which values are being rescaled to make code more
+    # readable.
+
+    if convertTo == 'signed' or convertTo == 'psychopy':
+        rgb_out = rgb * 2 - 1   # from OpenGL to PsychoPy format
+    elif convertTo == 'unsigned' or convertTo == 'opengl':
+        rgb_out = (rgb + 1) / 2.  # from PsychoPy to OpenGL
+    else:
+        raise ValueError("Invalid value for `convertTo`, can either be "
+                         "'signed' or 'unsigned'.")
+
+    if clip:
+        rgb_out = numpy.clip(rgb_out, -1 if convertTo == 'signed' else 0, 1)
+
+    return rgb_out
 
 
 def srgbTF(rgb, reverse=False, **kwargs):
@@ -253,7 +325,7 @@ def cielab2rgb(lab,
     elif orig_dim == 3:
         rgb_out = numpy.reshape(rgb_out, orig_shape)
 
-    return rgb_out * 2.0 - 1.0
+    return rescaleColor(rgb_out, convertTo='psychopy')
 
 
 def cielch2rgb(lch,
@@ -397,6 +469,92 @@ def dklCart2rgb(LUM, LM, S, conversionMatrix=None):
     return numpy.reshape(numpy.transpose(rgb), NxNx3)
 
 
+def rgb2hsv(rgb):
+    """Convert values from linear RGB to HSV colorspace.
+
+    Parameters
+    ----------
+    rgb : `array_like`
+        1-, 2-, 3-D vector of RGB coordinates to convert. The last dimension
+        should be length-3 in all cases, specifying a single coordinate.
+
+    Returns
+    -------
+    ndarray
+        HSV values with the same shape as the input.
+
+    """
+    # Based on https://www.geeksforgeeks.org/program-change-rgb-color-model-hsv-color-model/
+    rgb, orig_shape, orig_dim = unpackColors(rgb)
+
+    # need to rescale RGB values to 0.0 and 1.0
+    rgb = rescaleColor(rgb, convertTo='unsigned')
+
+    # get row min/max indices
+    rmax = numpy.argmax(rgb, axis=1)
+    rmin = numpy.argmin(rgb, axis=1)
+
+    # get min/max values for each color coordinate
+    sel = numpy.arange(len(rgb))
+    cmax = rgb[sel, rmax]
+    cmin = rgb[sel, rmin]
+
+    # compute the difference between the max and min color value
+    delta = cmax - cmin
+
+    # vector to return HSV values
+    hsv_out = numpy.zeros_like(rgb, dtype=float)
+
+    # --- calculate vibrancy ---
+    dzero = delta == 0  # if delta is zero the color is a shade of grey
+    inv_dzero = None
+    if numpy.any(dzero):  # vibrancy is 1
+        hsv_out[dzero, 2] = numpy.sum(rgb[dzero], axis=1) / 3.
+        inv_dzero = ~dzero
+
+    if inv_dzero is not None:
+        hsv_out[inv_dzero, 2] = cmax[inv_dzero]
+    else:
+        hsv_out[:, 2] = cmax[:]  # no B/W colors
+
+    # --- calculate saturation ---
+    hsv_out[:, 1] = numpy.where(cmax > 0.0, delta / cmax, 0.0)
+
+    # --- calculate hues ---
+    # views of each column
+    r = rgb[:, 0]
+    g = rgb[:, 1]
+    b = rgb[:, 2]
+
+    # select on rows where the RGB gun value is max and not `dzero`
+    sel_r = (rmax == 0) & inv_dzero if inv_dzero is not None else rmax == 0
+    sel_g = (rmax == 1) & inv_dzero if inv_dzero is not None else rmax == 1
+    sel_b = (rmax == 2) & inv_dzero if inv_dzero is not None else rmax == 2
+
+    if numpy.any(sel_r):  # if red == cmax
+        hsv_out[sel_r, 0] = \
+            (60 * ((g[sel_r] - b[sel_r]) / delta[sel_r]) + 360) % 360
+
+    if numpy.any(sel_g):  # if green == cmax
+        hsv_out[sel_g, 0] = \
+            (60 * ((b[sel_g] - r[sel_g]) / delta[sel_g]) + 120) % 360
+
+    if numpy.any(sel_b):  # if blue == cmax
+        hsv_out[sel_b, 0] = \
+            (60 * ((r[sel_b] - g[sel_b]) / delta[sel_b]) + 240) % 360
+
+    # round the hue angle value
+    hsv_out[:, 0] = numpy.round(hsv_out[:, 0])
+
+    # make the output match the dimensions/shape of input
+    if orig_dim == 1:
+        hsv_out = hsv_out[0]
+    elif orig_dim == 3:
+        hsv_out = numpy.reshape(hsv_out, orig_shape)
+
+    return hsv_out
+
+
 def hsv2rgb(hsv_Nx3):
     """Convert from HSV color space to RGB gun values.
 
@@ -482,6 +640,40 @@ def lms2rgb(lms_Nx3, conversionMatrix=None):
     return numpy.transpose(rgb)  # return in the shape we received it
 
 
+def rgb2lms(rgb_Nx3, conversionMatrix=None):
+    """Convert from RGB to cone space (LMS).
+
+    Requires a conversion matrix, which will be generated from generic
+    Sony Trinitron phosphors if not supplied (note that you will not get
+    an accurate representation of the color space unless you supply a
+    conversion matrix)
+
+    usage::
+
+        lms_Nx3 = rgb2lms(rgb_Nx3(el,az,radius), conversionMatrix)
+
+    """
+
+    # its easier to use in the other orientation!
+    rgb_3xN = numpy.transpose(rgb_Nx3)
+
+    if conversionMatrix is None:
+        cones_to_rgb = numpy.asarray([
+            # L        M        S
+            [4.97068857, -4.14354132, 0.17285275],  # R
+            [-0.90913894, 2.15671326, -0.24757432],  # G
+            [-0.03976551, -0.14253782, 1.18230333]])  # B
+
+        logging.warning('This monitor has not been color-calibrated. '
+                        'Using default LMS conversion matrix.')
+    else:
+        cones_to_rgb = conversionMatrix
+    rgb_to_cones = numpy.linalg.inv(cones_to_rgb)
+
+    lms = numpy.dot(rgb_to_cones, rgb_3xN)
+    return numpy.transpose(lms)  # return in the shape we received it
+
+
 def rgb2dklCart(picture, conversionMatrix=None):
     """Convert an RGB image into Cartesian DKL space.
     """
@@ -516,38 +708,7 @@ def rgb2dklCart(picture, conversionMatrix=None):
 
     # Reshape the picture so that it's back to it's original shape
     dklPicture = numpy.reshape(numpy.transpose(dkl), origShape)
+
     return dklPicture
 
 
-def rgb2lms(rgb_Nx3, conversionMatrix=None):
-    """Convert from RGB to cone space (LMS).
-
-    Requires a conversion matrix, which will be generated from generic
-    Sony Trinitron phosphors if not supplied (note that you will not get
-    an accurate representation of the color space unless you supply a
-    conversion matrix)
-
-    usage::
-
-        lms_Nx3 = rgb2lms(rgb_Nx3(el,az,radius), conversionMatrix)
-
-    """
-
-    # its easier to use in the other orientation!
-    rgb_3xN = numpy.transpose(rgb_Nx3)
-
-    if conversionMatrix is None:
-        cones_to_rgb = numpy.asarray([
-            # L        M        S
-            [4.97068857, -4.14354132, 0.17285275],  # R
-            [-0.90913894, 2.15671326, -0.24757432],  # G
-            [-0.03976551, -0.14253782, 1.18230333]])  # B
-
-        logging.warning('This monitor has not been color-calibrated. '
-                        'Using default LMS conversion matrix.')
-    else:
-        cones_to_rgb = conversionMatrix
-    rgb_to_cones = numpy.linalg.inv(cones_to_rgb)
-
-    lms = numpy.dot(rgb_to_cones, rgb_3xN)
-    return numpy.transpose(lms)  # return in the shape we received it

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2020 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Experiment classes:
@@ -18,6 +18,8 @@ The code that writes out a *_lastrun.py experiment file is (in order):
 
 from __future__ import absolute_import, print_function
 # from future import standard_library
+import re
+
 from past.builtins import basestring
 from builtins import object
 import os
@@ -26,6 +28,7 @@ import xml.etree.ElementTree as xml
 from xml.dom import minidom
 from copy import deepcopy
 from pathlib import Path
+from packaging.version import Version
 
 import psychopy
 from psychopy import data, __version__, logging
@@ -33,7 +36,7 @@ from .exports import IndentingBuffer, NameSpace
 from .flow import Flow
 from .loops import TrialHandler, LoopInitiator, \
     LoopTerminator, StairHandler, MultiStairHandler
-from .params import _findParam, Param
+from .params import _findParam, Param, legacyParams
 from .routine import Routine
 from . import utils, py2js
 from .components import getComponents, getAllComponents
@@ -44,6 +47,9 @@ import locale
 # standard_library.install_aliases()
 
 from collections import OrderedDict, namedtuple
+
+from ..alerts import alert
+
 RequiredImport = namedtuple('RequiredImport',
                             field_names=('importName',
                                          'importFrom',
@@ -81,7 +87,7 @@ class Experiment(object):
         # What libs are needed (make sound come first)
         self.requiredImports = []
         libs = ('sound', 'gui', 'visual', 'core', 'data', 'event',
-                'logging', 'clock')
+                'logging', 'clock', 'colors')
         self.requirePsychopyLibs(libs=libs)
         self.requireImport(importName='keyboard',
                            importFrom='psychopy.hardware')
@@ -206,9 +212,9 @@ class Experiment(object):
             self_copy.flow.writeBody(script)
             self_copy.settings.writeEndCode(script)  # close log file
             script = script.getvalue()
+
         elif target == "PsychoJS":
             script.oneIndent = "  "  # use 2 spaces rather than python 4
-
 
             self_copy.settings.writeInitCodeJS(script,self_copy.psychopyVersion,
                                                localDateTime, modular)
@@ -520,7 +526,7 @@ class Experiment(object):
                     if params[name].allowedTypes is None:
                         params[name].allowedTypes = []
                     params[name].readOnly = True
-                    if name not in ['JS libs', 'OSF Project ID']:
+                    if name not in legacyParams + ['JS libs', 'OSF Project ID']:
                         # don't warn people if we know it's OK (e.g. for params
                         # that have been removed
                         msg = _translate(
@@ -565,6 +571,9 @@ class Experiment(object):
             # the current exp is already vaporized at this point, oops
             return
         self.psychopyVersion = root.get('version')
+        # If running an experiment from a future version, send alert to change "Use Version"
+        if Version(psychopy.__version__) < Version(self.psychopyVersion):
+            alert(code=4051, strFields={'version': self.psychopyVersion})
 
         # Parse document nodes
         # first make sure we're empty
@@ -800,9 +809,8 @@ class Experiment(object):
             :param filePath: str to a potential file path (rel or abs)
             :return: list of dicts{'rel','abs'} of valid file paths
             """
-
             # Clean up filePath that cannot be eval'd
-            if '$' in filePath:
+            if filePath.startswith('$'):
                 try:
                     filePath = filePath.strip('$')
                     filePath = eval(filePath)
@@ -900,7 +908,6 @@ class ExpFile(list):
         self.filename = filename
         self._clockName = None  # used in script "t = trialClock.GetTime()"
         self.type = 'ExpFile'
-        list.__init__(self, components)
 
     def __repr__(self):
         _rep = "psychopy.experiment.ExpFile(name='%s',exp=%s,filename='%s')"

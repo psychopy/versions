@@ -5,7 +5,7 @@
 #
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2020 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 __all__ = ['normalize',
@@ -62,9 +62,9 @@ __all__ = ['normalize',
            'accumQuat',
            'fixTangentHandedness',
            'articulate',
-           'matrixAngle',
            'forwardProject',
-           'reverseProject']
+           'reverseProject',
+           'lensCorrectionSpherical']
 
 
 import numpy as np
@@ -612,8 +612,8 @@ def distance(v0, v1, out=None, dtype=None):
     elif v0.ndim == v1.ndim == 1:
         dist = np.sqrt(np.sum(np.square(v1 - v0)))
     elif v0.ndim == 1 and v1.ndim == 2:
-        dist = np.zeros((v0.shape[0],), dtype=dtype) if out is None else out
-        dist[:] = np.sqrt(np.sum(np.square(v1 - v0), axis=1))
+        dist = np.zeros((v1.shape[0],), dtype=dtype) if out is None else out
+        dist[:] = np.sqrt(np.sum(np.square(v0 - v1), axis=1))
     else:
         raise ValueError("Input arguments have invalid dimensions.")
 
@@ -1243,7 +1243,28 @@ def computeBBoxCorners(extents, dtype=None):
     ndarray
         8x4 array of points defining the corners of the bounding box.
 
+    Examples
+    --------
+    Compute the corner points of a bounding box::
+
+        minExtent = [-1, -1, -1]
+        maxExtent = [1, 1, 1]
+        corners = computeBBoxCorners([minExtent, maxExtent])
+
+        # [[ 1.  1.  1.  1.]
+        #  [-1.  1.  1.  1.]
+        #  [ 1. -1.  1.  1.]
+        #  [-1. -1.  1.  1.]
+        #  [ 1.  1. -1.  1.]
+        #  [-1.  1. -1.  1.]
+        #  [ 1. -1. -1.  1.]
+        #  [-1. -1. -1.  1.]]
+
     """
+    extents = np.asarray(extents, dtype=dtype)
+
+    assert extents.shape == (2, 3,)
+
     corners = np.zeros((8, 4), dtype=dtype)
     idx = np.arange(0, 8)
     corners[:, 0] = np.where(idx[:] & 1, extents[0, 0], extents[1, 0])
@@ -2299,7 +2320,7 @@ def applyQuat(q, points, out=None, dtype=None):
         axis = [0., 0., -1.]
         angle = -90.0
         rotMat = rotationMatrix(axis, angle)[:3, :3]  # rotation sub-matrix only
-        rotQuat = quatFromAxisAngle(axis, angle, degrees=True)
+        rotQuat = quatFromAxisAngle(angle, axis, degrees=True)
         points = [[1., 0., 0.], [0., -1., 0.]]
         isClose = np.allclose(applyMatrix(rotMat, points),  # True
                               applyQuat(rotQuat, points))
@@ -2812,43 +2833,6 @@ def rotationMatrix(angle, axis=(0., 0., -1.), out=None, dtype=None):
     return R
 
 
-def matrixAngle(r, degrees=True, dtype=None):
-    """Get the rotation angle of an extant rotation matrix.
-
-    Parameters
-    ----------
-    m : array_like
-        Rotation matrix (2x2, 3x3, 4x4) with orthogonal rotation group.
-    degrees : bool
-        Return rotation angle in degrees. If `False`, this function will return
-        the angle in radians.
-    dtype : dtype or str, optional
-        Data type for computations can either be 'float32' or 'float64'. If
-        `out` is specified, the data type of `out` is used and this argument is
-        ignored. If `out` is not provided, 'float64' is used by default.
-
-    Returns
-    -------
-    float
-        Rotation angle in degrees or radians.
-
-    Examples
-    --------
-    Getting the angle of rotation from a rotation matrix::
-
-        r = rotationMatrix(90., normalize((1, 2, 3)))
-        angle = matrixAngle(r)  # 90.0
-
-    """
-    dtype = np.float64 if dtype is None else np.dtype(dtype).type
-    r = np.asarray(r, dtype=dtype)
-
-    r = r[:3, :3] if r.shape == (4, 4) or r.shape == (3, 4) else r
-    theta = np.arccos((np.sum(np.diagonal(r), dtype=dtype) - 1) / 2., dtype=dtype)
-
-    return np.degrees(theta, dtype=dtype) if degrees else theta
-
-
 def translationMatrix(t, out=None, dtype=None):
     """Create a translation matrix.
 
@@ -3060,6 +3044,11 @@ def concatenate(matrices, out=None, dtype=None):
     See Also
     --------
     * multMatrix : Chain multiplication of matrices.
+
+    Notes
+    -----
+    * This function should only be used for combining transformation matrices.
+      Use `multMatrix` for general matrix chain multiplication.
 
     Examples
     --------
@@ -3825,6 +3814,8 @@ def lensCorrection(xys, coefK=(1.0,), distCenter=(0., 0.), out=None,
     for optical distortion introduced by lenses placed in the optical path of
     the viewer and the display (such as in an HMD).
 
+    See references[1]_ for implementation details.
+
     Parameters
     ----------
     xys : array_like
@@ -3895,6 +3886,128 @@ def lensCorrection(xys, coefK=(1.0,), distCenter=(0., 0.), out=None,
     toReturn[:, :] = xys + (d_minus_c / denom[:, np.newaxis])
 
     return toReturn
+
+
+def lensCorrectionSpherical(xys, coefK=1.0, aspect=1.0, out=None, dtype=None):
+    """Simple lens correction.
+
+    Lens correction for a spherical lenses with distortion centered at the
+    middle of the display. See references[1]_ for implementation details.
+
+    Parameters
+    ----------
+    xys : array_like
+        Nx2 list of vertex positions or texture coordinates to distort. Assumes
+        the output will be rendered to normalized device coordinates where
+        points range from -1.0 to 1.0.
+    coefK : float
+        Distortion coefficent. Use positive numbers for pincushion distortion
+        and negative for barrel distortion.
+    aspect : float
+        Aspect ratio of the target window or buffer (width / height).
+    out : ndarray, optional
+        Optional output array. Must be same `shape` and `dtype` as the expected
+        output if `out` was not specified.
+    dtype : dtype or str, optional
+        Data type for computations can either be 'float32' or 'float64'. If
+        `out` is specified, the data type of `out` is used and this argument is
+        ignored. If `out` is not provided, 'float64' is used by default.
+
+    Returns
+    -------
+    ndarray
+        Array of distorted vertices.
+
+    References
+    ----------
+    .. [1] Lens Distortion White Paper, Andersson Technologies LLC,
+           www.ssontech.com/content/lensalg.html (obtained 07/28/2020)
+
+    Examples
+    --------
+    Creating a lens correction mesh with barrel distortion (eg. for HMDs)::
+
+        vertices, textureCoords, normals, faces = gltools.createMeshGrid(
+            subdiv=11, tessMode='center')
+
+        # recompute vertex positions
+        vertices[:, :2] = mt.lensCorrection2(vertices[:, :2], coefK=2.0)
+
+    """
+    if out is None:
+        dtype = np.float64 if dtype is None else np.dtype(dtype).type
+    else:
+        dtype = np.dtype(dtype).type
+
+    toReturn = np.empty_like(xys, dtype=dtype) if out is None else out
+
+    xys = np.asarray(xys, dtype=dtype)
+    toReturn[:, 0] = u = xys[:, 0]
+    toReturn[:, 1] = v = xys[:, 1]
+    coefKCubed = np.power(coefK, 3, dtype=dtype)
+
+    r2 = aspect * aspect * u * u + v * v
+    r2sqr = np.sqrt(r2, dtype=dtype)
+    f = 1. + r2 * (coefK + coefKCubed * r2sqr)
+
+    toReturn[:, 0] *= f
+    toReturn[:, 1] *= f
+
+    return toReturn
+
+
+class infrange():
+    """
+    Similar to base Python `range`, but allowing the step to be a float or even
+    0, useful for specifying ranges for logical comparisons.
+    """
+    def __init__(self, min, max, step=0):
+        self.min = min
+        self.max = max
+        self.step = step
+
+    @property
+    def range(self):
+        return abs(self.max-self.min)
+
+    def __lt__(self, other):
+        return other > self.max
+
+    def __le__(self, other):
+        return other > self.min
+
+    def __gt__(self, other):
+        return self.min > other
+
+    def __ge__(self, other):
+        return self.max > other
+
+    def __contains__(self, item):
+        if self.step == 0:
+            return self.min < item < self.max
+        else:
+            return item in np.linspace(self.min, self.max, int(self.range/self.step)+1)
+
+    def __eq__(self, item):
+        if isinstance(item, self.__class__):
+            return all((
+                self.min == item.min,
+                self.max == item.max,
+                self.step == item.step
+            ))
+        return item in self
+
+    def __add__(self, other):
+        return self.__class__(self.min+other, self.max+other, self.step)
+
+    def __sub__(self, other):
+        return self.__class__(self.min - other, self.max - other, self.step)
+
+    def __mul__(self, other):
+        return self.__class__(self.min * other, self.max * other, self.step * other)
+
+    def __truedic__(self, other):
+        return self.__class__(self.min / other, self.max / other, self.step / other)
 
 
 if __name__ == "__main__":

@@ -125,12 +125,12 @@
   "documentation": {
     "fg": "",
     "bg": "",
-    "font": ""
+    "font": "italic"
   },
   "documentation2": {
     "fg": "",
     "bg": "",
-    "font": ""
+    "font": "italic"
   },
   "whitespace": {
     "fg": "",
@@ -144,6 +144,9 @@
 
   },
   "r": {
+
+  },
+  "json": {
 
   }
 }

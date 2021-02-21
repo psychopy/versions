@@ -4,7 +4,7 @@
 """A class for getting numeric or categorical ratings, e.g., a 1-to-7 scale."""
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2020 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import, division, print_function
@@ -16,7 +16,6 @@ import sys
 import numpy
 
 from psychopy import core, logging, event
-from psychopy.colors import isValidColor
 from psychopy.visual.circle import Circle
 from psychopy.visual.patch import PatchStim
 from psychopy.visual.shape import ShapeStim
@@ -130,6 +129,7 @@ class RatingScale(MinimalStim):
                  rightKeys='right',
                  respKeys=(),
                  lineColor='White',
+                 colorSpace='rgb',
                  skipKeys='tab',
                  mouseOnly=False,
                  noMouse=False,
@@ -788,7 +788,7 @@ class RatingScale(MinimalStim):
             scaledTickSize = self.baseSize * self.size
             vert = [[-1 * scaledTickSize * 1.8, scaledTickSize * 3],
                     [scaledTickSize * 1.8, scaledTickSize * 3], [0, -0.005]]
-            if markerColor is None or not isValidColor(markerColor):
+            if markerColor is None:
                 markerColor = 'DarkBlue'
             self.marker = ShapeStim(win=self.win, units='norm', vertices=vert,
                                     lineWidth=0.1, lineColor=markerColor,
@@ -801,7 +801,7 @@ class RatingScale(MinimalStim):
                     [scaledTickSize * 1.8, scaledTickSize],
                     [scaledTickSize * 1.8, -1 * scaledTickSize],
                     [-1 * scaledTickSize * 1.8, -1 * scaledTickSize]]
-            if markerColor is None or not isValidColor(markerColor):
+            if markerColor is None:
                 markerColor = 'black'
             self.marker = ShapeStim(win=self.win, units='norm', vertices=vert,
                                     lineWidth=0.1, lineColor=markerColor,
@@ -809,7 +809,7 @@ class RatingScale(MinimalStim):
                                     name=self.name + '.markerSlider',
                                     opacity=0.7, autoLog=False)
         elif self.markerStyle == 'glow':
-            if markerColor is None or not isValidColor(markerColor):
+            if markerColor is None:
                 markerColor = 'White'
             self.marker = PatchStim(win=self.win, units='norm',
                                     tex=None, mask='gauss',
@@ -842,7 +842,7 @@ class RatingScale(MinimalStim):
                 marker.name = 'customMarker'
             self.marker = marker
         else:  # 'circle':
-            if markerColor is None or not isValidColor(markerColor):
+            if markerColor is None:
                 markerColor = 'DarkRed'
             x, y = self.win.size
             windowRatio = y/x
@@ -857,6 +857,7 @@ class RatingScale(MinimalStim):
         self.markerColor = markerColor
         self.markerYpos = self.offsetVert + self.markerOffsetVert
         # save initial state, restore on reset
+        self.markerColorOriginal = markerColor
 
     def _initTextElements(self, win, scale, textColor,
                           textFont, textSize, showValue, tickMarks):
@@ -902,6 +903,16 @@ class RatingScale(MinimalStim):
                     self.labels.append(txtStim)
         self.origScaleDescription = scale
         self.setDescription(scale)  # do last
+
+    def _setMarkerColor(self, color):
+        """Set the fill color or color of the marker"""
+        try:
+            self.marker.setFillColor(color, log=False)
+        except AttributeError:
+            try:
+                self.marker.setColor(color, log=False)
+            except Exception:
+                pass
 
     def setDescription(self, scale=None, log=True):
         """Method to set the brief description (scale).
@@ -1144,13 +1155,8 @@ class RatingScale(MinimalStim):
         if self.noResponse == False:
             # fix the marker position on the line
             if not self.markerPosFixed:
-                try:
-                    self.marker.setFillColor('DarkGray', log=False)
-                except AttributeError:
-                    try:
-                        self.marker.setColor('DarkGray', log=False)
-                    except Exception:
-                        pass
+                self._setMarkerColor('DarkGray')
+
                 # drop it onto the line
                 self.marker.setPos((0, -.012), ('+', '-')[self.flipVert],
                                    log=False)
@@ -1331,8 +1337,8 @@ class RatingScale(MinimalStim):
                 labels.setColor(self.textColor, log=False)
         self.noResponse = True
         # restore in case it turned gray, etc
-        self.resetMarker = str(self.marker)
-        self.resetMarker = self.resetMarker.replace('Window(...)', 'self.win')
+        self.markerColor = self.markerColorOriginal
+        self._setMarkerColor(self.markerColor)
         # placed by subject or markerStart: show on screen
         self.markerPlaced = False
         # placed by subject is actionable: show value, singleClick
@@ -1354,7 +1360,7 @@ class RatingScale(MinimalStim):
         if self.showAccept:
             self.acceptBox.setFillColor(self.acceptFillColor, log=False)
             self.acceptBox.setLineColor(self.acceptLineColor, log=False)
-            self.accept.setColor('#444444', log=False)  # greyed out
+            self.accept.setColor('#444444', colorSpace='hex', log=False)  # greyed out
             self.accept.setText(self.keyClick, log=False)
         if log and self.autoLog:
             logging.exp('RatingScale %s: reset()' % self.name)
