@@ -763,6 +763,7 @@ class BuilderFrame(wx.Frame, ThemeMixin):
         self.app.coder.fileOpen(filename=htmlPath)
 
     def editREADME(self, event):
+        self.showReadme()
         folder = Path(self.filename).parent
         if folder == folder.parent:
             raise FileNotFoundError("Please save experiment before editing the README file")
@@ -969,7 +970,7 @@ class BuilderFrame(wx.Frame, ThemeMixin):
         """
         if newTitle is None:
             shortName = os.path.split(self.filename)[-1]
-            newTitle = '%s - PsychoPy Builder' % (shortName)
+            newTitle = '%s - PsychoPy Builder (v%s)' % (shortName, self.app.version)
         self.SetTitle(newTitle)
 
     def setIsModified(self, newVal=None):
@@ -2104,6 +2105,7 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
                                              id,
                                              size=(panelWidth, 10 * self.dpi),
                                              style=wx.BORDER_NONE)
+        self.filter = prefs.builder['componentFilter']
         self._maxBtnWidth = 0  # will store width of widest button
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.componentButtons = []
@@ -2184,7 +2186,17 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
     def makeFavoriteButtons(self):
         # add a copy of each favorite to that panel first
         for thisName in self.favorites.getFavorites():
-            self.addComponentButton(thisName, self.panels['Favorites'])
+            comp = self.components[thisName]
+            # Filter according to prefs
+            cond = True
+            if self.filter == 'Any':
+                cond = True
+            elif self.filter == 'Both':
+                cond = 'PsychoJS' in comp.targets and 'PsychoPy' in comp.targets
+            elif self.filter in ['PsychoPy', 'PsychoJS']:
+                cond = self.filter in comp.targets
+            if cond:
+                self.addComponentButton(thisName, self.panels['Favorites'])
 
     def makeComponentButtons(self):
         """Make all the components buttons, including favorites
@@ -2194,6 +2206,18 @@ class ComponentsPanel(scrolledpanel.ScrolledPanel):
         # lists
         componentNames = list(self.components.keys())
         componentNames.sort()
+
+        for key, comp in self.components.items():
+            # Filter according to prefs
+            cond = True
+            if self.filter == 'Any':
+                cond = True
+            elif self.filter == 'Both':
+                cond = 'PsychoJS' in comp.targets and 'PsychoPy' in comp.targets
+            elif self.filter in ['PsychoPy', 'PsychoJS']:
+                cond = self.filter in comp.targets
+            if not cond:
+                componentNames.remove(key)
         for thisName in componentNames:
             thisComp = self.components[thisName]
             # NB thisComp is a class - we can't use its methods/attribs until
@@ -2502,10 +2526,15 @@ class ReadmeFrame(wx.Frame):
         menu = self.fileMenu
         keys = self.parent.app.keys
         menu.Append(wx.ID_EDIT, _translate("Edit"))
+        self.Bind(wx.EVT_MENU, self.fileEdit, id=wx.ID_EDIT)
         menu.Append(wx.ID_CLOSE,
                     _translate("&Close readme\t%s") % keys['close'])
-        self.Bind(wx.EVT_MENU, self.fileEdit, id=wx.ID_EDIT)
-        self.Bind(wx.EVT_MENU, self.toggleVisible, id=wx.ID_CLOSE)
+        item = self.Bind(wx.EVT_MENU, self.toggleVisible, id=wx.ID_CLOSE)
+        item = menu.Append(-1,
+                           _translate("&Toggle readme\t%s") % keys[
+                               'toggleReadme'],
+                           _translate("Toggle Readme"))
+        self.Bind(wx.EVT_MENU, self.toggleVisible, item)
         self.SetMenuBar(menuBar)
 
     def setFile(self, filename):
@@ -2548,6 +2577,10 @@ class ReadmeFrame(wx.Frame):
             renderedText = readmeText.replace("\n", "<br>")
         self.ctrl.SetPage(renderedText)
         self.SetTitle("%s readme (%s)" % (self.expName, filename))
+
+    def refresh(self, evt=None):
+        if hasattr(self, 'filename'):
+            self.setFile(self.filename)
 
     def fileEdit(self, evt=None):
         self.parent.app.showCoder()
@@ -2982,8 +3015,8 @@ class FlowPanel(wx.ScrolledWindow):
                 self.frame.routinePanel.setCurrentRoutine(comp)
                 try:
                     self._menuComponentID = icon
-                    xy = wx.Point(x + self.GetPosition()[0],
-                                  y + self.GetPosition()[1])
+                    xy = wx.Point(event.X + self.GetPosition()[0],
+                                  event.Y + self.GetPosition()[1])
                     self.showContextMenu(self._menuComponentID, xy=xy)
                 except UnboundLocalError:
                     # right click but not on an icon
