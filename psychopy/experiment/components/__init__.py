@@ -23,8 +23,8 @@ from ..params import Param
 from psychopy.localization import _translate
 from psychopy.experiment import py2js
 
-excludeComponents = ['BaseComponent', 'BaseVisualComponent',  # templates only
-                     'EyetrackerComponent']  # this one isn't ready yet
+excludeComponents = ['BaseComponent', 'BaseVisualComponent', 'BaseStandaloneRoutine'  # templates only
+                     ]  # this one isn't ready yet
 
 pluginComponents = {}  # components registered by loaded plugins
 
@@ -41,12 +41,16 @@ for filename in pycFiles:
 
 def getAllCategories(folderList=()):
     allComps = getAllComponents(folderList)
-    allCats = ['Stimuli', 'Responses', 'Custom']
+    # Hardcode some categories to always appear first/last
+    firstCats = ['Favorites', 'Stimuli', 'Responses', 'Custom']
+    lastCats = ['I/O', 'Other']
+    # Start getting categories
+    allCats = firstCats
     for name, thisComp in list(allComps.items()):
         for thisCat in thisComp.categories:
-            if thisCat not in allCats:
+            if thisCat not in allCats + lastCats:
                 allCats.append(thisCat)
-    return allCats
+    return allCats + lastCats
 
 
 def getAllComponents(folderList=(), fetchIcons=True):
@@ -181,8 +185,8 @@ def getComponents(folder=None, fetchIcons=True):
 
                 if hasattr(module, 'tooltip'):
                     tooltips[name] = module.tooltip
-                if hasattr(module, 'iconFile'):
-                    iconFiles[name] = module.iconFile
+                if hasattr(components[attrib], 'iconFile'):
+                    iconFiles[name] = components[attrib].iconFile
                 # assign the module categories to the Component
                 if not hasattr(components[attrib], 'categories'):
                     components[attrib].categories = ['Custom']
@@ -287,6 +291,9 @@ def getInitVals(params, target="PsychoPy"):
             inits[name].valType = 'str'
         elif name == 'buttonRequired':
             inits[name].val = "True"
+            inits[name].valType = 'code'
+        elif name == 'vertices':
+            inits[name].val = "[[-0.5,-0.5], [-0.5, 0.5], [0.5, 0.5], [0.5, -0.5]]"
             inits[name].valType = 'code'
         else:
             print("I don't know the appropriate default value for a '%s' "

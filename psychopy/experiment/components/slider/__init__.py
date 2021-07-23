@@ -9,6 +9,7 @@ from __future__ import absolute_import, print_function
 from builtins import super  # provides Py3-style super() using python-future
 
 from os import path
+from pathlib import Path
 from psychopy.experiment.components import BaseVisualComponent, Param, \
     getInitVals, _translate
 from psychopy.visual import slider
@@ -20,11 +21,6 @@ _localized = __localized.copy()
 import copy
 
 __author__ = 'Jon Peirce'
-
-# the absolute path to the folder containing this path
-thisFolder = path.abspath(path.dirname(__file__))
-iconFile = path.join(thisFolder, 'slider.png')
-tooltip = _translate('Slider: A simple, flexible object for getting ratings')
 
 # only use _localized values for label values, nothing functional:
 _localized.update({'categoryChoices': _translate('Category choices'),
@@ -58,12 +54,17 @@ legacyStyleTweaks = slider.Slider.legacyStyleTweaks
 class SliderComponent(BaseVisualComponent):
     """A class for presenting a rating scale as a builder component
     """
+
     categories = ['Responses']
     targets = ['PsychoPy', 'PsychoJS']
+    iconFile = Path(__file__).parent / 'slider.png'
+    tooltip = _translate('Slider: A simple, flexible object for getting ratings')
+
     def __init__(self, exp, parentName,
                  name='slider',
                  labels='',
                  ticks="(1, 2, 3, 4, 5)",
+                 initVal="",
                  size='(1.0, 0.1)',
                  pos='(0, -0.4)',
                  flip=False,
@@ -114,6 +115,11 @@ class SliderComponent(BaseVisualComponent):
                 hint=_translate("Labels for the tick marks on the scale, "
                                 "separated by commas"),
                 label=_localized['labels'])
+        self.params['initVal'] = Param(
+            initVal, valType='code', inputType="single", categ='Basic',
+            hint=_translate("Value of the slider befre any response, leave blank to hide the marker until clicked on"),
+            label=_translate("Starting Value")
+        )
         self.params['granularity'] = Param(
                 granularity, valType='num', inputType="single", allowedTypes=[], categ='Basic',
                 updates='constant',
@@ -150,6 +156,9 @@ class SliderComponent(BaseVisualComponent):
         self.params['fillColor'].hint = _translate("Color of the marker on this slider (might be overridden by the style setting)")
         self.params['borderColor'].label = _translate("Line Color")
         self.params['borderColor'].hint = _translate("Color of all lines on this slider (might be overridden by the style setting)")
+
+        # Disable units
+        self.params['units'].allowedVals = ['from exp settings']
 
         self.params['font'] = Param(
                 font, valType='str', inputType="single", categ='Formatting',
@@ -208,6 +217,9 @@ class SliderComponent(BaseVisualComponent):
 
         inits['depth'] = -self.getPosInRoutine()
 
+        # Use None as a start value if none set
+        inits['initVal'] = inits['initVal'] or None
+
         # build up an initialization string for Slider():
         initStr = ("{name} = visual.Slider(win=win, name='{name}',\n"
                    "    size={size}, pos={pos}, units={units},\n"
@@ -216,6 +228,7 @@ class SliderComponent(BaseVisualComponent):
                    "    color={color}, fillColor={fillColor}, borderColor={borderColor}, colorSpace={colorSpace},\n"
                    "    font={font}, labelHeight={letterHeight},\n"
                    "    flip={flip}, depth={depth}, readOnly={readOnly})\n"
+                   "{name}.markerPos = {initVal}\n"
                    .format(**inits))
         buff.writeIndented(initStr)
 
@@ -273,7 +286,7 @@ class SliderComponent(BaseVisualComponent):
                    "  size: {size}, pos: {pos}, units: {units},\n"
                    "  labels: {labels}, ticks: {ticks},\n"
                    "  granularity: {granularity}, style: {styles},\n"
-                   "  color: new util.Color({color}), \n"
+                   "  color: new util.Color({color}), markerColor: new util.Color({fillColor}), lineColor: new util.Color({borderColor}), \n"
                    "  fontFamily: {font}, bold: true, italic: false, depth: {depth}, \n"
                    ).format(**inits)
         initStr += ("  flip: {flip},\n"

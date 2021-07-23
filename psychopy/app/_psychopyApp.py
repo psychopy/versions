@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function
 
 from builtins import str
 from builtins import object
+from pathlib import Path
 
 from psychopy.app.colorpicker import PsychoColorPicker
 
@@ -16,7 +17,6 @@ profiling = False  # turning on will save profile files in currDir
 
 import sys
 import argparse
-import platform
 import psychopy
 from psychopy import prefs
 from pkg_resources import parse_version
@@ -24,10 +24,9 @@ from psychopy.constants import PY3
 from . import urls
 from . import frametracker
 from . import themes
-from . import icons
+from . import console
 
 import io
-import json
 
 if not hasattr(sys, 'frozen'):
     try:
@@ -68,7 +67,6 @@ if not PY3 and sys.platform == 'darwin':
 else:
     blockTips = False
 
-travisCI = bool(str(os.environ.get('TRAVIS')).lower() == 'true')
 
 # Enable high-dpi support if on Windows. This fixes blurry text rendering.
 if sys.platform == 'win32':
@@ -165,6 +163,7 @@ class _Showgui_Hack(object):
 
 
 class PsychoPyApp(wx.App, themes.ThemeMixin):
+    _called_from_test = False  # pytest needs to change this
 
     def __init__(self, arg=0, testMode=False, **kwargs):
         """With a wx.App some things get done here, before App.__init__
@@ -229,10 +228,9 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
         logging.flush()
 
         # set the exception hook to present unhandled errors in a dialog
-        if not travisCI:
+        if not PsychoPyApp._called_from_test:  #NB class variable not self
             from psychopy.app.errorDlg import exceptionCallback
             sys.excepthook = exceptionCallback
-
 
     def onInit(self, showSplash=True, testMode=False):
         """This is launched immediately *after* the app initialises with wx
@@ -295,23 +293,46 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
 
         self.dpi = int(wx.GetDisplaySize()[0] /
                        float(wx.GetDisplaySizeMM()[0]) * 25.4)
+        # detect retina displays
+        self.isRetina = self.dpi>80 and wx.Platform == '__WXMAC__'
+        if self.isRetina:
+            fontScale = 1.2  # fonts are looking tiny on macos (only retina?) right now
+        else:
+            fontScale = 1
+        # adjust dpi to something reasonable
         if not (50 < self.dpi < 120):
             self.dpi = 80  # dpi was unreasonable, make one up
 
+        # Manage fonts
         if sys.platform == 'win32':
             # wx.SYS_DEFAULT_GUI_FONT is default GUI font in Win32
             self._mainFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         else:
             self._mainFont = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
+            # rescale for tiny retina fonts
 
-        try:
-            self._codeFont = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
-        except wx._core.wxAssertionError:
-            # if no SYS_ANSI_FIXED_FONT then try generic FONTFAMILY_MODERN
-            self._codeFont = wx.Font(self._mainFont.GetPointSize(),
-                                     wx.FONTFAMILY_MODERN,
-                                     wx.FONTSTYLE_NORMAL,
-                                     wx.FONTWEIGHT_NORMAL)
+        if hasattr(wx.Font, "AddPrivateFont") and sys.platform != "darwin":
+            # Load packaged fonts if possible
+            for fontFile in (Path(__file__).parent / "Resources" / "fonts").glob("*"):
+                if fontFile.suffix in ['.ttf', '.truetype']:
+                    wx.Font.AddPrivateFont(str(fontFile))
+            # Set fonts as those loaded
+            self._codeFont = wx.Font(wx.FontInfo(self._mainFont.GetPointSize()).FaceName("JetBrains Mono"))
+        else:
+            # Get system defaults if can't load fonts
+            try:
+                self._codeFont = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
+            except wx._core.wxAssertionError:
+                # if no SYS_ANSI_FIXED_FONT then try generic FONTFAMILY_MODERN
+                self._codeFont = wx.Font(self._mainFont.GetPointSize(),
+                                         wx.FONTFAMILY_TELETYPE,
+                                         wx.FONTSTYLE_NORMAL,
+                                         wx.FONTWEIGHT_NORMAL)
+
+        if self.isRetina:
+            self._codeFont.SetPointSize(int(self._codeFont.GetPointSize()*fontScale))
+            self._mainFont.SetPointSize(int(self._mainFont.GetPointSize()*fontScale))
+
         # that gets most of the properties of _codeFont but the FaceName
         # FaceName is set in the setting of the theme:
         self.theme = self.prefs.app['theme']
@@ -354,6 +375,10 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
                 view.builder = True
                 view.coder = True
                 view.runner = True
+
+        # set the dispatcher for standard output
+        self.stdStreamDispatcher = console.StdStreamDispatcher(self)
+        self.stdStreamDispatcher.redirect()
 
         # Create windows
         if view.runner:
@@ -407,7 +432,7 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
         # wx-windows on some platforms (Mac 10.9.4) with wx-3.0:
         v = parse_version
         if sys.platform == 'darwin':
-            if v('3.0') <= v(wx.version()) <v('4.0'):
+            if v('3.0') <= v(wx.version()) < v('4.0'):
                 _Showgui_Hack()  # returns ~immediately, no display
                 # focus stays in never-land, so bring back to the app:
                 if prefs.app['defaultView'] in ['all', 'builder', 'coder', 'runner']:
@@ -427,6 +452,11 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
             logging.console.setLevel(logging.INFO)
 
         return True
+
+    @property
+    def appLoaded(self):
+        """`True` if the app has been fully loaded (`bool`)."""
+        return self._appLoaded
 
     def _wizard(self, selector, arg=''):
         from psychopy import core
@@ -589,8 +619,7 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
             self.SetTopWindow(self.runner)
         # Runner captures standard streams until program closed
         if self.runner and not self.testMode:
-            sys.stdout = self.runner.stdOut
-            sys.stderr = self.runner.stdOut
+            sys.stderr = sys.stdout = self.stdStreamDispatcher
 
     def newRunnerFrame(self, event=None):
         # have to reimport because it is only local to __init__ so far
@@ -645,7 +674,11 @@ class PsychoPyApp(wx.App, themes.ThemeMixin):
         Note: units are psychopy -1..+1 rgb units to three decimal places,
         preserving 24-bit color.
         """
-        dlg = PsychoColorPicker(None)  # doesn't need a parent
+        if self.coder is None:
+            return
+
+        document = self.coder.currentDoc
+        dlg = PsychoColorPicker(document)  # doesn't need a parent
         dlg.ShowModal()
         dlg.Destroy()
 

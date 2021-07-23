@@ -22,7 +22,7 @@ class psychoJSTransformer(ast.NodeTransformer):
     """
 
     def visit_Name(self, node):
-        # status = STOPPED => status = PsychoJS.Status.STOPPED
+        # status = STOPPED --> status = PsychoJS.Status.STOPPED
         if node.id in ['STARTED', 'FINISHED', 'STOPPED'] and isinstance(node.ctx, ast.Load):
             return ast.copy_location(
                 ast.Attribute(
@@ -36,6 +36,30 @@ class psychoJSTransformer(ast.NodeTransformer):
                 ),
                 node)
 
+        # thisExp --> psychoJS.experiment
+        elif node.id == 'thisExp' and isinstance(node.ctx, ast.Load):
+            return ast.Attribute(
+                value=ast.Name(id='psychoJS', ctx=ast.Load()),
+                attr='experiment',
+                ctx=ast.Load()
+            )
+
+        # win --> psychoJS.window
+        elif node.id == 'win' and isinstance(node.ctx, ast.Load):
+            return ast.Attribute(
+                value=ast.Name(id='psychoJS', ctx=ast.Load()),
+                attr='window',
+                ctx=ast.Load()
+            )
+
+        # event --> psychoJS.eventManager
+        elif node.id == 'event' and isinstance(node.ctx, ast.Load):
+            return ast.Attribute(
+                value=ast.Name(id='psychoJS', ctx=ast.Load()),
+                attr='eventManager',
+                ctx=ast.Load()
+            )
+
         # return the node by default:
         return node
 
@@ -44,21 +68,28 @@ class pythonTransformer(ast.NodeTransformer):
     """Python-specific AST transformer
     """
 
-    # builtin python operations that require substitution by specific JavaScript code:
-    subtitutableOperations = []
-
     # operations from the math python module or builtin operations that exist in JavaScript Math:
-    directMathOperations = ['abs', 'min', 'max', 'ceil', 'fabs', 'floor', 'trunc', 'exp', 'log', 'log2', 'pow',
-                            'sqrt', 'acos', 'asin', 'atan2', 'cos', 'sin', 'tan', 'acosh', 'asinh', 'atanh', 'cosh',
-                            'sinh', 'tanh']
+    directMathOperations = ['abs', 'min', 'max', 'round', 'ceil', 'fabs', 'floor', 'trunc',
+                            'exp', 'log', 'log2', 'pow', 'sqrt', 'acos', 'asin', 'atan2', 'cos',
+                            'sin', 'tan', 'acosh', 'asinh', 'atanh', 'cosh', 'sinh', 'tanh',
+                            'random']
+
+    # operation from the math python module or builtin operations that are available
+    # in util/Util.js:
+    utilOperations = ['sum', 'average', 'randint', 'range', 'sort', 'shuffle']
 
     def visit_BinOp(self, node):
+
+        # transform the left and right arguments of the binary operation:
+        node.left = pythonTransformer().visit(node.left)
+        node.right = pythonTransformer().visit(node.right)
 
         # formatted strings with %:
         if isinstance(node.op, ast.Mod) and isinstance(node.left, ast.Str):
             raise Exception('string formatting using % is not currently supported, please use f-strings instead')
 
         return node
+
 
     def visit_FormattedValue(self, node):
 
@@ -124,10 +155,19 @@ class pythonTransformer(ast.NodeTransformer):
 
     def visit_Call(self, node):
 
-        # if the call node has arguments, transform them first:
+        # transform the node arguments:
         nbArgs = len(node.args)
         for i in range(0, nbArgs):
             node.args[i] = pythonTransformer().visit(node.args[i])
+
+        # transform the node func:
+        node.func = pythonTransformer().visit(node.func)
+
+        # substitutable transformation, e.g. Vector.append(5) --> Vector.push(5):
+        if isinstance(node.func, ast.Attribute):  # and isinstance(node.func.value, ast.Name):
+            substitutedNode = self.substitutionTransform(node.func, node.args)
+            if substitutedNode:
+                return substitutedNode
 
         # operations with module prefix, e.g. a = math.fabs(-1.2)
         if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
@@ -135,12 +175,12 @@ class pythonTransformer(ast.NodeTransformer):
             attribute = node.func.attr
 
             if prefix == 'math':
-                return self.mathTransform(attribute, node.args)
-            else:
-                return node
+                mathNode = self.mathTransform(attribute, node.args)
+                if mathNode:
+                    return mathNode
 
         # operations without prefix:
-        elif isinstance(node.func, ast.Name):
+        if isinstance(node.func, ast.Name):
             attribute = node.func.id
 
             # check whether this is a math operation:
@@ -148,13 +188,91 @@ class pythonTransformer(ast.NodeTransformer):
             if mathNode:
                 return mathNode
 
+            # check whether we have code for it in util/Util:
+            utilNode = self.utilTransform(attribute, node.args)
+            if utilNode:
+                return utilNode
+
         # string.format(args):
-        elif isinstance(node.func, ast.Attribute) and isinstance(node.func.value,
-                                                                 ast.Str) and node.func.attr == 'format':
+        if isinstance(node.func, ast.Attribute) and isinstance(node.func.value,
+                                                               ast.Str) and node.func.attr == 'format':
             raise Exception('format() is not supported at the moment, please use f-strings instead')
 
         # return the node by default:
         return node
+
+
+    def substitutionTransform(self, func, args):
+
+        # a = [1,2,3]
+        # a.append(4) --> a.push(4)
+        # value=Call(func=Attribute(value=Name(id='a', ctx=Load()), attr='append', ctx=Load()), args=[Num(n=4)], keywords=[])
+        if func.attr == 'append':
+            func.attr = 'push'
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
+        # a = [1,2,3]
+        # a.index(2) --> util.index(a,2)
+        # value=Call(func=Attribute(value=Name(id='a', ctx=Load()), attr='index', ctx=Load()), args=[Num(n=2)], keywords=[])
+        # value=Call(func=Attribute(value=Name(id='util', ctx=Load()), attr='index', ctx=Load()), args=[Name(id='a', ctx=Load()), Num(n=2)], keywords=[])
+        elif func.attr == 'index':
+            value = func.value
+            func.value = ast.Name(id='util', ctx=ast.Load())
+            args = [value, args]
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
+        # a = [1,2,3]
+        # a.count(2) --> util.count(a,2)
+        # value=Call(func=Attribute(value=Name(id='a', ctx=Load()), attr='count', ctx=Load()), args=[Num(n=2)], keywords=[])
+        # value=Call(func=Attribute(value=Name(id='util', ctx=Load()), attr='count', ctx=Load()), args=[Name(id='a', ctx=Load()), Num(n=2)], keywords=[])
+        elif func.attr == 'count':
+            value = func.value
+            func.value = ast.Name(id='util', ctx=ast.Load())
+            args = [value, args]
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
+        elif isinstance(func.value, ast.Name):
+            # webbrowser.open('https://pavlovia.org') --> window.open('https://pavlovia.org')
+            if func.value.id == 'webbrowser':
+                func.value.id = 'window'
+                return ast.Call(
+                    func=func,
+                    args=args,
+                    keywords=[]
+                )
+
+        return None
+
+
+    def utilTransform(self, attribute, args):
+
+        # operations from the math python module or builtin operations that are available
+        # in util/Util.js:
+        if attribute in self.utilOperations:
+            func = ast.Attribute(
+                value=ast.Name(id='util', ctx=ast.Load()),
+                attr=attribute,
+                ctx=ast.Load()
+            )
+
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
 
     def mathTransform(self, attribute, args):
 
@@ -172,13 +290,6 @@ class pythonTransformer(ast.NodeTransformer):
                 keywords=[]
             )
 
-        # substitutable operations, e.g. a = sum(b,c) => a = [b,c].reduce( function(x,y) { return x+y: })
-        elif attribute in self.subtitutableOperations:
-            # a = sum(b,c) => a = [b,c].reduce( function(x,y) { return x+y: })
-            pass  # removed for now in preference for creating the func in utils
-
-        else:
-            return None
 
 
 class pythonAddonVisitor(ast.NodeVisitor):

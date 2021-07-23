@@ -44,6 +44,8 @@
     gammaErrorPolicy = option('abort', 'warn', default='abort')
     # Add plugin names here to load when a PsychoPy session starts.
     startUpPlugins = list(default=list())
+    # Google Cloud Platform key, required for the audio transcription using Google Speech Recognition. Specified as a path to a JSON file containing the key data.
+    appKeyGoogleCloud = string(default='')
 
 # Application settings, applied to coder, builder, & prefs windows
 [app]
@@ -228,7 +230,7 @@
     # Coder: show / hide the output panel
     toggleOutputPanel = string(default='Ctrl+Shift+O')
     #Builder: rename an existing routine
-    renameRoutine = string(default='Ctrl+Shift+R')
+    renameRoutine = string(default='Ctrl+Shift+M')
     # switch between windows
     cycleWindows = string(default='Ctrl+L')
     # increase display size in Flow

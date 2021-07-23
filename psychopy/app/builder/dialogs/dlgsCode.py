@@ -17,6 +17,7 @@ import wx
 # import wx.lib.agw.aui as aui
 from collections import OrderedDict
 from psychopy.experiment.components.code import CodeComponent
+from ..validators import WarningManager
 from ...themes import ThemeMixin
 
 from psychopy.constants import PY3
@@ -37,33 +38,42 @@ class DlgCodeComponentProperties(wx.Dialog):
     _style = (wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
               | wx.DIALOG_NO_PARENT)
 
-    def __init__(self, frame, title, params, order,
+    def __init__(self, frame, element, experiment,
                  helpUrl=None, suppressTitles=True, size=(1000,600),
                  style=_style, editing=False, depends=[],
                  timeout=None, type="Code"):
 
         # translate title
-        localizedTitle = title.replace(' Properties',
-                                       _translate(' Properties'))
-        wx.Dialog.__init__(self, None, -1, localizedTitle,
-                           size=size, style=self._style)
-        self.SetTitle(localizedTitle)  # use localized title
+        if "name" in element.params:
+            title = element.params['name'].val + _translate(' Properties')
+        elif "expName" in element.params:
+            title = element.params['expName'].val + _translate(' Properties')
+        else:
+            title = "Properties"
+        # get help url
+        if hasattr(element, 'url'):
+            helpUrl = element.url
+        else:
+            helpUrl = None
+
+        wx.Dialog.__init__(self, None, -1, title,
+                           size=size, style=style)
+        self.SetTitle(title)  # use localized title
         # self.panel = wx.Panel(self)
         self.frame = frame
         self.app = frame.app
         self.helpUrl = helpUrl
-        self.params = params  # dict
-        self.order = order
+        self.params = element.params  # dict
+        self.order = element.order
         self.title = title
         self.timeout = timeout
-        self.warningsDict = {}  # to store warnings for all fields
         self.codeBoxes = {}
         self.tabs = OrderedDict()
 
         if not editing and 'name' in self.params:
             # then we're adding a new component so ensure a valid name:
             makeValid = self.frame.exp.namespace.makeValid
-            self.params['name'].val = makeValid(params['name'].val)
+            self.params['name'].val = makeValid(self.params['name'].val)
 
         self.codeNotebook = wx.Notebook(self)
         # in AUI notebook the labels are blurry on retina mac
@@ -122,7 +132,7 @@ class DlgCodeComponentProperties(wx.Dialog):
                                                     pos=wx.DefaultPosition,
                                                     style=0,
                                                     prefs=self.app.prefs,
-                                                    params=params,
+                                                    params=self.params,
                                                     codeType=codeType)
                 self.codeBoxes[paramName].AddText(param.val)
                 self.codeBoxes[paramName].Bind(wx.EVT_KEY_UP, self.onKeyUp)  # For real time translation
@@ -140,6 +150,7 @@ class DlgCodeComponentProperties(wx.Dialog):
         self.okButton.SetDefault()
         self.cancelButton = wx.Button(self, wx.ID_CANCEL,
                                       _translate(" Cancel "))
+        self.warnings = WarningManager(self)  # to store warnings for all fields
         self.__do_layout()
         if openToPage is None:
             openToPage = 1
@@ -420,18 +431,17 @@ class DlgCodeComponentProperties(wx.Dialog):
         buttonSizer.Add(self.helpButton, 0,
                         wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 10)
         buttonSizer.AddStretchSpacer()
-        if sys.platform == 'darwin':
-            buttonSizer.Add(self.cancelButton, 0,
-                            wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
-                            border=3)
-            buttonSizer.Add(self.okButton, 0,
-                            wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
-                            border=3)
+        # Add Okay and Cancel buttons
+        if sys.platform == "win32":
+            btns = [self.okButton, self.cancelButton]
         else:
-            buttonSizer.Add(self.okButton, 0,
-                            wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=3)
-            buttonSizer.Add(self.cancelButton, 0,
-                            wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=3)
+            btns = [self.cancelButton, self.okButton]
+        buttonSizer.Add(btns[0], 0,
+                        wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                        border=3)
+        buttonSizer.Add(btns[1], 0,
+                        wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                        border=3)
 
         mainSizer.Add(buttonSizer, 0, wx.ALL | wx.RIGHT | wx.EXPAND, 5)
         self.SetSizer(mainSizer)

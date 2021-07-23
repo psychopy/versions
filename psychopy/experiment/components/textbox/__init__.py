@@ -8,16 +8,13 @@
 from __future__ import absolute_import, print_function
 
 from os import path
-
-from psychopy.alerts import alerttools
+from pathlib import Path
+import copy
+from psychopy.alerts import alerttools, alert
 from psychopy.experiment.components import BaseVisualComponent, Param, getInitVals, _translate
 from psychopy.localization import _localized as __localized
+from ..keyboard import KeyboardComponent
 _localized = __localized.copy()
-
-# the absolute path to the folder containing this path
-thisFolder = path.abspath(path.dirname(__file__))
-iconFile = path.join(thisFolder, 'textbox.png')
-tooltip = _translate('Textbox: present text stimuli but cooler')
 
 # only use _localized values for label values, nothing functional:
 _localized.update({'text': _translate('Text'),
@@ -44,13 +41,17 @@ class TextboxComponent(BaseVisualComponent):
     """
     categories = ['Stimuli', 'Responses']
     targets = ['PsychoPy', 'PsychoJS']
+    iconFile = Path(__file__).parent / 'textbox.png'
+    tooltip = _translate('Textbox: present text stimuli but cooler')
+    beta = True
+
     def __init__(self, exp, parentName, name='textbox',
                  # effectively just a display-value
                  text=_translate('Any text\n\nincluding line breaks'),
                  font='Open Sans', units='from exp settings', bold=False, italic=False,
                  color='white', colorSpace='rgb', opacity="",
-                 pos=(0, 0), size='', letterHeight=0.05, ori=0,
-                 lineSpacing=1.0, padding="",  # gap between box and text
+                 pos=(0, 0), size=(None, None), letterHeight=0.05, ori=0,
+                 lineSpacing=1.0, padding=0,  # gap between box and text
                  startType='time (s)', startVal=0.0, anchor='center',
                  stopType='duration (s)', stopVal=1.0,
                  startEstim='', durationEstim='',
@@ -239,6 +240,37 @@ class TextboxComponent(BaseVisualComponent):
         buff.writeIndentedLines(code)
         depth = -self.getPosInRoutine()
 
+    def writeRoutineStartCode(self, buff):
+        # Give alert if in the same routine as a Keyboard component
+        if self.params['editable'].val:
+            routine = self.exp.routines[self.parentName]
+            for sibling in routine:
+                if isinstance(sibling, KeyboardComponent):
+                    alert(4405, strFields={'textbox': self.params['name'], 'keyboard': sibling.params['name']})
+
+        code = (
+            "%(name)s.reset()"
+        )
+        buff.writeIndentedLines(code % self.params)
+        BaseVisualComponent.writeRoutineStartCode(self, buff)
+
+    def writeRoutineStartCodeJS(self, buff):
+        if self.params['editable']:
+            # replaces variable params with sensible defaults
+            inits = getInitVals(self.params, 'PsychoJS')
+            # check for NoneTypes
+            for param in inits:
+                if inits[param] in [None, 'None', '']:
+                    inits[param].val = 'undefined'
+                    if param == 'text':
+                        inits[param].val = ""
+
+            code = (
+                "%(name)s.setText(%(text)s);"
+            )
+            buff.writeIndentedLines(code % inits)
+        BaseVisualComponent.writeRoutineStartCodeJS(self, buff)
+
     def writeRoutineEndCode(self, buff):
         name = self.params['name']
         if len(self.exp.flow._loopList):
@@ -246,8 +278,7 @@ class TextboxComponent(BaseVisualComponent):
         else:
             currLoop = self.exp._expHandler
         if self.params['editable']:
-            buff.writeIndentedLines(f"{currLoop.params['name']}.addData('{name}.text',{name}.text)\n"
-                               f"{name}.reset()\n")
+            buff.writeIndentedLines(f"{currLoop.params['name']}.addData('{name}.text',{name}.text)\n")
         # get parent to write code too (e.g. store onset/offset times)
         super().writeRoutineEndCode(buff)
 
@@ -258,8 +289,7 @@ class TextboxComponent(BaseVisualComponent):
         else:
             currLoop = self.exp._expHandler
         if self.params['editable']:
-            buff.writeIndentedLines(f"psychoJS.experiment.addData('{name}.text',{name}.text)\n"
-                                    f"{name}.reset()\n")
+            buff.writeIndentedLines(f"psychoJS.experiment.addData('{name}.text',{name}.text)\n")
         # get parent to write code too (e.g. store onset/offset times)
         super().writeRoutineEndCodeJS(buff)
 

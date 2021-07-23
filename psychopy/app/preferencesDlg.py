@@ -4,6 +4,7 @@
 from __future__ import absolute_import, print_function
 
 import json
+import sys
 from builtins import str
 import wx
 import wx.propgrid as pg
@@ -48,6 +49,8 @@ _localized = {
     'shutdownKeyModifiers': _translate("shutdown key modifier keys"),
     'gammaErrorPolicy': _translate("gammaErrorPolicy"),
     'startUpPlugins': _translate("start up plugins"),
+    'appKeyGoogleCloud':_translate('appKeyGoogleCloud'),
+    'transcrKeyAzure':_translate('transcrKeyAzure'),
     # pref labels in App section
     'showStartupTips': _translate("show start-up tips"),
     'defaultView': _translate("default view"),
@@ -62,6 +65,7 @@ _localized = {
     'codeComponentLanguage': _translate('Code component language'),
     'unclutteredNamespace': _translate('uncluttered namespace'),
     'componentsFolders': _translate('components folders'),
+    'componentFilter':_translate('componentFilter'),
     'hiddenComponents': _translate('hidden components'),
     'unpackedDemosDir': _translate('unpacked demos dir'),
     'savedDataFolder': _translate('saved data folder'),
@@ -325,8 +329,9 @@ class PrefPropGrid(wx.Panel):
         if section not in self.sections.keys():
             self.sections[section] = []
 
-        self.sections[section].update(
-            {name: wx.propgrid.FileProperty(label, name, value)})
+        prop = wx.propgrid.FileProperty(label, name, value)
+        self.sections[section].update({name: prop})
+        prop.SetAttribute(wx.propgrid.PG_FILE_SHOW_FULL_PATH, True)
 
         self.helpText[name] = helpText
 
@@ -493,19 +498,30 @@ class PreferencesDlg(wx.Dialog):
         sbPrefs.Add(self.stlMain, 0, wx.EXPAND | wx.ALL, 5)
 
         # dialog controls, have builtin localization
-        sdbControls = wx.StdDialogButtonSizer()
+        sdbControls = wx.BoxSizer(wx.HORIZONTAL)
         self.sdbControlsHelp = wx.Button(self.pnlMain, wx.ID_HELP)
-        sdbControls.AddButton(self.sdbControlsHelp)
+        sdbControls.Add(self.sdbControlsHelp, 0,
+                        wx.LEFT | wx.ALL | wx.ALIGN_CENTER_VERTICAL,
+                        border=3)
+        sdbControls.AddStretchSpacer()
+        # Add Okay and Cancel buttons
         self.sdbControlsApply = wx.Button(self.pnlMain, wx.ID_APPLY)
-        sdbControls.AddButton(self.sdbControlsApply)
         self.sdbControlsOK = wx.Button(self.pnlMain, wx.ID_OK)
-        sdbControls.AddButton(self.sdbControlsOK)
         self.sdbControlsCancel = wx.Button(self.pnlMain, wx.ID_CANCEL)
-        sdbControls.AddButton(self.sdbControlsCancel)
-
-        sdbControls.Realize()
-
-        sbPrefs.Add(sdbControls, 0, wx.ALL | wx.ALIGN_RIGHT, 0)
+        if sys.platform == "win32":
+            btns = [self.sdbControlsOK, self.sdbControlsApply, self.sdbControlsCancel]
+        else:
+            btns = [self.sdbControlsCancel, self.sdbControlsApply, self.sdbControlsOK]
+        sdbControls.Add(btns[0], 0,
+                        wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                        border=3)
+        sdbControls.Add(btns[1], 0,
+                        wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                        border=3)
+        sdbControls.Add(btns[2], 0,
+                        wx.ALL | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                        border=3)
+        sbPrefs.Add(sdbControls, flag=wx.ALL | wx.EXPAND, border=3)
 
         self.pnlMain.SetSizer(sbPrefs)
         self.pnlMain.Layout()
@@ -652,7 +668,7 @@ class PreferencesDlg(wx.Dialog):
                         sectionName, pLabel, prefName, thisPref,
                         helpText=helpText)
                 # single file
-                elif prefName in ('flac',):
+                elif prefName in ('flac', 'appKeyGoogleCloud',):
                     self.proPrefs.addFileItem(
                         sectionName, pLabel, prefName, thisPref,
                         helpText=helpText)
