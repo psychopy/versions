@@ -12,14 +12,14 @@
 import os
 import sys
 
-__version__ = '2022.1.0'
+__version__ = '2022.1.1'
 __license__ = 'GNU GPLv3 (or more recent equivalent)'
 __author__ = 'Open Science Tools Ltd'
 __author_email__ = 'support@opensciencetools.org'
 __maintainer_email__ = 'support@opensciencetools.org'
 __url__ = 'https://www.psychopy.org/'
 __download_url__ = 'https://github.com/psychopy/psychopy/releases/'
-__git_sha__ = '475eb834f'
+__git_sha__ = 'ea7492cce'
 __build_platform__ = 'n/a'
 
 __all__ = ["gui", "misc", "visual", "core",
