@@ -35,16 +35,12 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-# Many thanks to Martin O'Leary of supereffective.org, whos Squirtle module
+# Many thanks to Martin O'Leary of supereffective.org, whose Squirtle module
 # formed a major inspiration for this entire project [svgbatch], and in particular for
 # his sublime tesselation code. This has been copied wholesale, under the terms
 # of the BSD.
 # http://www.supereffective.org/pages/Squirtle-SVG-Library
 
-from __future__ import absolute_import, print_function
-
-from builtins import chr
-from builtins import object
 from ctypes import CFUNCTYPE, POINTER, byref, cast
 
 import sys
@@ -101,7 +97,7 @@ def set_tess_callback(which):
     return set_call
 
 
-class Tesselate(object):
+class Tesselate():
 
     def fan_to_triangles(self):
         c = self.curr_shape.pop(0)

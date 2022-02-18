@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2022 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import ast
@@ -60,9 +60,30 @@ class psychoJSTransformer(ast.NodeTransformer):
                 ctx=ast.Load()
             )
 
+        # _thisDir -->  '.'
+        elif node.id == '_thisDir' and isinstance(node.ctx, ast.Load):
+            return ast.Constant(
+                value='.',
+                kind=None
+            )
         # return the node by default:
         return node
 
+
+    def visit_Attribute(self, node):
+
+        node.value = psychoJSTransformer().visit(node.value)
+
+        if isinstance(node.value, ast.Name):
+            # os.sep --> '/'
+            if node.value.id == 'os' and node.attr == 'sep':
+                return ast.Constant(
+                    value='/',
+                    kind=None
+                )
+
+        # return the node by default:
+        return node
 
 class pythonTransformer(ast.NodeTransformer):
     """Python-specific AST transformer
@@ -76,7 +97,7 @@ class pythonTransformer(ast.NodeTransformer):
 
     # operation from the math python module or builtin operations that are available
     # in util/Util.js:
-    utilOperations = ['sum', 'average', 'randint', 'range', 'sort', 'shuffle']
+    utilOperations = ['sum', 'average', 'randint', 'range', 'sort', 'shuffle', 'randchoice']
 
     def visit_BinOp(self, node):
 
@@ -84,9 +105,37 @@ class pythonTransformer(ast.NodeTransformer):
         node.left = pythonTransformer().visit(node.left)
         node.right = pythonTransformer().visit(node.right)
 
-        # formatted strings with %:
+        # formatted strings with %
+        # note: we have extended the pythong syntax slightly, to accommodate both tuples and lists
+        # so both '%_%' % (1,2) and '%_%' % [1,2] are successfully transpiled
         if isinstance(node.op, ast.Mod) and isinstance(node.left, ast.Str):
-            raise Exception('string formatting using % is not currently supported, please use f-strings instead')
+            # transform the node into an f-string node:
+            stringFormat = node.left.value
+            stringTuple = node.right.elts if (
+              isinstance(node.right, ast.Tuple) or isinstance(node.right, ast.List))\
+                else [node.right]
+
+            values = []
+            tupleIndex = 0
+            while True:
+                # TODO deal with more complicated formats, such as %.3f
+                match = re.search(r'%.', stringFormat)
+                if match is None:
+                    break
+                values.append(ast.Constant(value=stringFormat[0:match.span(0)[0]], kind=None))
+                values.append(
+                    self.visit_FormattedValue(
+                        ast.FormattedValue(
+                            value=stringTuple[tupleIndex],
+                            conversion=-1,
+                            format_spec=None
+                        )
+                    )
+                )
+                stringFormat = stringFormat[match.span(0)[1]:]
+                tupleIndex += 1
+
+            return ast.JoinedStr(values)
 
         return node
 
@@ -133,14 +182,14 @@ class pythonTransformer(ast.NodeTransformer):
                     attr='toPrecision',
                     ctx=ast.Load()
                 ),
-                args=[ast.Num(n=precision)],
+                args=[ast.Constant(value=precision, kind=None)],
                 keywords=[]
             )
 
             # deal with width:
             widthCall = ast.Call(
                 func=ast.Name(id='pad', ctx=ast.Load()),
-                args=[precisionCall, ast.Num(n=width)],
+                args=[precisionCall, ast.Constant(value=width, kind=None)],
                 keywords=[]
             )
 
@@ -154,7 +203,6 @@ class pythonTransformer(ast.NodeTransformer):
         raise Exception('formatted f-string are not all supported at the moment')
 
     def visit_Call(self, node):
-
         # transform the node arguments:
         nbArgs = len(node.args)
         for i in range(0, nbArgs):
@@ -204,11 +252,42 @@ class pythonTransformer(ast.NodeTransformer):
 
     def substitutionTransform(self, func, args):
 
+        # a = 'HELLO'
+        # a.lower() --> a.toLowerCase()
+        if func.attr == 'lower':
+            func.attr = 'toLowerCase'
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
         # a = [1,2,3]
         # a.append(4) --> a.push(4)
         # value=Call(func=Attribute(value=Name(id='a', ctx=Load()), attr='append', ctx=Load()), args=[Num(n=4)], keywords=[])
         if func.attr == 'append':
             func.attr = 'push'
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
+        # a = 'hello
+        # a.upper() --> a.toUpperCase()
+        # value=Call(func=Attribute(value=Name(id='a', ctx=Load()), attr='append', ctx=Load()), args=[Num(n=4)], keywords=[])
+        if func.attr == 'upper':
+            func.attr = 'toUpperCase'
+            return ast.Call(
+                func=func,
+                args=args,
+                keywords=[]
+            )
+
+        # a = [1,2,3]
+        # a.extend([4, 5, 6]) --> a.concat([4, 5, 6])
+        if func.attr == 'extend':
+            func.attr = 'concat'
             return ast.Call(
                 func=func,
                 args=args,
@@ -289,7 +368,6 @@ class pythonTransformer(ast.NodeTransformer):
                 args=args,
                 keywords=[]
             )
-
 
 
 class pythonAddonVisitor(ast.NodeVisitor):
@@ -377,7 +455,7 @@ def transformPsychoJsCode(psychoJsCode, addons):
     else:
         startIndex = 0
 
-    if lines[startIndex].find('var') == 0:
+    if lines[startIndex].find('var ') == 0:
         startIndex += 1
 
     for index in range(startIndex, len(lines)):

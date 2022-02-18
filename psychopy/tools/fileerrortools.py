@@ -2,14 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2022 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Functions and classes related to file and directory error handling
 """
-from __future__ import absolute_import, print_function
-
-from builtins import str
 import os
 import glob
 
@@ -23,7 +20,7 @@ def handleFileCollision(fileName, fileCollisionMethod):
 
         fileCollisionMethod: 'overwrite', 'rename', 'fail'
             If a file with the requested name already exists, specify
-            how to deal with it. 'overwrite' will overwite existing
+            how to deal with it. 'overwrite' will overwrite existing
             files in place, 'rename' will append an integer to create
             a new file ('trials1.psydat', 'trials2.pysdat' etc) and
             'error' will raise an IOError.

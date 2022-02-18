@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import print_function  # for compatibility with python3
 import wx
 
 from pyglet.gl import gl_info, GLint, glGetIntegerv, GL_MAX_ELEMENTS_VERTICES
@@ -242,5 +240,3 @@ class SystemInfoDialog(wx.Dialog):
     def OnClose(self, event):
         self.Destroy()
         event.Skip()
-
-

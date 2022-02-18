@@ -3,6 +3,8 @@
 # Copyright (C) 2012-2020 iSolver Software Solutions (C) 2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 import os
+import gevent
+import threading
 import pylink
 
 try:
@@ -21,6 +23,14 @@ try:
 except Exception:
     pass
 
+def start_eyelink(eyelink):
+    eyelink.startRecording(1, 1, 1, 1)
+    gevent.sleep(0.01)
+    if not eyelink.waitForBlockStart(100, 1, 0):
+        print2err('EYETRACKER_START_RECORD_EXCEPTION ')
+
+def stop_eyelink(eyelink):
+    eyelink.stopRecording()
 
 class EyeTracker(EyeTrackerDevice):
     """
@@ -88,6 +98,7 @@ class EyeTracker(EyeTrackerDevice):
     _host_edf_name = None
     _active_edf_file = None
     _file_transfer_progress_dialog = None
+    _keyboard = None
     # <<<
 
     # >>> Overwritten class attributes
@@ -109,6 +120,11 @@ class EyeTracker(EyeTrackerDevice):
         EyeTrackerDevice.__init__(self, *args, **kwargs)
 
         EyeTracker._eyelink = None
+
+        if self._iohub_server:
+            for dev in self._iohub_server.devices:
+                if dev.__class__.__name__ == 'Keyboard':
+                    EyeTracker._keyboard = dev
 
         try:
             tracker_config = self.getConfiguration()
@@ -172,7 +188,7 @@ class EyeTracker(EyeTrackerDevice):
                     if len(default_native_data_file_name) > 7:
                         EyeTracker._full_edf_name = default_native_data_file_name
                         twoDigitRand = np.random.randint(10, 99)
-                        EyeTracker._host_edf_name = self._full_edf_name[:3] + twoDigitRand + self._full_edf_name[5:7]
+                        EyeTracker._host_edf_name = self._full_edf_name[:3] + str(twoDigitRand) + self._full_edf_name[5:7]
                     else:
                         EyeTracker._full_edf_name = default_native_data_file_name
                         EyeTracker._host_edf_name = default_native_data_file_name
@@ -203,7 +219,7 @@ class EyeTracker(EyeTrackerDevice):
 
     def setConnectionState(self, enable):
         """setConnectionState connects the ioHub Server to the EyeLink device
-        if the enable arguement is True, otherwise an open connection is closed
+        if the enable argument is True, otherwise an open connection is closed
         with the device. Calling this method multiple times with the same value
         has no effect.
 
@@ -292,8 +308,8 @@ class EyeTracker(EyeTrackerDevice):
             "key = value"
 
         and this is sent to the EyeLink device. If only key is provided, it is
-        assumed to include both the command name and any value or arguements
-        required by the EyeLink all in the one arguement, which is sent to the
+        assumed to include both the command name and any value or arguments
+        required by the EyeLink all in the one argument, which is sent to the
         EyeLink device untouched.
 
         """
@@ -350,6 +366,13 @@ class EyeTracker(EyeTrackerDevice):
                     eyelink.setAutoCalibrationPacing(int(cal_val * 1000))
                 elif cal_key == 'target_delay' and cal_val:  # in seconds.msec
                     eyelink.setAutoCalibrationPacing(int(cal_val * 1000))
+                elif cal_key == 'randomize':
+                    if cal_val is True:
+                        self._eyelink.sendCommand('randomize_calibration_order = YES')
+                        self._eyelink.sendCommand('randomize_validation_order = YES')
+                    else:
+                        self._eyelink.sendCommand('randomize_calibration_order = NO')
+                        self._eyelink.sendCommand('randomize_validation_order = NO')
                 elif cal_key == 'type':
                     VALID_CALIBRATION_TYPES = dict(THREE_POINTS='HV3', FIVE_POINTS='HV5', NINE_POINTS='HV9',
                                                    THIRTEEN_POINTS='HV13')
@@ -455,18 +478,28 @@ class EyeTracker(EyeTrackerDevice):
                 printExceptionDetailsToStdErr()
 
             if recording is True and not self.isRecordingEnabled():
-                error = self._eyelink.startRecording(1, 1, 1, 1)
-                if error:
-                    print2err('Start Recording error : ', error)
-
-                if not self._eyelink.waitForBlockStart(100, 1, 0):
-                    print2err('EYETRACKER_START_RECORD_EXCEPTION ')
-
+                starter_thread = threading.Thread(target=start_eyelink, args=(EyeTracker._eyelink,))
+                stime = Computer.getTime()
+                starter_thread.start()
+                while starter_thread.is_alive() or Computer.getTime()-stime < 0.5:
+                    gevent.sleep(0.001)
+                starter_thread.join()
+                #print2err('start: ', Computer.getTime()-stime)
+                if Computer.platform == 'win32' and EyeTracker._keyboard:
+                    EyeTracker._keyboard._syncPressedKeyState()
                 EyeTrackerDevice.enableEventReporting(self, True)
                 return self.isRecordingEnabled()
 
             elif recording is False and self.isRecordingEnabled():
-                self._eyelink.stopRecording()
+                stopper_thread = threading.Thread(target=stop_eyelink, args=(EyeTracker._eyelink,))
+                stime = Computer.getTime()
+                stopper_thread.start()
+                while stopper_thread.is_alive() or Computer.getTime()-stime < 0.5:
+                    gevent.sleep(0.001)
+                stopper_thread.join()
+                #print2err('stop: ', Computer.getTime() - stime)
+                if Computer.platform == 'win32' and EyeTracker._keyboard:
+                    EyeTracker._keyboard._syncPressedKeyState()
                 EyeTrackerDevice.enableEventReporting(self, False)
 
                 self._latest_sample = None
@@ -503,7 +536,7 @@ class EyeTracker(EyeTrackerDevice):
         are successfully being tracked, then the average of the two eye
         positions is returned. If the eye tracker is not recording or is not
         connected, then None is returned. The getLastGazePosition method
-        returns the most recent eye gaze position retieved from the eye tracker
+        returns the most recent eye gaze position retrieved from the eye tracker
         device. This is the position on the calibrated 2D surface that the eye
         tracker is reporting as the current eye position. The units are in the
         units in use by the Display device.

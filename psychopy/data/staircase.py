@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-
-# from future import standard_library
-# standard_library.install_aliases()
-from builtins import zip
-from builtins import next
-from past.builtins import basestring
-from past.builtins import str
-from builtins import range
-import string
 import sys
 import os
 import pickle
@@ -256,7 +246,7 @@ class StairHandler(_BaseTrialHandler):
         """
         if not dataName in self.otherData:  # init the list
             if self.thisTrialN > 0:
-                # might have run trals already
+                # might have run trials already
                 self.otherData[dataName] = [None] * (self.thisTrialN - 1)
             else:
                 self.otherData[dataName] = []
@@ -2022,7 +2012,7 @@ class MultiStairHandler(_BaseTrialHandler):
 
         """
         self.addResponse(result, intensity)
-        if isinstance(result, basestring):
+        if isinstance(result, str):
             raise TypeError("MultiStairHandler.addData should only receive "
                             "corr / incorr. Use .addOtherData('datName',val)")
 

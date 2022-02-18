@@ -2,13 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2022 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 # This file by Andrew Schofield
 
-from __future__ import absolute_import, print_function
-
-from os import path
 from pathlib import Path
 from psychopy.experiment.components import BaseVisualComponent, Param, getInitVals, _translate
 from psychopy.localization import _localized as __localized
@@ -145,7 +142,7 @@ class NoiseStimComponent(BaseVisualComponent):
                          "rescaled")
         self.params['interpolate'] = Param(
             interpolate, valType='str', inputType="choice", allowedVals=['linear', 'nearest'], categ='Texture',
-            updates='constant', allowedUpdates=[],
+            updates='constant', allowedUpdates=[], direct=False,
             hint=msg,
             label=_localized['interpolate'])
 
@@ -217,13 +214,13 @@ class NoiseStimComponent(BaseVisualComponent):
             hint=msg,
             label=_localized['noiseBWO'])
             
-        msg = _translate("Orientation of Gabor filter in degrees. Used to set the orienation "
+        msg = _translate("Orientation of Gabor filter in degrees. Used to set the orientation "
                            "of a Gabor filter to be applied to another noise sample with a "
                            "different overall orientation. "
                            "The best way to set the orientation of a Gabor noise sample "
                            "is to leave this as 0 degree and use the overall orientation "
                            "on the Advanced tab to vary the dominant orientation of the noise. "
-                           "If using this setting for orientation it is strongly recomended to set "
+                           "If using this setting for orientation it is strongly recommended to set "
                            "the interpolation method to 'linear' on the Advanced tab to avoid pixelization.")
         self.params['noiseOri'] = Param(
             noiseOri, valType='num', inputType="single", allowedTypes=[], categ='Texture',

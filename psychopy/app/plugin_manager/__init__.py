@@ -1,6 +1,4 @@
-"""Plugin manger for PsychoPy GUI apps (Builder and Coder)."""
-
-from __future__ import absolute_import, division, print_function
+"""Plugin manager for PsychoPy GUI apps (Builder and Coder)."""
 
 from pkg_resources import parse_version
 import wx

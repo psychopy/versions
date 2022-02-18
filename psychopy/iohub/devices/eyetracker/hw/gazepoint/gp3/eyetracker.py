@@ -2,7 +2,6 @@
 # Part of the PsychoPy library
 # Copyright (C) 2012-2020 iSolver Software Solutions (C) 2021 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
-from __future__ import division
 
 import errno
 import sys
@@ -347,7 +346,7 @@ class EyeTracker(EyeTrackerDevice):
         """
         try:
             if time_offset is not None:
-                print2err('Warning: GP3 EyeTracker.sendMessage time_offset arguement is ignored.')
+                print2err('Warning: GP3 EyeTracker.sendMessage time_offset argument is ignored.')
             if self._gp3 and self.isRecordingEnabled() is True:
                 strMessage = '<SET ID="USER_DATA" VALUE="{0}"/>\r\n'.format(message_contents)
                 self._gp3.sendall(strMessage)
@@ -427,7 +426,7 @@ class EyeTracker(EyeTrackerDevice):
         Start the eye tracker calibration procedure.
         """
         cal_config = updateSettings(self.getConfiguration().get('calibration'), calibration_args)
-        print2err("gp3 cal_config:", cal_config)
+        #print2err("gp3 cal_config:", cal_config)
 
         use_builtin = cal_config.get('use_builtin')
         targ_timeout = cal_config.get('target_duration')
@@ -551,7 +550,7 @@ class EyeTracker(EyeTrackerDevice):
 
     def _createStartFixEvt(self, m, logged_time, tracker_time):
         # Create start fixation evt based on m
-        # GP3 does not craete separate left and right eye fix evts, so we
+        # GP3 does not create separate left and right eye fix evts, so we
         # create a left and right fix evt each time.
         gaze = m.get('FPOGX', ET_UNDEFINED), m.get('FPOGY', ET_UNDEFINED)
 

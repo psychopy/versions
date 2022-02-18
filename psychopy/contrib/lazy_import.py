@@ -44,10 +44,8 @@ true for classes or functions (when used as a factory, or you want
 to inherit from them).
 """
 
-from __future__ import absolute_import, print_function
-from builtins import object
 
-class ScopeReplacer(object):
+class ScopeReplacer():
     """A lazy object that will replace itself in the appropriate scope.
 
     This object sits, ready to create the real object the first time it is
@@ -93,7 +91,7 @@ class ScopeReplacer(object):
             # Check if another thread has jumped in while obj was generated.
             real_obj = object.__getattribute__(self, '_real_obj')
             if real_obj is None:
-                # Still no prexisting obj, so go ahead and assign to scope and
+                # Still no preexisting obj, so go ahead and assign to scope and
                 # return. There is still a small window here where races will
                 # not be detected, but safest to avoid additional locking.
                 object.__setattr__(self, '_real_obj', obj)
@@ -219,7 +217,7 @@ class ImportReplacer(ScopeReplacer):
         return module
 
 
-class ImportProcessor(object):
+class ImportProcessor():
     """Convert text that users input into lazy import requests"""
 
     # TODO: jam 20060912 This class is probably not strict enough about

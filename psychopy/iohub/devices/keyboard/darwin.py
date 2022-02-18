@@ -5,7 +5,7 @@
 from copy import copy
 import Quartz as Qz
 from AppKit import NSEvent  # NSKeyUp, NSSystemDefined, NSEvent
-from . import ioHubKeyboardDevice
+from . import ioHubKeyboardDevice, psychopy_key_mappings
 from ...constants import KeyboardConstants, DeviceConstants, EventConstants
 from .. import Computer, Device
 
@@ -26,7 +26,24 @@ import unicodedata
 
 from .darwinkey import code2label
 
-#print2err("code2label: ",code2label)
+psychopy_numlock_key_mappings = dict()
+psychopy_numlock_key_mappings['1'] = 'num_1'
+psychopy_numlock_key_mappings['2'] = 'num_2'
+psychopy_numlock_key_mappings['3'] = 'num_3'
+psychopy_numlock_key_mappings['4'] = 'num_4'
+psychopy_numlock_key_mappings['5'] = 'num_5'
+psychopy_numlock_key_mappings['6'] = 'num_6'
+psychopy_numlock_key_mappings['7'] = 'num_7'
+psychopy_numlock_key_mappings['8'] = 'num_8'
+psychopy_numlock_key_mappings['9'] = 'num_9'
+psychopy_numlock_key_mappings['0'] = 'num_0'
+psychopy_numlock_key_mappings['/'] = 'num_divide'
+psychopy_numlock_key_mappings['*'] = 'num_multiple'
+psychopy_numlock_key_mappings['-'] = 'num_minus'
+psychopy_numlock_key_mappings['+'] = 'num_add'
+psychopy_numlock_key_mappings['='] = 'num_equal'
+psychopy_numlock_key_mappings['.'] = 'num_decimal'
+
 carbon_path = ctypes.util.find_library('Carbon')
 carbon = ctypes.cdll.LoadLibrary(carbon_path)
 
@@ -151,8 +168,8 @@ class Keyboard(ioHubKeyboardDevice):
         ioHubKeyboardDevice.__init__(self, *args, **kwargs['dconfig'])
 
         # TODO: This dict should be reset whenever monitoring is turned off for the device OR
-        # whenever events are cleared fpr the device.
-        # Same to do for the _active_modifiers bool lookup array
+        # whenever events are cleared for the device.
+        # Do the same for the _active_modifiers bool lookup array
         self._last_general_mod_states = dict(
             shift_on=False, alt_on=False, cmd_on=False, ctrl_on=False)
 
@@ -269,7 +286,7 @@ class Keyboard(ioHubKeyboardDevice):
                         key_mods)
 
                     if fnModifierActive(key_mods) and keyFromNumpad(key_mods):
-                        # Atleast on mac mini wireless kb, arrow keys have
+                        # At least on mac mini wireless kb, arrow keys have
                         # fnModifierActive at all times, even when fn key is not pressed.
                         # When fn key 'is' pressed, and arrow key is pressed,
                         # then keyFromNumpad becomes false.
@@ -308,12 +325,19 @@ class Keyboard(ioHubKeyboardDevice):
                     elif key_value == 'return':
                         char_value = '\n'
 
-                    is_auto_repeat = Qz.CGEventGetIntegerValueField(
-                        event, Qz.kCGKeyboardEventAutorepeat)
+                    if Keyboard.use_psychopy_keymap:
+                        if keyFromNumpad(key_mods) and key_value in psychopy_numlock_key_mappings.keys():
+                            key_value = psychopy_numlock_key_mappings[key_value]
+                        elif key_value in psychopy_key_mappings.keys():
+                            key_value = psychopy_key_mappings[key_value]
+
+
+
+                    is_auto_repeat = Qz.CGEventGetIntegerValueField(event, Qz.kCGKeyboardEventAutorepeat)
 
                     # TODO: CHeck WINDOW BOUNDS
 
-                    # report_system_wide_events=self.getConfiguration().get('report_system_wide_events',True)
+                    # report_system_wide_events=s elf.getConfiguration().get('report_system_wide_events',True)
                     # Can not seem to figure out how to get window handle id from evt to match with pyget in darwin, so
                     # Comparing event target process ID to the psychopy windows process ID,
                     # yglet_window_hnds=self._iohub_server._pyglet_window_hnds

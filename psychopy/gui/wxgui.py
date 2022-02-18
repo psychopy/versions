@@ -2,17 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2021 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2022 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """To build simple dialogues etc. (requires wxPython)
 """
 
-from __future__ import absolute_import, print_function
-
-from builtins import str
-from builtins import super
-from builtins import range
 from psychopy import logging
 import wx
 import numpy
@@ -353,7 +348,7 @@ def fileSaveDlg(initFilePath="", initFileName="",
         allowed: string
             A string to specify file filters.
             e.g. "BMP files (*.bmp)|*.bmp|GIF files (*.gif)|*.gif"
-            See http://www.wxpython.org/docs/api/wx.FileDialog-class.html
+            See https://docs.wxpython.org/wx.FileDialog.html
             for further details
 
     If initFilePath or initFileName are empty or invalid then
@@ -398,7 +393,7 @@ def fileOpenDlg(tryFilePath="",
         allowed: string (available since v1.62.01)
             a string to specify file filters.
             e.g. "BMP files (*.bmp)|*.bmp|GIF files (*.gif)|*.gif"
-            See http://www.wxpython.org/docs/api/wx.FileDialog-class.html
+            See https://docs.wxpython.org/wx.FileDialog.html
             for further details
 
     If tryFilePath or tryFileName are empty or invalid then
