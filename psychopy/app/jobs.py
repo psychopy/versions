@@ -36,6 +36,7 @@ __all__ = [
 import os.path
 
 import wx
+import os
 from subprocess import Popen, PIPE
 from threading import Thread, Event
 from queue import Queue, Empty
@@ -248,7 +249,8 @@ class Job:
                 cwd=cwd,
                 env=None,
                 universal_newlines=True,  # gives us back a string instead of bytes
-                creationflags=0
+                creationflags=0,
+                text=True
             )
         except FileNotFoundError:
             return -1  # negative PID means failure
@@ -286,6 +288,7 @@ class Job:
 
         # isOk = wx.Process.Kill(self._pid, signal, flags) is wx.KILL_OK
         self._process.kill()  # kill the process
+        #self._pollTimer.Stop()
 
         # Wait for the process to exit completely, return code will be incorrect
         # if we don't.

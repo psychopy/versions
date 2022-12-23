@@ -30,6 +30,7 @@ except ImportError:
 import copy
 import sys
 import os
+import ctypes
 from psychopy import logging
 
 # tools must only be imported *after* event or MovieStim breaks on win32
@@ -634,6 +635,8 @@ class ForeColorMixin(BaseColorMixin, LegacyForeColorMixin):
         if not self._foreColor:
             self._foreColor = Color()
             logging.error(f"'{value}' is not a valid {self.colorSpace} color")
+        # Handle logging
+        logAttrib(self, log=None, attrib="foreColor", value=value)
 
     @property
     def color(self):
@@ -679,6 +682,8 @@ class FillColorMixin(BaseColorMixin, LegacyFillColorMixin):
             # If given an invalid color, set as transparent and log error
             self._fillColor = Color()
             logging.error(f"'{value}' is not a valid {self.colorSpace} color")
+        # Handle logging
+        logAttrib(self, log=None, attrib="fillColor", value=value)
 
     @property
     def backColor(self):
@@ -719,6 +724,9 @@ class BorderColorMixin(BaseColorMixin, LegacyBorderColorMixin):
             # If given an invalid color, set as transparent and log error
             self._borderColor = Color()
             logging.error(f"'{value}' is not a valid {self.colorSpace} color")
+
+        # Handle logging
+        logAttrib(self, log=None, attrib="borderColor", value=value)
 
     @property
     def lineColor(self):
@@ -908,35 +916,37 @@ class TextureMixin:
 
     Could move visual.helpers.setTexIfNoShaders() into here.
 
-    Parameters
-    ----------
-    tex : Any
-        Texture data. Value can be anything that resembles image data.
-    id : int or :class:`~pyglet.gl.GLint`
-        Texture ID.
-    pixFormat : :class:`~pyglet.gl.GLenum` or int
-        Pixel format to use, values can be `GL_ALPHA` or `GL_RGB`.
-    stim : Any
-        Stimulus object using the texture.
-    res : int
-        The resolution of the texture (unless a bitmap image is used).
-    maskParams : dict or None
-        Additional parameters to configure the mask used with this texture.
-    forcePOW2 : bool
-        Force the texture to be stored in a square memory area. For grating
-        stimuli (anything that needs multiple cycles) `forcePOW2` should be
-        set to be `True`. Otherwise the wrapping of the texture will not
-        work.
-    dataType : class:`~pyglet.gl.GLenum`, int or None
-        None, `GL_UNSIGNED_BYTE`, `GL_FLOAT`. Only affects image files
-        (numpy arrays will be float).
-    wrapping : bool
-        Enable wrapping of the texture. A texture will be set to repeat (or
-        tile).
-
     """
     def _createTexture(self, tex, id, pixFormat, stim, res=128, maskParams=None,
                        forcePOW2=True, dataType=None, wrapping=True):
+        """Create a new OpenGL 2D image texture.
+
+        Parameters
+        ----------
+        tex : Any
+            Texture data. Value can be anything that resembles image data.
+        id : int or :class:`~pyglet.gl.GLint`
+            Texture ID.
+        pixFormat : :class:`~pyglet.gl.GLenum` or int
+            Pixel format to use, values can be `GL_ALPHA` or `GL_RGB`.
+        stim : Any
+            Stimulus object using the texture.
+        res : int
+            The resolution of the texture (unless a bitmap image is used).
+        maskParams : dict or None
+            Additional parameters to configure the mask used with this texture.
+        forcePOW2 : bool
+            Force the texture to be stored in a square memory area. For grating
+            stimuli (anything that needs multiple cycles) `forcePOW2` should be
+            set to be `True`. Otherwise the wrapping of the texture will not
+            work.
+        dataType : class:`~pyglet.gl.GLenum`, int or None
+            None, `GL_UNSIGNED_BYTE`, `GL_FLOAT`. Only affects image files
+            (numpy arrays will be float).
+        wrapping : bool
+            Enable wrapping of the texture. A texture will be set to repeat (or
+            tile).
+        """
 
         # transform all variants of `None` to that, simplifies conditions below
         if tex in ["none", "None", "color"]:
@@ -1019,6 +1029,21 @@ class TextureMixin:
                     logging.flush()
                     msg = "Found file '%s' [= %s], failed to load as an image"
                     raise IOError(msg % (tex, os.path.abspath(tex)))
+            elif hasattr(tex, 'getVideoFrame'):  # camera or movie textures
+                # get an image to configure the initial texture store
+                frame = tex.getVideoFrame()
+                if frame is not None:
+                    frameSize = frame.size
+                    im = Image.frombuffer(
+                        'RGB',
+                        frameSize,
+                        frame.colorData
+                    ).transpose(Image.FLIP_TOP_BOTTOM)
+                else:
+                    msg = "Failed to initialize texture from camera stream."
+                    logging.error(msg)
+                    logging.flush()
+                    raise AttributeError(msg)
             else:
                 # can't be a file; maybe its an image already in memory?
                 try:
@@ -1134,6 +1159,30 @@ class TextureMixin:
                 internalFormat = GL.GL_RGBA32F_ARB
         texture = data.ctypes  # serialise
 
+        # Create the pixel buffer object which will serve as the texture memory
+        # store. First we compute the number of bytes used to store the texture.
+        # We need to determine the data type in use by the texture to do this.
+        if stim is not None and hasattr(stim, '_pixbuffID'):
+            if dataType == GL.GL_UNSIGNED_BYTE:
+                storageType = GL.GLubyte
+            elif dataType == GL.GL_FLOAT:
+                storageType = GL.GLfloat
+            else:
+                # raise waring or error? just default to `GLfloat` for now
+                storageType = GL.GLfloat
+
+            # compute buffer size
+            bufferSize = data.size * ctypes.sizeof(storageType)
+
+            # create the pixel buffer to access texture memory as an array
+            GL.glBindBuffer(GL.GL_PIXEL_UNPACK_BUFFER, stim._pixbuffID)
+            GL.glBufferData(
+                GL.GL_PIXEL_UNPACK_BUFFER,
+                bufferSize,
+                None,
+                GL.GL_STREAM_DRAW)  # one-way app -> GL
+            GL.glBindBuffer(GL.GL_PIXEL_UNPACK_BUFFER, 0)
+
         # bind the texture in openGL
         GL.glEnable(GL.GL_TEXTURE_2D)
         GL.glBindTexture(GL.GL_TEXTURE_2D, id)  # bind that name to the target
@@ -1185,9 +1234,14 @@ class TextureMixin:
         As of v1.61.00 this is called automatically during garbage collection
         of your stimulus, so doesn't need calling explicitly by the user.
         """
-        GL.glDeleteTextures(1, self._texID)
+        if hasattr(self, '_texID'):
+            GL.glDeleteTextures(1, self._texID)
+
         if hasattr(self, '_maskID'):
             GL.glDeleteTextures(1, self._maskID)
+
+        if hasattr(self, '_pixBuffID'):
+            GL.glDeleteBuffers(1, self._pixBuffID)
 
     @attributeSetter
     def mask(self, value):
@@ -1307,7 +1361,16 @@ class WindowMixin:
 
     @pos.setter
     def pos(self, value):
-        self._pos = Position(value, units=self.units, win=self.win)
+        # If no autolog attribute, assume silent
+        if hasattr(self, "autoLog"):
+            log = self.autoLog
+        else:
+            log = False
+        # Do attribute setting
+        setAttribute(self, '_pos', Position(value, units=self.units, win=self.win), log)
+
+        if hasattr(self, "_vertices"):
+            self._vertices._pos = self._pos
 
         if hasattr(self, "_vertices"):
             self._vertices._pos = self._pos
@@ -1319,9 +1382,19 @@ class WindowMixin:
 
     @size.setter
     def size(self, value):
+        # Convert None to a 2x1 tuple
         if value is None:
             value = (None, None)
-        self._size = Size(value, units=self.units, win=self.win)
+        # If no autolog attribute, assume silent
+        if hasattr(self, "autoLog"):
+            log = self.autoLog
+        else:
+            log = False
+        # Do attribute setting
+        setAttribute(self, '_size', Size(value, units=self.units, win=self.win), log)
+
+        if hasattr(self, "_vertices"):
+            self._vertices._size = self._size
 
         if hasattr(self, "_vertices"):
             self._vertices._size = self._size
@@ -1339,13 +1412,22 @@ class WindowMixin:
     def width(self, value):
         # Convert to a numpy array
         value = numpy.array(value)
+        # Get original size
+        size = self.size
         # Set size
         if len(self.size.shape) == 1:
             # Set first value if a 1d array
-            self.size[0] = value
+            size[0] = value
         elif len(self.size.shape) == 2:
             # Set first column if a 2d array
-            self.size[:, 0] = value
+            size[:, 0] = value
+        else:
+            raise NotImplementedError(
+                f"Cannot set height and width for {type(self).__name__} objects with more than 2 dimensions. "
+                f"Please use .size instead."
+            )
+
+        self.size = size
 
     @property
     def height(self):
@@ -1360,13 +1442,22 @@ class WindowMixin:
     def height(self, value):
         # Convert to a numpy array
         value = numpy.array(value)
+        # Get original size
+        size = self.size
         # Set size
         if len(self.size.shape) == 1:
-            # Set first value if a 1d array
-            self.size[1] = value
+            # Set second value if a 1d array
+            size[1] = value
         elif len(self.size.shape) == 2:
-            # Set first column if a 2d array
-            self.size[:, 1] = value
+            # Set second column if a 2d array
+            size[:, 1] = value
+        else:
+            raise NotImplementedError(
+                f"Cannot set height and width for {type(self).__name__} objects with more than 2 dimensions. "
+                f"Please use .size instead."
+            )
+
+        self.size = size
 
     @property
     def vertices(self):
@@ -1395,6 +1486,7 @@ class WindowMixin:
             ]
         # Create Vertices object
         self._vertices = Vertices(value, obj=self, flip=self.flip, anchor=self.anchor)
+        self._needVertexUpdate = True
 
     @property
     def flip(self):
