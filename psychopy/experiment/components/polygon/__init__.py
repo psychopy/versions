@@ -75,7 +75,7 @@ class PolygonComponent(BaseVisualComponent):
         self.params['nVertices'] = Param(
             nVertices, valType='int', inputType="single", categ='Basic',
             updates='constant',
-            allowedUpdates=['constant'],
+            allowedUpdates=['constant', 'set every repeat', 'set every frame'],
             hint=msg,
             label=_localized['nVertices'])
 
@@ -108,7 +108,7 @@ class PolygonComponent(BaseVisualComponent):
                          "polygon...' you can set vertices")
         self.params['shape'] = Param(
             shape, valType='str', inputType="choice", categ='Basic',
-            allowedVals=["line", "triangle", "rectangle", "circle", "cross", "star",
+            allowedVals=["line", "triangle", "rectangle", "circle", "cross", "star", "arrow",
                          "regular polygon...", "custom polygon..."],
             hint=msg, direct=False,
             label=_translate("Shape"))
@@ -156,11 +156,11 @@ class PolygonComponent(BaseVisualComponent):
             inits['size'].val = '[1.0, 1.0]'
 
         if self.params['shape'] == 'regular polygon...':
-            vertices = self.params['nVertices']
+            vertices = inits['nVertices']
         elif self.params['shape'] == 'custom polygon...':
-            vertices = self.params['vertices']
+            vertices = inits['vertices']
         else:
-            vertices = self.params['shape']
+            vertices = inits['shape']
         if vertices in ['line', '2']:
             code = ("%s = visual.Line(\n" % inits['name'] +
                     "    win=win, name='%s',%s\n" % (inits['name'], unitsStr) +
@@ -266,6 +266,10 @@ class PolygonComponent(BaseVisualComponent):
             code = ("{name} = new visual.ShapeStim ({{\n"
                     "  win: psychoJS.window, name: '{name}', {unitsStr}\n"
                     "  vertices: 'cross', size:{size},\n")
+        elif vertices in ['arrow']:
+            code = ("{name} = new visual.ShapeStim ({{\n"
+                    "  win: psychoJS.window, name: '{name}', {unitsStr}\n"
+                    "  vertices: 'arrow', size:{size},\n")
         else:
             code = ("{name} = new visual.Polygon ({{\n"
                     "  win: psychoJS.window, name: '{name}', {unitsStr}\n"
@@ -278,6 +282,7 @@ class PolygonComponent(BaseVisualComponent):
             interpolate = 'false'
 
         code += ("  ori: {ori}, pos: {pos},\n"
+                 "  anchor: {anchor},\n"
                  "  lineWidth: {lineWidth}, \n"
                  "  colorSpace: {colorSpace},\n"
                  "  lineColor: new util.Color({lineColor}),\n"
@@ -287,6 +292,7 @@ class PolygonComponent(BaseVisualComponent):
 
         buff.writeIndentedLines(code.format(name=inits['name'],
                                             unitsStr=unitsStr,
+                                            anchor=inits['anchor'],
                                             lineWidth=inits['lineWidth'],
                                             size=inits['size'],
                                             ori=inits['ori'],
