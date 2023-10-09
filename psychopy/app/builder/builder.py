@@ -1726,7 +1726,7 @@ class RoutineCanvas(wx.ScrolledWindow, handlers.ThemeMixin):
         self.fontBaseSize = (1100, 1200, 1300)[self.drawSize]  # depends on OS?
         #self.scroller = PsychopyScrollbar(self, wx.VERTICAL)
         self.SetVirtualSize((self.maxWidth, self.maxHeight))
-        self.SetScrollRate(self.dpi // 4, self.dpi // 4)
+        self.SetScrollRate(self.dpi // 16, self.dpi // 16)
 
         self.routine = routine
         self.yPositions = None
@@ -1834,8 +1834,8 @@ class RoutineCanvas(wx.ScrolledWindow, handlers.ThemeMixin):
 
     def OnScroll(self, event):
         xy = self.GetViewStart()
-        multiplier = self.dpi / 1600
-        self.Scroll(xy[0], int(xy[1] - event.WheelRotation * multiplier))
+        delta = int(event.WheelRotation * self.dpi / 1600)
+        self.Scroll(xy[0], xy[1]-delta)
 
     def showContextMenu(self, component, xy):
         """Show a context menu in the routine view.
@@ -3357,7 +3357,7 @@ class FlowCanvas(wx.ScrolledWindow, handlers.ThemeMixin):
         self.appData = self.app.prefs.appData
 
         # self.SetAutoLayout(True)
-        self.SetScrollRate(self.dpi // 4, self.dpi // 4)
+        self.SetScrollRate(self.dpi // 16, self.dpi // 16)
 
         # create a PseudoDC to record our drawing
         self.pdc = PseudoDC()
@@ -4035,6 +4035,8 @@ class FlowCanvas(wx.ScrolledWindow, handlers.ThemeMixin):
 
     def drawLineStart(self, dc, pos):
         # draw bar at start of timeline; circle looked bad, offset vertically
+        tmpId = wx.NewId()
+        dc.SetId(tmpId)
         ptSize = (9, 9, 12)[self.appData['flowSize']]
         thic = (1, 1, 2)[self.appData['flowSize']]
         dc.SetBrush(wx.Brush(colors.app['fl_flowline_bg']))
@@ -4047,8 +4049,8 @@ class FlowCanvas(wx.ScrolledWindow, handlers.ThemeMixin):
 
     def drawLineEnd(self, dc, pos):
         # draws arrow at end of timeline
-        # tmpId = wx.NewIdRef()
-        # dc.SetId(tmpId)
+        tmpId = wx.NewId()
+        dc.SetId(tmpId)
         dc.SetBrush(wx.Brush(colors.app['fl_flowline_bg']))
         dc.SetPen(wx.Pen(colors.app['fl_flowline_bg']))
 
