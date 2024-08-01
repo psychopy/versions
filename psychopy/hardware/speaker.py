@@ -1,13 +1,32 @@
 from psychopy.hardware import BaseDevice
-from psychopy.sound import setDevice, getDevices
+from psychopy.sound import setDevice, getDevices, backend
+from psychopy import logging
 
 
 class SpeakerDevice(BaseDevice):
     def __init__(self, index):
-        # use first device if index is default
+        profiles = self.getAvailableDevices()
+
+        # if index is default (-1), setup a default device index
         if not isinstance(index, (int, float)) or index < 0:
-            profiles = self.getAvailableDevices()
-            index = profiles[0]['index']
+            index = profiles[0]['index']  # initialize as the first device
+
+            # check if a default device is already set and update index
+            if hasattr(backend, 'defaultOutput'):
+                defaultDevice = backend.defaultOutput
+                if isinstance(defaultDevice, (int, float)):
+                    # if a default device index is set, use it
+                    index = defaultDevice
+                elif isinstance(defaultDevice, str):
+                    # if a default device is set by name, find it
+                    for profile in profiles:
+                        if profile['deviceName'] == defaultDevice:
+                            index = profile['index']
+
+        available_index = [profile['index'] for profile in profiles]
+        if index < 0 or index not in available_index:
+            logging.error("No speaker device found with index %d" % index)
+
         # store index
         self.index = index
         # set global device (best we can do for now)
@@ -39,6 +58,22 @@ class SpeakerDevice(BaseDevice):
             return False
 
         return self.index == index
+
+    def testDevice(self):
+        """
+        Play a simple sound to check whether this device is working.
+        """
+        from psychopy.sound import Sound
+        import time
+        # create a basic sound
+        snd = Sound(
+            speaker=self.index,
+            value="A"
+        )
+        # play the sound for 1s
+        snd.play()
+        time.sleep(1)
+        snd.stop()
 
     @staticmethod
     def getAvailableDevices():

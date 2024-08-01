@@ -1724,7 +1724,7 @@ class DraggingMixin:
         """
         # if we don't have reference to a mouse, make one
         if not isinstance(self.mouse, Mouse):
-            self.mouse = Mouse(win=self.win)
+            self.mouse = Mouse(visible=self.win.mouseVisible, win=self.win)
             # make sure it has an initial pos for rel pos comparisons
             self.mouse.lastPos = self.mouse.getPos()
         # store value
@@ -1762,17 +1762,10 @@ class BaseVisualStim(MinimalStim, WindowMixin, LegacyVisualMixin):
         (transparent). :ref:`Operations <attrib-operations>` are supported.
         Precisely how this is used depends on the :ref:`blendMode`.
         """
-        alphas = []
-        if hasattr(self, '_foreColor'):
-            alphas.append(self._foreColor.alpha)
-        if hasattr(self, '_fillColor'):
-            alphas.append(self._fillColor.alpha)
-        if hasattr(self, '_borderColor'):
-            alphas.append(self._borderColor.alpha)
-        if alphas:
-            return mean(alphas)
-        else:
+        if not hasattr(self, "_opacity"):
             return 1
+        
+        return self._opacity 
 
     @opacity.setter
     def opacity(self, value):
@@ -1780,6 +1773,7 @@ class BaseVisualStim(MinimalStim, WindowMixin, LegacyVisualMixin):
         if value is None:
             # If opacity is set to be None, this indicates that each color should handle its own opacity
             return
+        self._opacity = value
         if hasattr(self, '_foreColor'):
             if self._foreColor != None:
                 self._foreColor.alpha = value

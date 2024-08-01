@@ -8,13 +8,13 @@ import platform
 from pathlib import Path
 from .. import __version__
 
-from pkg_resources import parse_version
+from packaging.version import Version
 import shutil
 
 try:
     import configobj
     if (sys.version_info.minor >= 7 and
-            parse_version(configobj.__version__) < parse_version('5.1.0')):
+            Version(configobj.__version__) < Version('5.1.0')):
         raise ImportError('Installed configobj does not support Python 3.7+')
     _haveConfigobj = True
 except ImportError:
@@ -101,6 +101,14 @@ class Preferences:
         self.loadAll()  # reloads, now getting all from .spec
 
     def getPaths(self):
+        """Get the paths to various directories and files used by PsychoPy.
+
+        If the paths are not found, they are created. Usually, this is only
+        necessary on the first run of PsychoPy. However, if the user has
+        deleted or moved the preferences directory, this method will recreate 
+        those directories.
+
+        """
         # on mac __file__ might be a local path, so make it the full path
         thisFileAbsPath = os.path.abspath(__file__)
         prefSpecDir = os.path.split(thisFileAbsPath)[0]
@@ -119,6 +127,7 @@ class Preferences:
         self.paths['appFile'] = join(dirApp, 'PsychoPy.py')
         self.paths['demos'] = join(dirPsychoPy, 'demos')
         self.paths['resources'] = dirResources
+        self.paths['assets'] = join(dirPsychoPy, "assets")
         self.paths['tests'] = join(dirPsychoPy, 'tests')
         # path to libs/frameworks
         if 'PsychoPy.app/Contents' in exePath:
@@ -148,6 +157,7 @@ class Preferences:
             'themes',  # define theme path
             'fonts',  # find / copy fonts
             'packages',  # packages and plugins
+            'configs',  # config files for plugins
             'cache',  # cache for downloaded and other temporary files
         )
 
@@ -164,42 +174,55 @@ class Preferences:
             except OSError as err:
                 if err.errno != errno.EEXIST:
                     raise
-        
+
         # root site-packages directory for user-installed packages and add it
-        pyVer = 'Python{}{}'.format(
-            sys.version_info.major, sys.version_info.minor)
-        prefixRootDir = Path(
-            self.paths['userPrefsDir']) / 'packages' / pyVer
+        userPkgRoot = Path(self.paths['packages'])
+
+        # Package paths for custom user site-packages, these should be compliant
+        # with platform specific conventions.
+        if sys.platform == 'win32':
+            pyDirName = "Python" + sys.winver.replace(".", "")
+            userPackages = userPkgRoot / pyDirName / "site-packages"
+            userInclude = userPkgRoot / pyDirName / "Include"
+            userScripts = userPkgRoot / pyDirName / "Scripts"
+        elif sys.platform == 'darwin' and sys._framework:  # macos + framework
+            pyVersion = sys.version_info
+            pyDirName = "python{}.{}".format(pyVersion[0], pyVersion[1])
+            userPackages = userPkgRoot / "lib" / "python" / "site-packages"
+            userInclude = userPkgRoot / "include" / pyDirName
+            userScripts = userPkgRoot / "bin"
+        else:  # posix (including linux and macos without framework)
+            pyVersion = sys.version_info
+            pyDirName = "python{}.{}".format(pyVersion[0], pyVersion[1])
+            userPackages = userPkgRoot / "lib" / pyDirName / "site-packages"
+            userInclude = userPkgRoot / "include" / pyDirName
+            userScripts = userPkgRoot / "bin"
 
         # populate directory structure for user-installed packages
-        if not prefixRootDir.is_dir():
-            prefixRootDir.mkdir()
-        
-        userSiteDir = prefixRootDir / 'site-packages'
-        if not userSiteDir.is_dir():
-            userSiteDir.mkdir()
-
-        # Scripts directory for user-installed packages
-        userScriptsDir = prefixRootDir / 'Scripts'
-        if not userScriptsDir.is_dir():
-            userScriptsDir.mkdir()
+        if not userPackages.is_dir():
+            userPackages.mkdir(parents=True)
+        if not userInclude.is_dir():
+            userInclude.mkdir(parents=True)
+        if not userScripts.is_dir():
+            userScripts.mkdir(parents=True)
 
         # add paths from plugins/packages (installed by plugins manager)
-        self.paths['userPackages'] = userSiteDir
-        self.paths['userScripts'] = userScriptsDir
-        
+        self.paths['userPackages'] = userPackages
+        self.paths['userInclude'] = userInclude
+        self.paths['userScripts'] = userScripts
+
         # Get dir for base and user themes
         baseThemeDir = Path(self.paths['appDir']) / "themes" / "spec"
         userThemeDir = Path(self.paths['themes'])
         # Check what version user themes were last updated in
         if (userThemeDir / "last.ver").is_file():
             with open(userThemeDir / "last.ver", "r") as f:
-                lastVer = parse_version(f.read())
+                lastVer = Version(f.read())
         else:
             # if no version available, assume it was the first version to have themes
-            lastVer = parse_version("2020.2.0")
+            lastVer = Version("2020.2.0")
         # If version has changed since base themes last copied, they need updating
-        updateThemes = lastVer < parse_version(__version__)
+        updateThemes = lastVer < Version(__version__)
         # Copy base themes to user themes folder if missing or need update
         for file in baseThemeDir.glob("*.json"):
             if updateThemes or not (Path(self.paths['themes']) / file.name).is_file():

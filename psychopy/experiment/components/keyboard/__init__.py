@@ -170,10 +170,23 @@ class KeyboardComponent(BaseDeviceComponent):
         buff.writeIndentedLines(code % self.params)
 
     def writeRoutineStartCode(self, buff):
-        code = ("%(name)s.keys = []\n"
-                "%(name)s.rt = []\n"
-                "_%(name)s_allKeys = []\n")
+        code = (
+            "# create starting attributes for %(name)s\n"
+            "%(name)s.keys = []\n"
+            "%(name)s.rt = []\n"
+            "_%(name)s_allKeys = []\n"
+        )
         buff.writeIndentedLines(code % self.params)
+        # if allowedKeys looks like a variable, load it from global
+        allowedKeys = str(self.params['allowedKeys'])
+        allowedKeysIsVar = valid_var_re.match(str(allowedKeys)) and not allowedKeys == 'None'
+        if allowedKeysIsVar:
+            code = (
+                "# allowedKeys looks like a variable, so make sure it exists locally\n"
+                "if '%(allowedKeys)s' in globals():\n"
+                "    %(allowedKeys)s = globals()['%(allowedKeys)s']\n"
+            )
+            buff.writeIndentedLines(code % self.params)
 
     def writeRoutineStartCodeJS(self, buff):
         code = ("%(name)s.keys = undefined;\n"
@@ -203,13 +216,12 @@ class KeyboardComponent(BaseDeviceComponent):
                 # if it looks like a variable, check that the variable is suitable
                 # to eval at run-time
                 stringType = 'str'
-                code = ("# AllowedKeys looks like a variable named `{0}`\n"
-                        "if not type({0}) in [list, tuple, np.ndarray]:\n"
-                        "    if not isinstance({0}, {1}):\n"
-                        "        logging.error('AllowedKeys variable `{0}` is "
-                        "not string- or list-like.')\n"
-                        "        core.quit()\n"
-                        .format(allowedKeys, stringType))
+                code = (
+                    "# allowed keys looks like a variable named `{0}`\n"
+                    "if not type({0}) in [list, tuple, np.ndarray]:\n"
+                    "    if not isinstance({0}, {1}):\n"
+                    "        {0} = str({0})\n"
+                ).format(allowedKeys, stringType)
 
                 code += (
                     "    elif not ',' in {0}:\n"
