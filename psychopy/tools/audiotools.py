@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import os
@@ -97,6 +97,9 @@ sampleRateQualityLevels = {
     3: (SAMPLE_RATE_48kHz, 'DVD Audio (48kHz)'),  # <<< usually system default
     4: (SAMPLE_RATE_96kHz, 'High-Def (96kHz)'),
     5: (SAMPLE_RATE_192kHz, 'Ultra High-Def (192kHz)')
+}
+sampleRateLabels = {
+    r[1]: r[0] for r in sampleRateQualityLevels.values()
 }
 
 # supported formats for loading and saving audio samples to file

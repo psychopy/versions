@@ -55,6 +55,26 @@ def is_file(source):
     return isFile
 
 
+class RegexSearchable(str):
+    """
+    Like a string, but uses `re.search` for `in` comparisons
+
+    Example
+    -------
+    ```
+    r".*" in RegexSearchable("any text!")
+    ```
+    is the same as 
+    ```
+    bool(re.search(r".*", "any text!"))
+    ```
+    """
+    def __contains__(self, item):
+        return bool(
+            re.search(pattern=item, string=self)
+        )
+
+
 class CaseSwitcher:
     """
     Collection of static methods for switching case in strings. Can currently convert between:
@@ -230,7 +250,7 @@ class CaseSwitcher:
         return value
 
 
-def wrap(value, chars, delim=r"\s|\-"):
+def wrap(value, chars, delim=r"\s|-"):
     """
     Wrap a string at a number of characters.
 
@@ -241,7 +261,7 @@ def wrap(value, chars, delim=r"\s|\-"):
     chars : int
         Number of characters to split at
     delim : str
-        Regex string delimeter to split words at, default is a space or a hyphen (r"\s|\-")
+        Regex string delimeter to split words at, default is a space or a hyphen (r"\\s|\-")
 
     Returns
     -------

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Functions and classes related to file and directory handling
@@ -246,7 +246,7 @@ def openOutputFile(fileName=None, append=False, fileCollisionMethod='rename',
         encoding = None
 
     if os.path.exists(fileName) and mode in ['w', 'wb']:
-        logging.warning('Data file %s will be overwritten!' % fileName)
+        logging.info('Data file %s will be overwritten' % fileName)
 
     # The file will always be opened in binary writing mode,
     # see https://docs.python.org/2/library/codecs.html#codecs.open

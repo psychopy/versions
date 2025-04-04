@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """A Backend class defines the core low-level functions required by a Window
@@ -45,6 +45,9 @@ if pyglet.version < '1.4':
     _default_display_ = pyglet.window.get_platform().get_default_display()
 else:
     _default_display_ = pyglet.canvas.get_display()
+
+USE_LEGACY_GL = pyglet.version < '2.0'
+
 
 # Cursors available to pyglet. These are used to map string names to symbolic
 # constants used to specify which cursor to use.
@@ -139,11 +142,13 @@ class PygletBackend(BaseBackend):
             win.stereo = False
 
         if sys.platform == 'darwin' and not win.useRetina and pyglet.version >= "1.3":
-            raise ValueError(
+            logging.warn(
                 "As of PsychoPy 1.85.3 OSX windows should all be set to "
                 "`useRetina=True` (or remove the argument). Pyglet 1.3 appears "
                 "to be forcing us to use retina on any retina-capable screen "
-                "so setting to False has no effect.")
+                "so setting to False has no effect."
+            )
+            win.useRetina = True
 
         # window framebuffer configuration
         bpc = backendConf.get('bpc', (8, 8, 8))
@@ -385,6 +390,17 @@ class PygletBackend(BaseBackend):
 
         # store properties of the system
         self._driver = pyglet.gl.gl_info.get_renderer()
+        logging.info("Using renderer '{}' for graphics".format(self._driver))
+
+        # report the OpenGL version
+        glVersion = pyglet.gl.gl_info.get_version()
+        logging.info("OpenGL version supported by driver is {}.{}".format(
+            glVersion[0], glVersion[1]))
+
+        if int(glVersion[0]) < 2:
+            raise RuntimeError(
+                "OpenGL version 2.0 or higher is required! Please update your "
+                "graphics drivers or use a different backend.")
 
     @property
     def frameBufferSize(self):
@@ -394,7 +410,7 @@ class PygletBackend(BaseBackend):
     @property
     def shadersSupported(self):
         # on pyglet shaders are fine so just check GL>2.0
-        return pyglet.gl.gl_info.get_version() >= '2.0'
+        return int(pyglet.gl.gl_info.get_version()[0]) >= 2
 
     def swapBuffers(self, flipThisFrame=True):
         """Performs various hardware events around the window flip and then
@@ -409,7 +425,9 @@ class PygletBackend(BaseBackend):
             self.winHandle.switch_to()
             globalVars.currWindow = self
 
-        GL.glTranslatef(0.0, 0.0, -5.0)
+        # DEPRECATED: this is now done in the Window class
+        if USE_LEGACY_GL:
+            GL.glTranslatef(0.0, 0.0, -5.0)
 
         for dispatcher in self.win._eventDispatchers:
             try:
@@ -941,9 +959,12 @@ def _onResize(width, height):
         back_width, back_height = width, height
 
     GL.glViewport(0, 0, back_width, back_height)
-    GL.glMatrixMode(GL.GL_PROJECTION)
-    GL.glLoadIdentity()
-    GL.glOrtho(-1, 1, -1, 1, -1, 1)
-    # GL.gluPerspective(90, 1.0 * width / height, 0.1, 100.0)
-    GL.glMatrixMode(GL.GL_MODELVIEW)
-    GL.glLoadIdentity()
+
+    # DEPRECATED - this is now done with matrices we compute
+    if USE_LEGACY_GL:
+        GL.glMatrixMode(GL.GL_PROJECTION)
+        GL.glLoadIdentity()
+        GL.glOrtho(-1, 1, -1, 1, -1, 1)
+        # GL.gluPerspective(90, 1.0 * width / height, 0.1, 100.0)
+        GL.glMatrixMode(GL.GL_MODELVIEW)
+        GL.glLoadIdentity()

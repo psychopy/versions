@@ -12,11 +12,11 @@ import re
 import os
 
 from psychopy.app.themes import icons
+from psychopy.hardware.speaker import SpeakerDevice
 from . import dialogs
 from psychopy import localization, prefs
 from psychopy.localization import _translate
 from packaging.version import Version
-from psychopy import sound
 from psychopy.app.utils import getSystemFonts
 import collections
 
@@ -243,7 +243,7 @@ class PrefPropGrid(wx.Panel):
             pagePtr.Clear()
 
             for s in sections:
-                _ = pagePtr.Append(pg.PropertyCategory(s, s))
+                _ = pagePtr.Append(pg.PropertyCategory(_translate(s), s))
                 for name, prop in self.sections[s].items():
                     if name in prefs.legacy:
                         # If this is included in the config file only for legacy, don't show it
@@ -429,7 +429,12 @@ class PreferencesDlg(wx.Dialog):
 
         # get sound devices for "audioDevice" property
         try:
-            devnames = sorted(sound.getDevices('output'))
+            devnames = [profile['deviceName'] for profile in SpeakerDevice.getAvailableDevices()]
+            # prefs need to have a default value, but we need an actual device - so remove it from 
+            # the dialog
+            if 'default' in devnames:
+                devnames.pop('default')
+
         except (ValueError, OSError, ImportError, AttributeError):
             devnames = []
 
@@ -468,7 +473,7 @@ class PreferencesDlg(wx.Dialog):
                         thisPref = thisPref.replace('Ctrl+', 'Cmd+')
 
                 # can we translate this pref?
-                pLabel = prefName
+                pLabel = _translate(prefName)
 
                 # get tooltips from comment lines from the spec, as parsed by
                 # configobj
@@ -552,36 +557,6 @@ class PreferencesDlg(wx.Dialog):
                             labels=labels,
                             values=[i for i in range(len(labels))],
                             value=default, helpText=helpText)
-                # # audio latency mode for the PTB driver
-                elif prefName == 'audioLatencyMode':
-                    # get the labels from above
-                    labels = []
-                    for val, labl in audioLatencyLabels.items():
-                        labels.append(u'{}: {}'.format(val, labl))
-
-                    # get the options from the config file spec
-                    vals = thisSpec.replace("option(", "").replace("'", "")
-                    # item -1 is 'default=x' from spec
-                    vals = vals.replace(", ", ",").split(',')
-
-                    try:
-                        # set the field to the value in the pref
-                        default = int(thisPref)
-                    except ValueError:
-                        try:
-                            # use first if default not in list
-                            default = int(vals[-1].strip('()').split('=')[1])
-                        except (IndexError, TypeError, ValueError):
-                            # no default
-                            default = 0
-
-                    self.proPrefs.addEnumItem(
-                            sectionName,
-                            pLabel,
-                            prefName,
-                            labels=labels,
-                            values=[i for i in range(len(labels))],
-                            value=default, helpText=helpText)
                 # # option items are given a dropdown, current value is shown
                 # # in the box
                 elif thisSpec.startswith('option') or prefName == 'audioDevice':
@@ -610,7 +585,7 @@ class PreferencesDlg(wx.Dialog):
 
                     labels = []  # display only
                     for opt in options:
-                        labels.append(opt)
+                        labels.append(_translate(opt))
 
                     self.proPrefs.addEnumItem(
                             sectionName,
@@ -701,8 +676,8 @@ class PreferencesDlg(wx.Dialog):
                             newVal = eval(thisPref)
                     except Exception:
                         # if eval() failed, show warning dialog and return
-                        pLabel = prefName
-                        sLabel = sectionName
+                        pLabel = _translate(prefName)
+                        sLabel = _translate(sectionName)
                         txt = _translate(
                             'Invalid value in "%(pref)s" ("%(section)s" Tab)')
                         msg = txt % {'pref': pLabel, 'section': sLabel}

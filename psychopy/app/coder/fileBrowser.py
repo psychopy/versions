@@ -4,7 +4,7 @@
 """Classes and functions for the coder file browser pane."""
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import wx
@@ -28,9 +28,9 @@ FOLDER_TYPE_NAV = 1
 FOLDER_TYPE_NO_ACCESS = 2
 
 # IDs for menu events
-ID_GOTO_BROWSE = wx.NewId()
-ID_GOTO_CWD = wx.NewId()
-ID_GOTO_FILE = wx.NewId()
+ID_GOTO_BROWSE = wx.NewIdRef(count=1)
+ID_GOTO_CWD = wx.NewIdRef(count=1)
+ID_GOTO_FILE = wx.NewIdRef(count=1)
 
 
 def convertBytes(nbytes):
@@ -117,21 +117,63 @@ class FileBrowserPanel(wx.Panel, handlers.ThemeMixin):
     fileImgExt = {
             "..": 'dirup16',
             "\\": 'folder16',
-            ".?": 'fileunknown16',
-            ".csv": 'filecsv16',
-            ".xlsx": 'filecsv16',
-            ".xls": 'filecsv16',
-            ".tsv": 'filecsv16',
-            ".png": 'fileimage16',
-            ".jpeg": 'fileimage16',
-            ".jpg": 'fileimage16',
-            ".bmp": 'fileimage16',
-            ".tiff": 'fileimage16',
-            ".tif": 'fileimage16',
-            ".ppm": 'fileimage16',
-            ".gif": 'fileimage16',
-            ".py": 'coderpython',
-            ".js": 'coderjs'
+            ".?": 'fileunknown',
+            ".txt": 'filetxt',
+            ".md": 'filetxt',
+            ".log": 'filetxt',
+            ".json": 'filejson',
+            ".yaml": 'filejson',
+            ".yml": 'filejson',
+            ".toml": 'filejson',
+            ".tml": 'filejson',
+            ".xml": 'filejson',
+            ".csv": 'filecsv',
+            ".xlsx": 'filecsv',
+            ".xls": 'filecsv',
+            ".tsv": 'filecsv',
+            ".png": 'fileimage',
+            ".jpeg": 'fileimage',
+            ".jpg": 'fileimage',
+            ".bmp": 'fileimage',
+            ".tiff": 'fileimage',
+            ".tif": 'fileimage',
+            ".ppm": 'fileimage',
+            ".gif": 'fileimage',
+            ".svg": 'filedesign',
+            ".psd": 'filedesign',
+            ".ai": 'filedesign',
+            ".afdesign": 'filedesign',
+            ".afphoto": 'filedesign',
+            ".xcf": 'filedesign',
+            ".vsd": 'filedesign',
+            ".cdr": 'filedesign',
+            ".cdx": 'filedesign',
+            ".drawio": 'filedesign',
+            ".mp4": 'filevideo',
+            ".mov": 'filevideo',
+            ".avi": 'filevideo',
+            ".wmv": 'filevideo',
+            ".webm": 'filevideo',
+            ".mpeg": 'filevideo',
+            ".mp3": 'fileaudio',
+            ".wav": 'fileaudio',
+            ".aac": 'fileaudio',
+            ".wma": 'fileaudio',
+            ".flac": 'fileaudio',
+            ".m4a": 'fileaudio',
+            ".psyexp": 'filepsyexp',
+            ".py": 'filepy',
+            "pyproject.toml": 'filepkg',
+            ".whl": 'filepkg',
+            ".wheel": 'filepkg',
+            ".js": 'filejs',
+            ".html": 'filehtml',
+            ".css": 'filecss',
+            ".git": 'filegit',
+            ".gitignore": 'filegit',
+            ".gitattributes": 'filegit',
+            "README.md": 'fileinfo',
+            "readme.md": 'fileinfo',
         }
 
     def __init__(self, parent, frame):
@@ -539,11 +581,13 @@ class FileBrowserPanel(wx.Panel, handlers.ThemeMixin):
             elif isinstance(self.selectedItem, FileItemData):
                 # add some mimetypes which aren't recognised by default
                 mimetypes.add_type("text/xml", ".psyexp")
-                mimetypes.add_type("text/json", ".psyrun")
                 mimetypes.add_type("text/markdown", ".md")
                 mimetypes.add_type("text/config", ".cfg")
                 mimetypes.add_type("text/plain", ".log")
                 mimetypes.add_type("text/plain", ".yaml")
+                # add mimetypes which are falsely mapped
+                mimetypes.add_type("text/javascript", ".js")
+                mimetypes.add_type("text/json", ".psyrun")
                 # try to guess data type
                 dataType = mimetypes.guess_type(self.selectedItem.abspath)[0]
 
@@ -619,7 +663,9 @@ class FileBrowserPanel(wx.Panel, handlers.ThemeMixin):
                     self.fileList.GetItemCount(), obj.name, img)
             elif isinstance(obj, FileItemData):
                 ext = os.path.splitext(obj.name)[1]
-                if ext in self.fileImgInds:
+                if obj.name in self.fileImgInds:
+                    img = self.fileImgInds[obj.name]
+                elif ext in self.fileImgInds:
                     img = self.fileImgInds[ext]
                 else:
                     img = self.fileImgInds['.?']
@@ -630,7 +676,7 @@ class FileBrowserPanel(wx.Panel, handlers.ThemeMixin):
                 #self.fileList.SetItem(index, 1, obj.fsize)
                 #self.fileList.SetItem(index, 2, obj.mod)
         # Enable/disable "go to current file" button based on current file
-        self.currentFileBtn.Enable(self.GetTopLevelParent().filename is not None)
+        self.currentFileBtn.Enable(self.coder.filename is not None)
 
     def addItem(self, name, absPath):
         """Add an item to the directory browser."""

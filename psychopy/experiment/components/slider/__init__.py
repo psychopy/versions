@@ -55,7 +55,7 @@ class SliderComponent(BaseVisualComponent):
                  color="LightGray",
                  fillColor='Red',
                  borderColor='White',
-                 font="Open Sans",
+                 font="Noto Sans",
                  letterHeight=0.05,
                  startType='time (s)', startVal='0.0',
                  stopType='condition', stopVal='',
@@ -87,7 +87,7 @@ class SliderComponent(BaseVisualComponent):
         # = the usual as inherited from BaseVisual plus:
         self.params['ticks'] = Param(
                 ticks, valType='list', inputType="single", allowedTypes=[], categ='Basic',
-                updates='constant',
+                updates='constant', allowedUpdates=["constant"],
                 hint=_translate("Tick positions (numerical) on the scale, "
                                 "separated by commas"),
                 label=_translate("Ticks"))
@@ -107,7 +107,7 @@ class SliderComponent(BaseVisualComponent):
         )
         self.params['labels'] = Param(
                 labels, valType='list', inputType="single", allowedTypes=[], categ='Basic',
-                updates='constant',
+                updates='constant', allowedUpdates=["constant"],
                 hint=_translate("Labels for the tick marks on the scale, "
                                 "separated by commas"),
                 label=_translate("Labels"))
@@ -118,7 +118,7 @@ class SliderComponent(BaseVisualComponent):
         )
         self.params['granularity'] = Param(
                 granularity, valType='num', inputType="single", allowedTypes=[], categ='Basic',
-                updates='constant',
+                updates='constant', allowedUpdates=["constant"],
                 hint=_translate("Specifies the minimum step size "
                                 "(0 for a continuous scale, 1 for integer "
                                 "rating scale)"),
@@ -168,7 +168,7 @@ class SliderComponent(BaseVisualComponent):
         self.params['borderColor'].hint = _translate("Color of all lines on this slider (might be overridden by the style setting)")
 
         self.params['font'] = Param(
-                font, valType='str', inputType="single", categ='Formatting',
+                font, valType='str', inputType="font", categ='Formatting',
                 updates='constant',
                 hint=_translate(
                         "Font for the labels"),

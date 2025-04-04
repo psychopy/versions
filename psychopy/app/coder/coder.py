@@ -1340,9 +1340,9 @@ class CoderFrame(BaseAuiFrame, handlers.ThemeMixin):
 
         Provides menu items to clear all, select all and copy selected text."""
         if not hasattr(self, "outputMenuID1"):
-            self.outputMenuID1 = wx.NewId()
-            self.outputMenuID2 = wx.NewId()
-            self.outputMenuID3 = wx.NewId()
+            self.outputMenuID1 = wx.NewIdRef(count=1)
+            self.outputMenuID2 = wx.NewIdRef(count=1)
+            self.outputMenuID3 = wx.NewIdRef(count=1)
 
             self.Bind(wx.EVT_MENU, self.outputClear, id=self.outputMenuID1)
             self.Bind(wx.EVT_MENU, self.outputSelectAll, id=self.outputMenuID2)
@@ -1429,7 +1429,7 @@ class CoderFrame(BaseAuiFrame, handlers.ThemeMixin):
             wx.ID_ANY, _translate("Reset preferences...")
         )
         self.Bind(wx.EVT_MENU, self.resetPrefs, item)
-        # item = menu.Append(wx.NewId(), "Plug&ins")
+        # item = menu.Append(wx.NewIdRef(count=1), "Plug&ins")
         # self.Bind(wx.EVT_MENU, self.pluginManager, id=item.GetId())
         # -------------Close coder frame
         menu.AppendSeparator()
@@ -1963,27 +1963,12 @@ class CoderFrame(BaseAuiFrame, handlers.ThemeMixin):
                 if self._lastCaretPos != pos:
                     self.currentDoc.OnUpdateUI(evt=None)
                     self._lastCaretPos = pos
-            last = self.fileStatusLastChecked
-            interval = self.fileStatusCheckInterval
-            if time.time() - last > interval and not self.showingReloadDialog:
-                if not self.expectedModTime(self.currentDoc):
-                    self.showingReloadDialog = True
-                    filename = os.path.basename(self.currentDoc.filename)
-                    msg = _translate("'%s' was modified outside of PsychoPy:\n\n"
-                                     "Reload (without saving)?") % filename
-                    dlg = dialogs.MessageDialog(self, message=msg, type='Warning')
-                    if dlg.ShowModal() == wx.ID_YES:
-                        self.statusBar.SetStatusText(_translate('Reloading file'))
-                        self.fileReload(event,
-                                        filename=self.currentDoc.filename,
-                                        checkSave=False)
-                    self.showingReloadDialog = False
-                    self.statusBar.SetStatusText('')
-                    dlg.Destroy()
-                self.fileStatusLastChecked = time.time()
-                # Enable / disable save button
-                self.ribbon.buttons['save'].Enable(self.currentDoc.UNSAVED)
-                self.fileMenu.Enable(wx.ID_SAVE, self.currentDoc.UNSAVED)
+            # if file has been modified externally, show message
+            if (
+                time.time() - self.fileStatusLastChecked > self.fileStatusCheckInterval 
+                and not self.showingReloadDialog
+            ):
+                self.checkExternallyModified(event)
 
     def pageChanged(self, event):
         """Event called when the user switches between editor tabs."""
@@ -2022,21 +2007,33 @@ class CoderFrame(BaseAuiFrame, handlers.ThemeMixin):
             self.ribbon.buttons['pilotRunner'].Enable(isExp)
 
         self.statusBar.SetStatusText(fileType, 2)
-
-        # todo: reduce redundancy w.r.t OnIdle()
+        # check for external modified
+        self.checkExternallyModified(event)
+    
+    def checkExternallyModified(self, event=None):
+        """
+        Check whether the current file has been modified externally, and show a message dialog if 
+        so.
+        """
         if not self.expectedModTime(self.currentDoc):
+            self.showingReloadDialog = True
             filename = os.path.basename(self.currentDoc.filename)
             msg = _translate("'%s' was modified outside of PsychoPy:\n\n"
-                             "Reload (without saving)?") % filename
+                                "Reload (without saving)?") % filename
             dlg = dialogs.MessageDialog(self, message=msg, type='Warning')
+            dlg.Raise()
             if dlg.ShowModal() == wx.ID_YES:
                 self.statusBar.SetStatusText(_translate('Reloading file'))
                 self.fileReload(event,
                                 filename=self.currentDoc.filename,
                                 checkSave=False)
-                self.setFileModified(False)
+            self.showingReloadDialog = False
             self.statusBar.SetStatusText('')
             dlg.Destroy()
+        self.fileStatusLastChecked = time.time()
+        # Enable / disable save button
+        self.ribbon.buttons['save'].Enable(self.currentDoc.UNSAVED)
+        self.fileMenu.Enable(wx.ID_SAVE, self.currentDoc.UNSAVED)
 
     # def pluginManager(self, evt=None, value=True):
     #     """Show the plugin manager frame."""
@@ -2958,6 +2955,12 @@ class CoderRibbon(ribbon.FrameRibbon):
             section="edit", name="redo", label=_translate("Redo"), icon="redo",
             tooltip=_translate("Redo last action"),
             callback=parent.redo
+        )
+        # find
+        self.addButton(
+            section="edit", name="find", label=_translate("Find"), icon="find",
+            tooltip=_translate("Search the current file for a specific term"),
+            callback=parent.OnFindNext
         )
 
         self.addSeparator()

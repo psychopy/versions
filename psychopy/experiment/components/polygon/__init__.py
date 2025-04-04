@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from pathlib import Path
@@ -296,8 +296,7 @@ class PolygonComponent(BaseVisualComponent):
         # make a util.Color object for non-transparent
         for key in ("fillColor", "lineColor"):
             if inits[key].val != "undefined":
-                inits[key].val = "new util.Color(%s)" % inits[key]
-                inits[key].valType = "code"
+                inits[key] = "new util.Color(%s)" % inits[key]
         # add other params
         code += (
             "  ori: {ori}, \n"

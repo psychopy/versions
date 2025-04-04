@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from pathlib import Path
@@ -63,7 +63,7 @@ class BrushComponent(BaseVisualComponent):
         msg = _translate("The line opacity")
         self.params['opacity'].hint=msg
 
-        msg = _translate("Whether a button needs to be pressed to draw (True/False)")
+        msg = _translate("Should the participant have to press a button to paint (True), or should it be always on (False)?")
         self.params['buttonRequired'] = Param(
             buttonRequired, valType='bool', inputType="bool", allowedTypes=[], categ='Basic',
             updates='constant',

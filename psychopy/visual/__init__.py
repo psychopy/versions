@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Container for all visual-related functions and classes
@@ -70,9 +70,6 @@ from psychopy.visual.dot import DotStim
 from psychopy.visual.grating import GratingStim
 from psychopy.visual.secondorder import EnvelopeGrating
 from psychopy.visual.movies import MovieStim
-from psychopy.visual.movie2 import MovieStim2
-from psychopy.visual.movie3 import MovieStim3
-from psychopy.visual.vlcmoviestim import VlcMovieStim
 from psychopy.visual.shape import BaseShapeStim
 
 # stimuli derived from GratingStim

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Experiment classes:
@@ -216,8 +216,15 @@ class TrialHandler(_BaseLoopHandler):
         # then run the trials loop
         code = "\nfor %s in %s:\n"
         buff.writeIndentedLines(code % (self.thisName, self.params['name']))
-        # fetch parameter info from conditions
         buff.setIndentLevel(1, relative=True)
+        # mark current trial as started
+        code = (
+            "%(name)s.status = STARTED\n"
+            "if hasattr(%(loopIndex)s, 'status'):\n"
+            "    %(loopIndex)s.status = STARTED\n"
+        )
+        buff.writeIndentedLines(code % inits)
+        # fetch parameter info from conditions
         code = (
             "currentLoop = %(name)s\n"
             "thisExp.timestampOnFlip(win, 'thisRow.t', format=globalClock.format)\n"
@@ -345,7 +352,28 @@ class TrialHandler(_BaseLoopHandler):
         )
 
     def writeLoopEndCode(self, buff):
-        # Just within the loop advance data line if loop is whole trials
+        # copy params so we can safely add to it
+        params = self.params.copy()
+        # add param for current trial name
+        params['thisName'] = self.thisName
+        # mark current trial as finished at end of each iteration
+        code = (
+            "# mark %(thisName)s as finished\n"
+            "if hasattr(%(thisName)s, 'status'):\n"
+            "    %(thisName)s.status = FINISHED\n"
+            "# if awaiting a pause, pause now\n"
+            "if %(name)s.status == PAUSED:\n"
+            "    thisExp.status = PAUSED\n"
+            "    pauseExperiment(\n"
+            "        thisExp=thisExp, \n"
+            "        win=win, \n"
+            "        timers=[globalClock], \n"
+            "    )\n"
+            "    # once done pausing, restore running status\n"
+            "    %(name)s.status = STARTED"
+        )
+        buff.writeIndentedLines(code % params)
+        # just within the loop advance data line if loop is whole trials
         if self.params['isTrials'].val == True:
             buff.writeIndentedLines(
                 "thisExp.nextEntry()\n"
@@ -353,9 +381,13 @@ class TrialHandler(_BaseLoopHandler):
             )
         # end of the loop. dedent
         buff.setIndentLevel(-1, relative=True)
-        buff.writeIndented("# completed %s repeats of '%s'\n"
-                           % (self.params['nReps'], self.params['name']))
-        buff.writeIndented("\n")
+        # mark finished
+        code = (
+            "# completed %(nReps)s repeats of '%(name)s'\n"
+            "%(name)s.status = FINISHED\n"
+            "\n"
+        )
+        buff.writeIndentedLines(code % params)
         # save data
         if self.params['isTrials'].val:
             # send final data to Liaison
@@ -385,7 +417,7 @@ class TrialHandler(_BaseLoopHandler):
                         "    dataOut=['n','all_mean','all_std', 'all_raw'])\n")
                 buff.writeIndentedLines(code % self.params)
             if saveCSV:
-                code = ("%(name)s.saveAsText(filename + '%(name)s.csv', "
+                code = ("%(name)s.saveAsText(filename + '_%(name)s.csv', "
                         "delim=',',\n"
                         "    stimOut=params,\n"
                         "    dataOut=['n','all_mean','all_std', 'all_raw'])\n")
@@ -574,7 +606,7 @@ class StairHandler(_BaseLoopHandler):
                 buff.writeIndented(code % self.params)
             if self.exp.settings.params['Save csv file'].val:
                 code = ("%(name)s.saveAsText(filename + "
-                        "'%(name)s.csv', delim=',')\n")
+                        "'_%(name)s.csv', delim=',')\n")
                 buff.writeIndented(code % self.params)
 
     def getType(self):
@@ -683,7 +715,8 @@ class MultiStairHandler(_BaseLoopHandler):
     def writeLoopStartCode(self, buff):
         # create a 'thisName' for use in "for thisTrial in trials:"
         makeLoopIndex = self.exp.namespace.makeLoopIndex
-        self.thisName = makeLoopIndex(self.params['name'].val)
+        makeLoopIndex(self.params['name'].val)
+        self.thisName = "condition"
         # create the MultistairHander
         code = ("\n# set up handler to look after randomisation of trials etc\n"
                 "conditions = data.importConditions(%(conditionsFile)s)\n"
@@ -833,7 +866,7 @@ class MultiStairHandler(_BaseLoopHandler):
                 code = "%(name)s.saveAsExcel(filename + '.xlsx')\n"
                 buff.writeIndented(code % self.params)
             if self.exp.settings.params['Save csv file'].val:
-                code = ("%(name)s.saveAsText(filename + '%(name)s.csv', "
+                code = ("%(name)s.saveAsText(filename + '_%(name)s.csv', "
                         "delim=',')\n")
                 buff.writeIndented(code % self.params)
 

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """utility classes for the Builder
@@ -1555,7 +1555,7 @@ def sanitize(inStr):
     """
     # Key-value pairs of patterns with what to replace them with
     patterns = {
-        "https\:\/\/oauth2\:[\d\w]{64}@gitlab\.pavlovia\.org\/.*\.git": "[[OAUTH key hidden]]" # Remove any oauth keys
+        r"https\:\/\/oauth2\:[\d\w]{64}@gitlab\.pavlovia\.org\/.*\.git": "[[OAUTH key hidden]]" # Remove any oauth keys
     }
     # Replace each pattern
     for pattern, repl in patterns.items():
@@ -1671,7 +1671,7 @@ def sanitize(inStr):
     """
     # Key-value pairs of patterns with what to replace them with
     patterns = {
-        "https\:\/\/oauth2\:[\d\w]{64}@gitlab\.pavlovia\.org\/.*\.git": "[[OAUTH key hidden]]" # Remove any oauth keys
+        r"https:\/\/oauth2:[\d\w]{64}@gitlab\.pavlovia\.org\/.*\.git": "[[OAUTH key hidden]]" # Remove any oauth keys
     }
     # Replace each pattern
     for pattern, repl in patterns.items():

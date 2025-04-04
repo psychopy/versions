@@ -5,7 +5,7 @@
 """
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 __all__ = [
@@ -1222,7 +1222,7 @@ def recognizeSphinx(audioClip=None, language='en-US', expectedWords=None,
     onlyInitialize = audioClip is None
     global _pocketSphinxTranscriber
     if _pocketSphinxTranscriber is None:
-        allTranscribers = getAllTranscribers(engineKeys=True)
+        allTranscribers = getAllTranscriberInterfaces(engineKeys=True)
         try:
             interface = allTranscribers['sphinx']
         except KeyError:
@@ -1297,7 +1297,7 @@ def recognizeGoogle(audioClip=None, language='en-US', expectedWords=None,
     onlyInitialize = audioClip is None
     global _googleCloudTranscriber
     if _googleCloudTranscriber is None:
-        allTranscribers = getAllTranscribers(engineKeys=True)
+        allTranscribers = getAllTranscriberInterfaces(engineKeys=True)
         try:
             interface = allTranscribers['googleCloud']
         except KeyError:

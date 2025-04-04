@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Describes the Flow of an experiment
@@ -30,6 +30,8 @@ class BaseStandaloneRoutine:
     version = "0.0.0"
     # is it still in beta?
     beta = False
+    # hide this Component in Builder view?
+    hidden = False
 
     def __init__(self, exp, name='',
                  stopType='duration (s)', stopVal='',
@@ -680,16 +682,6 @@ class Routine(list):
                 '\n# --- Run Routine "{name}" ---\n')
         buff.writeIndentedLines(code.format(name=self.name,
                                             clockName=self._clockName))
-        # check for the trials loop ending this Routine
-        if len(self.exp.flow._loopList):
-            loop = self.exp.flow._loopList[-1]
-            code = (
-                "# if trial has changed, end Routine now\n"
-                "if isinstance({name}, data.TrialHandler2) and {thisName}.thisN != {"
-                "name}.thisTrial.thisN:\n"
-                "    continueRoutine = False\n"
-            ).format(name=loop.name, thisName=loop.thisName)
-            buff.writeIndentedLines(code)
 
         # initial value for forceRoutineEnded (needs to happen now as Code components will have executed
         # their Begin Routine code)
@@ -705,6 +697,15 @@ class Routine(list):
         buff.writeIndented(code)
 
         buff.setIndentLevel(1, True)
+        # check for the trials loop ending this Routine
+        if len(self.exp.flow._loopList):
+            loop = self.exp.flow._loopList[-1]
+            code = (
+                "# if trial has changed, end Routine now\n"
+                "if hasattr({thisName}, 'status') and {thisName}.status == STOPPING:\n"
+                "    continueRoutine = False\n"
+            ).format(thisName=loop.thisName)
+            buff.writeIndentedLines(code)
         # on each frame
         code = ('# get current time\n'
                 't = {clockName}.getTime()\n'
@@ -720,8 +721,8 @@ class Routine(list):
         for event in self:
             if event.type == 'Static':
                 continue  # we'll do those later
-            event.writeFrameCode(buff)
             event.writeEachFrameValidationCode(buff)
+            event.writeFrameCode(buff)
         # update static component code last
         for event in self.getStatics():
             event.writeFrameCode(buff)
@@ -741,27 +742,20 @@ class Routine(list):
             "    return\n"
         )
         buff.writeIndentedLines(code)
-
-        # handle pausing
-        playbackComponents = [
-            comp.name for comp in self
-            if type(comp).__name__ in ("MovieComponent", "SoundComponent")
-        ]
-        playbackComponentsStr = ", ".join(playbackComponents)
+        # write code (work out playback and dispatch comps at runtime)
         code = (
             "# pause experiment here if requested\n"
             "if thisExp.status == PAUSED:\n"
             "    pauseExperiment(\n"
             "        thisExp=thisExp, \n"
             "        win=win, \n"
-            "        timers=[routineTimer], \n"
-            "        playbackComponents=[{playbackComponentsStr}]\n"
+            "        timers=[routineTimer, globalClock], \n"
+            "        currentRoutine=%(name)s,\n"
             "    )\n"
             "    # skip the frame we paused on\n"
             "    continue"
         )
-        code = code.format(playbackComponentsStr=playbackComponentsStr)
-        buff.writeIndentedLines(code)
+        buff.writeIndentedLines(code % self.params)
 
         # are we done yet?
         code = (
@@ -826,12 +820,24 @@ class Routine(list):
                 "t = 0;\n"
                 "frameN = -1;\n"
                 "continueRoutine = true; // until we're told otherwise\n"
+                "// keep track of whether this Routine was forcibly ended\n"
+                "routineForceEnded = false;\n"
                 % self.params)
         buff.writeIndentedLines(code)
         # can we use non-slip timing?
         maxTime, useNonSlip = self.getMaxTime()
         if useNonSlip:
-            buff.writeIndented('routineTimer.add(%f);\n' % (maxTime))
+            code = (
+                "%(name)sClock.reset(routineTimer.getTime());\n"
+                "routineTimer.add({maxTime:f});\n"
+            ).format(maxTime=maxTime)
+            buff.writeIndentedLines(code % self.params)
+        else:
+            code = (
+                "%(name)sClock.reset();\n"
+                "routineTimer.reset();\n"
+            )
+            buff.writeIndentedLines(code % self.params)
         # keep track of whether max duration is reached
         code = (
             "%(name)sMaxDurationReached = false;\n"
@@ -916,6 +922,7 @@ class Routine(list):
         code = ("// check if the Routine should terminate\n"
                 "if (!continueRoutine) {"
                 "  // a component has requested a forced-end of Routine\n"
+                "  routineForceEnded = true;\n"
                 "  return Scheduler.Event.NEXT;\n"
                 "}\n\n"
                 "continueRoutine = false;  "
@@ -1006,7 +1013,9 @@ class Routine(list):
         # reset routineTimer at the *very end* of all non-nonSlip routines
         if useNonSlip:
             code = (
-                "if (%(name)sMaxDurationReached) {{\n"
+                "if (routineForceEnded) {{\n"
+                "    routineTimer.reset();"
+                "}} else if (%(name)sMaxDurationReached) {{\n"
                 "    %(name)sClock.add(%(name)sMaxDuration);\n"
                 "}} else {{\n"
                 "    %(name)sClock.add({:f});\n"

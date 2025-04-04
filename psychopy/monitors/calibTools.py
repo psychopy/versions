@@ -5,11 +5,11 @@
 """
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from .calibData import wavelength_5nm, juddVosXYZ1976_5nm, cones_SmithPokorny
-from psychopy import __version__, logging, hardware
+from psychopy import __version__, logging
 
 try:
     import serial
@@ -1116,6 +1116,7 @@ def getRGBspectra(stimSize=0.3, winSize=(800, 600), photometer='COM1'):
         photom = photometer
     else:
         # setup photom
+        from psychopy import hardware
         photom = hardware.Photometer(photometer)
     if photom != None:
         havephotom = 1

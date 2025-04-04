@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Module for the PsychoPy GUI application.
@@ -33,7 +33,37 @@ _psychopyAppInstance = None
 REQUIRES_RESTART = False
 
 
-def startApp(showSplash=True, testMode=False, safeMode=False, startView=None):
+# Adapted from
+# https://code.activestate.com/recipes/580767-unix-tee-like-functionality-via-a-python-class/
+# (BSD 3-Clause)
+class _Tee(object):
+    def __init__(self, fid):
+        self._other_fid = fid
+
+    def write(self, s):
+        sys.__stdout__.write(s)
+        self._other_fid.write(s)
+
+    def writeln(self, s):
+        self.write(s + '\n')
+
+    def close(self):
+        self._other_fid.close()
+
+    def flush(self):
+        self._other_fid.flush()
+        sys.__stdout__.flush()
+
+
+def startApp(
+        showSplash=True, 
+        testMode=False, 
+        safeMode=False, 
+        startView=None,
+        startFiles=None,
+        firstRun=False,
+        profiling=False,
+    ):
     """Start the PsychoPy GUI.
 
     This function is idempotent, where additional calls after the app starts
@@ -88,14 +118,25 @@ def startApp(showSplash=True, testMode=False, safeMode=False, startView=None):
 
         # NOTE - messages and errors cropping up before this point will go to
         # console, afterwards to 'last_app_load.log'.
-        sys.stderr = sys.stdout = lastRunLog  # redirect output to file
+        if sys.platform == 'win32' and sys.executable.endswith('pythonw.exe'):
+            sys.stderr = sys.stdout = lastRunLog
+        else:
+            sys.stderr = sys.stdout = _Tee(lastRunLog)  # redirect output to file
 
     # Create the application instance which starts loading it.
     # If `testMode==True`, all messages and errors (i.e. exceptions) will log to
     # console.
     from psychopy.app._psychopyApp import PsychoPyApp
     _psychopyAppInstance = PsychoPyApp(
-        0, testMode=testMode, showSplash=showSplash, safeMode=safeMode, startView=startView)
+        0, 
+        testMode=testMode, 
+        showSplash=showSplash, 
+        safeMode=safeMode, 
+        startView=startView,
+        startFiles=startFiles,
+        firstRun=firstRun,
+        profiling=profiling,
+    )
 
     # After the app is loaded, we hand off logging to the stream dispatcher
     # using the provided log file path. The dispatcher will write out any log
@@ -148,7 +189,7 @@ def restartApp():
     """Restart the PsychoPy application instance.
 
     This will write a file named '.restart' to the user preferences directory
-    and quit the application. The presence of this file will indicate to the 
+    and quit the application. The presence of this file will indicate to the
     launcher parent process that the app should restart.
 
     The app restarts with the same arguments as the original launch. This is
@@ -160,11 +201,11 @@ def restartApp():
     """
     if not isAppStarted():
         return
-    
+
     # write a restart file to the user preferences directory
     from psychopy.preferences import prefs
     restartFilePath = os.path.join(prefs.paths['userPrefsDir'], '.restart')
-    
+
     with open(restartFilePath, 'w') as restartFile:
         restartFile.write('')  # empty file
 
@@ -288,7 +329,7 @@ def getAppFrame(frameName):
             _psychopyAppInstance.showRunner()
         else:
             raise AttributeError('Cannot load frame. Method not available.')
-        
+
         frameRef = getattr(_psychopyAppInstance, frameName, None)
 
     return frameRef

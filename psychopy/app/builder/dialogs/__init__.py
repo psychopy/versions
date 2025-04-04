@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Dialog classes for the Builder, including ParamCtrls
@@ -28,9 +28,10 @@ from .dlgsConditions import DlgConditions
 from .dlgsCode import DlgCodeComponentProperties, CodeBox
 from .findDlg import BuilderFindDlg
 from . import paramCtrls
-from psychopy import data, logging, exceptions
+from psychopy.app.utils import HyperLinkCtrl
+from psychopy import data, logging, exceptions, plugins
 from psychopy.localization import _translate
-from psychopy.tools import versionchooser as vc
+from psychopy.tools import versionchooser as vc, pkgtools
 from psychopy.alerts import alert
 from ...colorpicker import PsychoColorPicker
 from pathlib import Path
@@ -194,6 +195,13 @@ class ParamCtrls():
                 fieldName=fieldName, 
                 size=wx.Size(int(self.valueWidth), 24))
             self.valueCtrl.allowedVals = param.allowedVals
+        elif param.inputType == 'font':
+            self.valueCtrl = paramCtrls.FontCtrl(
+                parent, 
+                val=str(param.val), 
+                valType=param.valType,
+                fieldName=fieldName, 
+                size=wx.Size(int(self.valueWidth), 24))
         elif param.inputType == 'survey':
             self.valueCtrl = paramCtrls.SurveyCtrl(
                 parent, 
@@ -649,6 +657,9 @@ class ParamNotebook(wx.Notebook, handlers.ThemeMixin):
              "false": "Disable",  # permitted: hide, show, enable, disable
             }"""
             isChanged = False
+            # This list will be used to delay the populate actions on the
+            # dependent params
+            populateCtrls = []
             for thisDep in self.parent.element.depends:
                 if not (
                         thisDep['param'] in list(self.ctrls) + ['start', 'stop']
@@ -683,9 +694,10 @@ class ParamNotebook(wx.Notebook, handlers.ThemeMixin):
                     # only repopulate if dependency ctrl has changed
                     dependencyParam = self.parent.element.params[thisDep['dependsOn']]
                     if dependencyParam.val != dependencyCtrls.getValue():
-                        dependencyParam.val = dependencyCtrls.getValue()
-                        if hasattr(dependentCtrls.valueCtrl, "populate"):
-                            dependentCtrls.valueCtrl.populate()
+                        # Delay the populate action
+                        populateCtrls.append(
+                            [dependencyParam, dependencyCtrls, dependentCtrls]
+                        )
                 else:
                     # if action is "enable" then do ctrl.Enable() etc
                     for ctrlName in ['valueCtrl', 'nameCtrl', 'updatesCtrl']:
@@ -694,6 +706,11 @@ class ParamNotebook(wx.Notebook, handlers.ThemeMixin):
                             evalStr = ("dependentCtrls.{}.{}()"
                                        .format(ctrlName, action.title()))
                             eval(evalStr)
+            # Execute the populate actions
+            for elem in populateCtrls:
+                elem[0].val = elem[1].getValue()
+                if hasattr(elem[2].valueCtrl, "populate"):
+                    elem[2].valueCtrl.populate()
             # Update sizer
             if isChanged:
                 self.sizer.SetEmptyCellSize((0, 0))
@@ -879,6 +896,7 @@ class _BaseParamsDlg(wx.Dialog):
         self.showAdvanced = showAdvanced
         self.order = element.order
         self.depends = element.depends
+        self.plugin = element.plugin
         self.data = []
         # max( len(str(self.params[x])) for x in keys )
         self.maxFieldLength = 10
@@ -907,11 +925,25 @@ class _BaseParamsDlg(wx.Dialog):
 
         self.mainSizer.Add(self.ctrls,  # ctrls is the notebook of params
                            proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
+        # if element came from a plugin that's not installed, add button to open plugins dlg
+        self.pluginBtn = HyperLinkCtrl(
+            self, label=_translate("Requires plugin {}, click here to install.").format(self.plugin)
+        )
+        self.pluginBtn.Bind(wx.EVT_BUTTON, self.jumpToPlugin)
+        self.mainSizer.Add(self.pluginBtn, border=6, flag=wx.CENTER | wx.ALL)
+        # show/hide button according to whether the plugin is installed or not
+        self.pluginBtn.Show(
+            self.plugin not in (None, "None", "") and self.plugin not in plugins.listPlugins()
+        )
 
         self.SetSizerAndFit(self.mainSizer)
 
     def getParams(self):
         return self.ctrls.getParams()
+
+    def jumpToPlugin(self, evt):
+        dlg = self.frame.openPluginManager()
+        dlg.jumpToPlugin(self.plugin)
 
     def openMonitorCenter(self, event):
         self.app.openMonitorCenter(event)
@@ -962,8 +994,7 @@ class _BaseParamsDlg(wx.Dialog):
                         border=3)
         self.OKbtn = wx.Button(self, wx.ID_OK, _translate(" OK "))
         # intercept OK button if a loop dialog, in case file name was edited:
-        if type(self) == DlgLoopProperties:
-            self.OKbtn.Bind(wx.EVT_BUTTON, self.onOK)
+        self.OKbtn.Bind(wx.EVT_BUTTON, self.onOK)
         self.OKbtn.SetDefault()
         CANCEL = wx.Button(self, wx.ID_CANCEL, _translate(" Cancel "))
 
@@ -1025,9 +1056,11 @@ class _BaseParamsDlg(wx.Dialog):
     def onOK(self, event=None):
         """Handler for OK button which should validate dialog contents.
         """
-        valid = self.Validate()
-        if not valid:
-            return
+        # run "on ok" validation for each ctrl
+        for ctrl in self.paramCtrls.values():
+            if hasattr(ctrl, "valueCtrl") and hasattr(ctrl.valueCtrl, "onOK"):
+                ctrl.valueCtrl.onOK()
+        
         event.Skip()
 
     def onTextEventCode(self, event=None):

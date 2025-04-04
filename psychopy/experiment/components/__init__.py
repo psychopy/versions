@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Extensible set of components for the PsychoPy Builder view.
@@ -64,11 +64,6 @@ def addComponent(compClass):
 
     # check type and attributes of the class
     if not issubclass(compClass, (BaseComponent, BaseVisualComponent)):
-        logging.warning(
-            "Component `{}` does not appear to be a subclass of "
-            "`psychopy.experiment.components._base.BaseComponent`. This will be skipped."
-            .format(compName)
-        )
         return
     elif not hasattr(compClass, 'categories'):
         logging.warning(

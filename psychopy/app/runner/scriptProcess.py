@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Utilities for running scripts from the PsychoPy application suite.
@@ -297,11 +297,16 @@ class ScriptProcess:
             Program exit code.
 
         """
-        # write a close message, shows the exit code
-        closeMsg = \
-            " Experiment ended with exit code {} [pid:{}] ".format(
-                exitCode, pid)
-        closeMsg = closeMsg.center(80, '#') + '\n'
+        # write a close message, shows the exit code if there is one
+        if exitCode:
+            closeMsg = (
+                " Experiment ended with exit code {ec} [pid:{pid}] "
+            )
+        else:
+            closeMsg = (
+                " Experiment completed [pid:{pid}] "
+            )
+        closeMsg = closeMsg.format(ec=exitCode, pid=pid).center(64, '#') + '\n'
         self._writeOutput(closeMsg)
 
         self.scriptProcess = None  # reset

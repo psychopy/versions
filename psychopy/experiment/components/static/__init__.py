@@ -3,7 +3,7 @@
 
 """
 Part of the PsychoPy library
-Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 Distributed under the terms of the GNU General Public License (GPL).
 """
 
@@ -26,10 +26,18 @@ class StaticComponent(BaseComponent):
     tooltip = _translate('Static: Static screen period (e.g. an ISI). '
                          'Useful for pre-loading stimuli.')
 
-    def __init__(self, exp, parentName, name='ISI',
-                 startType='time (s)', startVal=0.0,
-                 stopType='duration (s)', stopVal=0.5,
-                 startEstim='', durationEstim=''):
+    def __init__(
+            self, exp, parentName, 
+            # basic
+            name='ISI',
+            startType='time (s)', startVal=0.0,
+            stopType='duration (s)', stopVal=0.5,
+            startEstim='', durationEstim='',
+            # custom
+            code="",
+            # data
+            saveData=False
+        ):
         BaseComponent.__init__(
             self, exp, parentName, name=name,
             startType=startType, startVal=startVal,
@@ -39,11 +47,26 @@ class StaticComponent(BaseComponent):
         self.updatesList = []  # a list of dicts {compParams, fieldName}
         self.type = 'Static'
         self.url = "https://www.psychopy.org/builder/components/static.html"
-        hnt = _translate(
-            "Custom code to be run during the static period (after updates)")
-        self.params['code'] = Param("", valType='code', inputType="multi", categ='Custom',
-                                    hint=hnt,
-                                    label=_translate("Custom code"))
+        # --- Custom params ---
+        self.order += [
+            "code",
+            "saveData",
+        ]
+        self.params['code'] = Param(
+            code, valType='code', inputType="multi", categ='Custom',
+            label=_translate("Custom code"),
+            hint=_translate(
+                "Custom code to be run during the static period (after updates)"
+            )
+        )
+        self.params['saveData'] = Param(
+            saveData, valType="code", inputType="bool", categ="Custom",
+            label=_translate("Save data during"),
+            hint=_translate(
+                "While the frame loop is paused, should we take the opportunity to save data now? "
+                "This is only relevant locally, online data saving is either periodic or on close."
+            )
+        )
 
     def addComponentUpdate(self, routine, compName, fieldName):
         self.updatesList.append({'compName': compName,
@@ -157,7 +180,10 @@ class StaticComponent(BaseComponent):
         buff.writeIndented("# *%s* period\n" % (self.params['name']))
         needsUnindent = BaseComponent.writeStartTestCode(self, buff)
         if needsUnindent:
-            if self.params['stopType'].val == 'time (s)':
+            if self.params['stopVal'] in ("", "-1", "None", None):
+                # if duration is infinite, set it to extremely long and warn the user
+                durationSecsStr = "FOREVER"
+            elif self.params['stopType'].val == 'time (s)':
                 durationSecsStr = "%(stopVal)s-t" % (self.params)
             elif self.params['stopType'].val == 'duration (s)':
                 durationSecsStr = "%(stopVal)s" % (self.params)
@@ -169,9 +195,21 @@ class StaticComponent(BaseComponent):
                 msg = ("Couldn't deduce end point for startType=%(startType)s, "
                        "stopType=%(stopType)s")
                 raise Exception(msg % self.params)
-            vals = (self.params['name'], durationSecsStr)
-            buff.writeIndented("%s.start(%s)\n" % vals)
-
+            # save data
+            if self.params['saveData']:
+                code = (
+                    "# take the opportunity to save data file now (to be updated later)\n"
+                    "_%(name)sLastFileNames = thisExp.save()\n"
+                    "thisExp.queueNextCollision('overwrite', fileName=_%(name)sLastFileNames)\n"
+                )
+                buff.writeIndentedLines(code % self.params)
+            # start static
+            code = (
+                "# start the static period\n"
+                "%(name)s.start({})\n"
+            ).format(durationSecsStr)
+            buff.writeIndentedLines(code % self.params)
+        
         return needsUnindent
 
     def writeStopTestCode(self, buff):
@@ -182,27 +220,15 @@ class StaticComponent(BaseComponent):
         buff.writeIndented(code % self.params)
         buff.setIndentLevel(+1, relative=True)  # entered an if statement
         self.writeParamUpdates(buff)
-        code = "%(name)s.complete()  # finish the static period\n"
-        buff.writeIndented(code % self.params)
-        # Calculate stop time
-        if self.params['stopType'].val == 'time (s)':
-            code = "%(name)s.tStop = %(stopVal)s  # record stop time\n"
-        elif self.params['stopType'].val == 'duration (s)':
-            code = "%(name)s.tStop = %(name)s.tStart + %(stopVal)s  # record stop time\n"
-        elif self.params['stopType'].val == 'duration (frames)':
-            code = "%(name)s.tStop = %(name)s.tStart + %(stopVal)s*frameDur  # record stop time\n"
-        elif self.params['stopType'].val == 'frame N':
-            code = "%(name)s.tStop = %(stopVal)s*frameDur  # record stop time\n"
-        else:
-            msg = ("Couldn't deduce end point for startType=%(startType)s, "
-                   "stopType=%(stopType)s")
-            raise Exception(msg % self.params)
-        # Store stop time
-        buff.writeIndented(code % self.params)
+        # finish
+        code = (
+            "# finish the static period and store its duration\n"
+            "%(name)s.complete()\n"
+            "%(name)s.tStop = %(name)s.tStart + %(name)s.getDuration()\n"
+        )
+        buff.writeIndentedLines(code % self.params)
         # to get out of the if statement
         buff.setIndentLevel(-1, relative=True)
-
-        # pass  # the clock.StaticPeriod class handles its own stopping
 
     def writeParamUpdates(self, buff, updateType=None, paramNames=None, target="PsychoPy"):
         """Write updates. Unlike most components, which us this method

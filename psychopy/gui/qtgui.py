@@ -4,7 +4,7 @@
 # To build simple dialogues etc. (requires pyqt4)
 #
 #  Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 import importlib
 from psychopy import logging, data
@@ -175,16 +175,25 @@ class Dlg(QtWidgets.QDialog):
 
         # set always stay on top
         if alwaysOnTop:
-            self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+            if hasattr(Qt.WindowType, 'WindowStaysOnTopHint'):
+                self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
 
         # add buttons for OK and Cancel
-        buttons = QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel
-        self.buttonBox = QtWidgets.QDialogButtonBox(buttons, parent=self)
+        if hasattr(QtWidgets.QDialogButtonBox.StandardButton, 'Ok'):
+            # PyQt6 upwards?
+            okBtn = QtWidgets.QDialogButtonBox.StandardButton.Ok
+            cancelBtn = QtWidgets.QDialogButtonBox.StandardButton.Cancel
+        else:
+            # e.g. PyQt5
+            okBtn = QtWidgets.QDialogButtonBox.Ok
+            cancelBtn = QtWidgets.QDialogButtonBox.Cancel
+            
+        self.buttonBox = QtWidgets.QDialogButtonBox(okBtn | cancelBtn, parent=self)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         # store references to OK and CANCEL buttons
-        self.okBtn = self.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
-        self.cancelBtn = self.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        self.okBtn = self.buttonBox.button(okBtn)
+        self.cancelBtn = self.buttonBox.button(cancelBtn)
 
         if style:
             raise RuntimeWarning("Dlg does not currently support the "

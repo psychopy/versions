@@ -4,7 +4,6 @@ import wx
 import os
 import sys
 import subprocess as sp
-from pypi_search import search as pypi
 
 from psychopy.app import utils
 from psychopy.app.themes import handlers, icons
@@ -63,17 +62,16 @@ class PIPTerminalPanel(wx.Panel):
         ):
             executable = f'"{executable}"'
         # Construct preface
-        self.preface = " ".join([executable, "-m"])
+        self.preface = " ".join([executable, "-m", "pip"])
         # Add output
         self.output = wx.richtext.RichTextCtrl(
             self,
             value=_translate(
-                "Type a PIP command below and press Enter to execute it in the installed PsychoPy environment, any "
-                "returned text will appear below.\n"
+                "Type pip commands below and press Enter to execute them in the installed PsychoPy environment, any returned text will appear below. When installing, remember to add `--user` on the end!\n"
                 "\n"
                 "All commands will be automatically prefaced with:\n"
                 "{}\n"
-                "\n"
+                "(so you don't need to type it yourself)\n"
             ).format(self.preface),
             size=(480, -1),
             style=wx.TE_READONLY)
@@ -277,19 +275,17 @@ class PackageListCtrl(wx.Panel):
         # Add column for latest version if we're actually searching
         self.ctrl.AppendColumn(_translate("Latest"))
         # Get packages from search
-        foundPackages = pypi.find_packages(self.searchCtrl.GetValue())
         # Populate
-        for pkg in foundPackages:
+        for pkg, version in installedPackages.items():
+            if pkg is None:
+                continue
             font = wx.Font()
-            if pkg['name'] in installedPackages:
+            if searchTerm in pkg:
                 # If installed, add row with value for installed version
-                item = self.ctrl.Append((pkg['name'], installedPackages[pkg['name']], pkg['version']))
+                item = self.ctrl.Append((pkg, version))
                 font = font.Bold()
-            else:
-                # Otherwise, add row with installed version blank
-                item = self.ctrl.Append((pkg['name'], "-", pkg['version']))
-            # Style new row according to install status
-            self.ctrl.SetItemFont(item, font)
+                # Style new row according to install status
+                self.ctrl.SetItemFont(item, font)
 
     def onAddFromFile(self, evt=None):
         # Create dialog to get package file location

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Classes and functions for creating and managing subprocesses spawned by the
@@ -200,7 +200,10 @@ class Job:
     """
     def __init__(self, parent, command='', terminateCallback=None,
                  inputCallback=None, errorCallback=None, extra=None):
-
+        # use the app instance if parent isn't given
+        if parent is None:
+            from psychopy.app import getAppInstance
+            parent = getAppInstance()
         # command to be called, cannot be changed after spawning the process
         self.parent = parent
         self._command = command

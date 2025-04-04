@@ -7,7 +7,7 @@ import re
 import wx.richtext
 import locale
 
-from psychopy import prefs
+from psychopy import prefs, alerts
 from psychopy.localization import _translate
 from psychopy.app.utils import sanitize
 #!/usr/bin/env python
@@ -16,7 +16,7 @@ from psychopy.app.utils import sanitize
 """Classes and functions for the script output."""
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import re
@@ -390,6 +390,13 @@ class ScriptOutputCtrl(StdOutRich, handlers.ThemeMixin):
 
         self.errors = []
         self.alerts = []
+    
+    def __del__(self):
+        """
+        If setup as an alert handler, remove self on deletion.
+        """
+        if alerts.isAlertHandler(self):
+            alerts.removeAlertHandler(self)
 
 
 if __name__ == "__main__":

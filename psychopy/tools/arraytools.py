@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Functions and classes related to array handling
@@ -222,7 +222,7 @@ def val2array(value, withNone=True, withScalar=True, length=2):
             raise ValueError('Invalid parameter. None is not accepted as '
                              'value.')
     value = numpy.array(value, float)
-    if numpy.product(value.shape) == 1:
+    if numpy.prod(value.shape) == 1:
         if withScalar:
             # e.g. 5 becomes array([5.0, 5.0, 5.0]) for length=3
             return numpy.repeat(value, length)

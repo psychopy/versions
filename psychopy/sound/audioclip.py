@@ -5,7 +5,7 @@
 """
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 __all__ = [
@@ -43,6 +43,11 @@ AUDIO_CHANNELS_STEREO = 2
 AUDIO_CHANNEL_LEFT = AUDIO_EAR_LEFT = 0
 AUDIO_CHANNEL_RIGHT = AUDIO_EAR_RIGHT = 1
 AUDIO_CHANNEL_COUNT = AUDIO_EAR_COUNT = 2
+
+
+class AudioSynthesisError(Exception):
+    """Error raised when an issue occurs during audio synthesis."""
+    pass
 
 
 class AudioClip:
@@ -204,12 +209,16 @@ class AudioClip:
         """
         if codec is not None:
             AudioClip._checkCodecSupported(codec, raiseError=True)
-
+        # write file
         sf.write(
             filename,
             data=self._samples,
             samplerate=self._sampleRateHz,
             format=codec)
+        # log
+        logging.info(
+            f"Saved audio data to {filename}"
+        )
 
     # --------------------------------------------------------------------------
     # Tone and noise generation methods
@@ -573,6 +582,8 @@ class AudioClip:
         self._samples = np.ascontiguousarray(
             np.vstack((self._samples, other.samples)),
             dtype=np.float32)
+        
+        self._duration = len(self.samples) / float(self.sampleRateHz)
 
         return self
 
@@ -830,9 +841,10 @@ class AudioClip:
         """
         if channel is not None:
             assert 0 < channel < self.channels
-
+        # get samples
         arr = self._samples if channel is None else self._samples[:, channel]
-        rms = np.sqrt(np.mean(np.square(arr), axis=0))
+        # calculate rms
+        rms = np.nan_to_num(np.sqrt(np.nanmean(np.square(arr), axis=0)), nan=0)
 
         return rms if len(rms) > 1 else rms[0]
 
@@ -963,18 +975,25 @@ class AudioClip:
             Mono version of this object.
 
         """
-        samples = np.atleast_2d(self._samples)  # enforce 2D
+        if self.channels == 1:
+            return self
+        # log
+        logging.debug(
+            "Converted audio clip from stereo to mono"
+        )
+        # enforce 2D
+        samples = np.atleast_2d(self._samples)
+        # reduce to mono
         if samples.shape[1] > 1:
             samplesMixed = np.atleast_2d(
                 np.sum(samples, axis=1, dtype=np.float32) / np.float32(2.)).T
         else:
             samplesMixed = samples.copy()
-
+        # create copy if requested
         if copy:
             return AudioClip(samplesMixed, self.sampleRateHz)
-
-        self._samples = samplesMixed  # overwrite
-
+        # otherwise change self
+        self._samples = samplesMixed
         return self
     
     def asStereo(self, copy=True):
@@ -996,15 +1015,19 @@ class AudioClip:
         """
         if self.channels == 2:
             return self
-
-        samples = np.atleast_2d(self._samples)  # enforce 2D
+        # log
+        logging.debug(
+            "Converted audio clip from mono to stereo"
+        )
+        # enforce 2D
+        samples = np.atleast_2d(self._samples) 
+        # expand to stereo
         samples = np.hstack((samples, samples))
-
+        # create copy if requested
         if copy:
             return AudioClip(samples, self.sampleRateHz)
-
-        self._samples = samples  # overwrite
-
+        # otherwise change self
+        self._samples = samples
         return self
 
     def transcribe(self, engine='whisper', language='en-US', expectedWords=None,

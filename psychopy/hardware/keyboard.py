@@ -55,7 +55,7 @@ Example usage
 """
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from __future__ import absolute_import, division, print_function
@@ -151,6 +151,8 @@ class KeyPress(BaseResponse):
             else:
                 self.name = keyNames[code]
         elif KeyboardDevice._backend == 'iohub':
+            if name is None:
+                name = code
             self.name = name
         # get value
         value = self.name
@@ -405,7 +407,7 @@ class KeyboardDevice(BaseResponseDevice, aliases=["keyboard"]):
             True if the two objects represent the same physical device
         """
         # all Keyboards are the same device
-        return True
+        return isinstance(other, (KeyboardDevice, dict))
 
     @classmethod
     def getBackend(self):

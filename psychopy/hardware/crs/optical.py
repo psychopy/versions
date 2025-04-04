@@ -21,16 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from psychopy.tools.pkgtools import PluginStub
+from psychopy.plugins import PluginStub
 
 
-class OptiCAL(PluginStub, plugin="psychopy-crs", doclink="https://psychopy.github.io/psychopy-crs/coder/OptiCAL"):
+class OptiCAL(
+    PluginStub, 
+    plugin="psychopy-crs", 
+    docsHome="https://psychopy.github.io/psychopy-crs",
+    docsRef="/coder/optical"
+):
     pass
-
-
-# Monkey-patch our metadata into CRS class if missing required attributes
-if not hasattr(OptiCAL, "longName"):
-    setattr(OptiCAL, "longName", "CRS OptiCal")
-
-if not hasattr(OptiCAL, "driverFor"):
-    setattr(OptiCAL, "driverFor", ["optical"])

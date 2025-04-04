@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 # Acknowledgements:
@@ -12,10 +12,23 @@
 #    (Mario Kleiner) but does not use that code directly
 #    It is, for example, Mario's idea to add the 0.01 to avoid rounding issues
 
-try:
-    from psychopy_crs.shaders import bitsMonoModeFrag, bitsColorModeFrag
-except Exception:
+
+from psychopy.plugins import PluginStub
+
+
+class bitsMonoModeFrag(
+    PluginStub, 
+    plugin="psychopy-crs", 
+    docsHome="https://psychopy.github.io/psychopy-crs",
+    docsRef="/coder/shaders"
+):
     pass
 
-if __name__ == "__main__":
+
+class bitsColorModeFrag(
+    PluginStub, 
+    plugin="psychopy-crs", 
+    docsHome="https://psychopy.github.io/psychopy-crs",
+    docsRef="/coder/shaders"
+):
     pass

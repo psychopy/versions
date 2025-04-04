@@ -2,16 +2,56 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Functions and classes related to attribute handling
 """
 
 import numpy
+import inspect
 from psychopy import logging
 from functools import partialmethod
 from psychopy.tools.stringtools import CaseSwitcher
+
+
+class UndefinedType:
+    """
+    Represents a value which has not been defined - useful for distinguishing between something not 
+    being set and something being set to None.
+    """
+
+    instance = None
+
+    def __new__(cls):
+        """
+        There should only ever be one instance of UndefinedType
+        """
+        if cls.instance is None:
+            cls.instance = super(cls, cls).__new__(cls)
+        
+        return cls.instance
+    
+    def __eq__(self, other):
+        """
+        Comparing undefined by ``==`` should be the same as by ``is``
+        """
+        return self is other
+    
+    def __bool__(self):
+        """
+        When used as a boolean, undefined is always ``False``
+        """
+        return False
+
+    def __repr__(self):
+        """
+        Display as simply ``undefined`` when printed.
+        """
+        return "undefined"
+
+
+undefined = UndefinedType()
 
 
 class attributeSetter:
@@ -44,6 +84,17 @@ class attributeSetter:
         #        origin[1], origin[3].__repr__())))  # long
         '''
         return newValue
+    
+    def serialize(self):
+        """
+        If an attributeSetter is received by serializer as an attribute, return the default value or 
+        None
+        """
+        defaults = inspect.getfullargspec(self.func).defaults
+        if defaults:
+            return defaults[0]
+        else:
+            return None
 
     def __repr__(self):
         return repr(self.__getattribute__)

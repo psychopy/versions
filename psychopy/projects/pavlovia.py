@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Helper functions in PsychoPy for interacting with Pavlovia.org
@@ -33,6 +33,10 @@ try:
     haveGit = True
 except ImportError:
     haveGit = False
+# message to show when git is needed and not installed (format with action that failed)
+noGitMsg = _translate(
+    "Failed to {} as Pavlovia works via git, which is not installed on this machine. You can install git from here: https://git-scm.com/downloads"
+)
 
 import requests
 import gitlab
@@ -1109,9 +1113,11 @@ class PavloviaProject(dict):
         elif localFiles:
             # get project name
             if "/" in self.stringId:
-                _, projectName = self.stringId.split("/")
+                _, projectName = self.stringId.split("/", maxsplit=1)
             else:
                 projectName = self.stringId
+            # remove extra / from project name
+            projectName = projectName.replace("/", "")
             # ask user if they want to clone to a subfolder
             msg = _translate(
                     "Folder '{localRoot}' is not empty, use '{localRoot}/{projectName}' instead?"
@@ -1401,8 +1407,10 @@ class PavloviaProject(dict):
 def getGitRoot(p):
     """Return None or the root path of the repository"""
     if not haveGit:
-        raise exceptions.DependencyError(
-                "gitpython and a git installation required for getGitRoot()")
+        logging.warn(
+            noGitMsg.format(_translate("get git root"))
+        )
+        return None
 
     p = pathlib.Path(p).absolute()
     if not p.is_dir():
@@ -1432,8 +1440,10 @@ def getNameWithNamespace(p):
     """
     # Work out cwd
     if not haveGit:
-        raise exceptions.DependencyError(
-                "gitpython and a git installation required for getGitRoot()")
+        logging.warn(
+            noGitMsg.format(_translate("get project name"))
+        )
+        return None
 
     p = pathlib.Path(p).absolute()
     if not p.is_dir():
@@ -1446,14 +1456,14 @@ def getNameWithNamespace(p):
                             universal_newlines=True)  # newlines forces stdout to unicode
     stdout, stderr = proc.communicate()
     # Find a gitlab url in the response
-    url = re.match("https:\/\/gitlab\.pavlovia\.org\/\w*\/\w*\.git", stdout)
+    url = re.match(r"https:\/\/gitlab\.pavlovia\.org\/\w*\/\w*\.git", stdout)
     if url:
         # Get contents of url from response
         url = url.string[url.pos:url.endpos]
         # Get namespace/name string from url
         path = url
-        path = re.sub("\.git[.\n]*", "", path)
-        path = re.sub("[.\n]*https:\/\/gitlab\.pavlovia\.org\/", "", path)
+        path = re.sub(r"\.git[.\n]*", "", path)
+        path = re.sub(r"[.\n]*https:\/\/gitlab\.pavlovia\.org\/", "", path)
         return path
     else:
         return None
@@ -1464,8 +1474,10 @@ def getProject(filename):
     """
     # Check that we have Git
     if not haveGit:
-        raise exceptions.DependencyError(
-                "gitpython and a git installation required for getProject()")
+        logging.warn(
+            noGitMsg.format(_translate("get Pavlovia project"))
+        )
+        return None
     # Get git root
     gitRoot = getGitRoot(filename)
     # Get name with namespace
@@ -1477,7 +1489,9 @@ def getProject(filename):
     # If already found, return
     if (knownProjects is not None) and (path in knownProjects) and ('idNumber' in knownProjects[path]):
         # Make sure we are logged in
-        nameSpace, projectName = path.split("/")
+        nameSpace, projectName = path.split("/", maxsplit=1)
+        # remove extra slashes from project name
+        projectName = projectName.replace("/", "")
         # Try to log in if not logged in
         if not session.user:
             if nameSpace in knownUsers:
@@ -1523,7 +1537,9 @@ def getProject(filename):
                     # Remove .git
                     namespaceName = namespaceName.replace(".git", "")
                     # Split to get namespace
-                    nameSpace, projectName = namespaceName.split('/')
+                    nameSpace, projectName = namespaceName.split("/", maxsplit=1)
+                    # remove extra slashes from project name
+                    projectName = projectName.replace("/", "")
                     # Get current session
                     pavSession = getCurrentSession()
                     # Try to log in if not logged in

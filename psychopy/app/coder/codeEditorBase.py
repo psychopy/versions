@@ -7,7 +7,7 @@
 """
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 import wx
@@ -79,13 +79,13 @@ class BaseCodeEditor(wx.stc.StyledTextCtrl, handlers.ThemeMixin):
 
         if not hasattr(self, "UndoID"):
             # Create a new ID for all items
-            self.UndoID = wx.NewId()
-            self.RedoID = wx.NewId()
-            self.CutID = wx.NewId()
-            self.CopyID = wx.NewId()
-            self.PasteID = wx.NewId()
-            self.DeleteID = wx.NewId()
-            self.SelectAllID = wx.NewId()
+            self.UndoID = wx.NewIdRef(count=1)
+            self.RedoID = wx.NewIdRef(count=1)
+            self.CutID = wx.NewIdRef(count=1)
+            self.CopyID = wx.NewIdRef(count=1)
+            self.PasteID = wx.NewIdRef(count=1)
+            self.DeleteID = wx.NewIdRef(count=1)
+            self.SelectAllID = wx.NewIdRef(count=1)
 
         # Bind items to relevant method
         self.Bind(wx.EVT_MENU, self.onUndo, id=self.UndoID)

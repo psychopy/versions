@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 """Describes the Flow of an experiment
@@ -456,7 +456,7 @@ class Flow(list):
                     name = resource.split('/')[-1]
                 elif 'surveyId' in resource:
                     name = 'surveyId'
-                elif 'name' in resource and resource['name'] in list(ft.defaultStim):
+                elif 'name' in resource:
                     name = resource['name']
                 elif 'rel' in resource:
                     name = resource['rel']

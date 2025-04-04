@@ -9,7 +9,7 @@ by calling the :func:`getAllPhotometers()` function.
 """
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 __all__ = [
@@ -18,7 +18,7 @@ __all__ = [
     'getAllPhotometerClasses'
 ]
 
-from psychopy.tools.pkgtools import PluginStub
+from psychopy.plugins import PluginStub
 
 # Special handling for legacy classes which have been offloaded to optional
 # packages. This will change to allow more flexibility in the future to avoid

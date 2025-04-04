@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Part of the PsychoPy library
-# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2024 Open Science Tools Ltd.
+# Copyright (C) 2002-2018 Jonathan Peirce (C) 2019-2025 Open Science Tools Ltd.
 # Distributed under the terms of the GNU General Public License (GPL).
 
 from pathlib import Path
@@ -19,7 +19,7 @@ class TextboxComponent(BaseVisualComponent):
     version = "2020.2.0"
     iconFile = Path(__file__).parent / 'textbox.png'
     tooltip = _translate('Textbox: present text stimuli but cooler')
-    beta = True
+    beta = False
 
     def __init__(self, exp, parentName, name='textbox',
                  # effectively just a display-value
@@ -85,7 +85,7 @@ class TextboxComponent(BaseVisualComponent):
             hint=_translate("Placeholder text to show when there is no text contents."),
             label=_translate("Placeholder text"))
         self.params['font'] = Param(
-            font, valType='str', inputType="single", allowedTypes=[], categ='Formatting',
+            font, valType='str', inputType="font", allowedTypes=[], categ='Formatting',
             updates='constant', allowedUpdates=_allow3[:],  # copy the list
             hint=_translate("The font name (e.g. Comic Sans)"),
             label=_translate("Font"))
@@ -334,7 +334,3 @@ class TextboxComponent(BaseVisualComponent):
             buff.writeIndentedLines(f"psychoJS.experiment.addData('{name}.text',{name}.text)\n")
         # get parent to write code too (e.g. store onset/offset times)
         super().writeRoutineEndCodeJS(buff)
-
-    def integrityCheck(self):
-        super().integrityCheck()  # run parent class checks first
-        alerttools.testFont(self) # Test whether font is available locally
