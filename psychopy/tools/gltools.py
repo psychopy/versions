@@ -121,7 +121,6 @@ __all__ = [
     'createTexImage2D',
     'createTexImage2dFromFile',
     'bindTexture',
-    'unbindTexture',
     'createCubeMap',
     'TexCubeMap',
     'getModelViewMatrix',
@@ -405,7 +404,10 @@ def getOpenGLInfo():
 
 
 # OpenGL limits for this system
-MAX_TEXTURE_UNITS = getOpenGLInfo().maxTextureUnits
+try:
+    MAX_TEXTURE_UNITS = getOpenGLInfo().maxTextureUnits
+except:
+    MAX_TEXTURE_UNITS = 32
 
 
 # -------------------------------
