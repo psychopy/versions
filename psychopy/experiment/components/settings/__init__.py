@@ -71,6 +71,11 @@ participantIdAliases = ('participant', 'Participant', 'Subject', 'Observer')
 #         pass
 
 
+def getSoundBackends():
+    from psychopy.sound.sound import Sound
+    return list(Sound.getBackends())
+
+
 class SettingsComponent:
     """This component stores general info about how to run the experiment
     """
@@ -397,7 +402,7 @@ class SettingsComponent:
             label=_translate("Force stereo"))
         self.params['Audio lib'] = Param(
             'ptb', valType='str', inputType="choice",
-            allowedVals=['ptb', 'pyo', 'sounddevice', 'pygame'],
+            allowedVals=getSoundBackends,
             hint=_translate("Which Python sound engine do you want to play your sounds?"),
             label=_translate("Audio library"), categ='Audio')
 
@@ -922,13 +927,6 @@ class SettingsComponent:
             "from psychopy import prefs\n"
             "from psychopy import plugins\n"
             "plugins.activatePlugins()\n"  # activates plugins
-        )
-        # adjust the prefs for this study if needed
-        if self.params['Audio lib'].val.lower() != 'use prefs':
-            buff.writelines(
-                "prefs.hardware['audioLib'] = {}\n".format(self.params['Audio lib'])
-            )
-        buff.write(
             "from psychopy import %s\n" % ', '.join(psychopyImports) +
             "from psychopy.tools import environmenttools\n"
             "from psychopy.constants import (\n"
@@ -942,7 +940,8 @@ class SettingsComponent:
             "from numpy.random import %s\n" % ', '.join(_numpyRandomImports) +
             "import os  # handy system and path functions\n" +
             "import sys  # to get file system encoding\n"
-            "\n")
+            "\n"
+        )
 
         if not self.params['eyetracker'] == "None" or self.params['keyboardBackend'] == "ioHub":
             code = (

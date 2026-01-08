@@ -275,7 +275,7 @@ class SerialDeviceBackend(DeviceBackend):
         ]
 
         self.params['timeout'] = Param(
-            "", valType='int', inputType="single", allowedTypes=[],
+            "", valType='code', inputType="single", allowedTypes=[],
             hint=_translate("Time at which to give up listening for a response (leave blank for no limit)"),
             label=_translate("Timeout")
         )
@@ -289,6 +289,7 @@ class SerialDeviceBackend(DeviceBackend):
         buff : io.StringIO
             Text buffer to write code to.
         """
+        inits = getInitVals(self.params)
         # write basic code
         self.writeBaseDeviceCode(buff, close=False)
         # add param and close
@@ -296,7 +297,7 @@ class SerialDeviceBackend(DeviceBackend):
             "    pauseDuration=(%(timeout)s or 0.1) / 3,\n"  
             ")\n"
         )
-        buff.writeIndentedLines(code % self.params)
+        buff.writeIndentedLines(code % inits)
 
 
 # register backend with Component

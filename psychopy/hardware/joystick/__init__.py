@@ -1189,7 +1189,7 @@ def getAllJoysticks():
         joy = Joystick(joysticks[0]['index'])
 
     """
-    return Joystick.getAllJoysticks()
+    return Joystick.getAvailableDevices()
 
 
 if __name__ == "__main__":
