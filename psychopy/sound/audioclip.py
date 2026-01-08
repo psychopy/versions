@@ -812,7 +812,165 @@ class AudioClip:
         self._sampleRateHz = targetSampleRateHz
 
         return self
+    
+    def pad(self, direction='start', duration=1.0, units='seconds'):
+        """Pad the audio clip with silence at the start or end.
 
+        This method will modify the audio clip inplace, adding samples of
+        silence to the specified location.
+
+        Parameters
+        ----------
+        direction : str
+            Where to add the padding. Can be 'start' or 'end'. Default is 'start'.
+        duration : float or int
+            Duration of the padding in seconds. Default is `1.0`.
+        units : str
+            Units to interpret the `duration` parameter as. Can be 'seconds' or
+            'samples'. Default is 'seconds'.
+
+        Returns
+        -------
+        AudioClip
+            This audio clip object with padding added at the specified location.
+        
+        """
+        # convert duration to samples
+        if units == 'seconds':
+            padSamples = int(duration * self.sampleRateHz)
+        elif units == 'samples':
+            padSamples = int(duration)
+        else:
+            raise ValueError(
+                "Invalid value for `units`. Must be 'seconds' or 'samples'.")
+
+        # create padding samples
+        padding = np.zeros((padSamples, self.channels), dtype=np.float32)
+
+        if direction == 'start':
+            self._samples = np.vstack((padding, self._samples))
+        elif direction == 'end':
+            self._samples = np.vstack((self._samples, padding))
+        else:
+            raise ValueError(
+                "Invalid value for `direction`. Must be 'start' or 'end'.")
+        
+        # ensure the samples are contiguous and right dtype
+        self._samples = np.ascontiguousarray(self._samples, dtype=np.float32)
+
+        # recompute the duration of the new clip
+        self._duration = len(self.samples) / float(self.sampleRateHz)
+
+        return self
+    
+    def padded(self, direction='start', duration=1.0, units='seconds'):
+        """Return a new audio clip with padding added at the start or end.
+
+        This method will return a new audio clip with samples of silence added
+        to the specified location. The original audio clip will not be modified.
+
+        Parameters
+        ----------
+        direction : str
+            Where to add the padding. Can be 'start' or 'end'. Default is 'start'.
+        duration : float or int
+            Duration of the padding in seconds. Default is `1.0`.
+        units : str
+            Units to interpret the `duration` parameter as. Can be 'seconds' or
+            'samples'. Default is 'seconds'.
+
+        Returns
+        -------
+        AudioClip
+            A new audio clip with padding added at the specified location.
+        
+        """
+        # create a copy of the audio clip
+        newClip = self.copy()
+
+        # pad the copy
+        return newClip.pad(direction, duration, units)
+
+    def trim(self, direction='start', duration=1.0, units='seconds'):
+        """Trim the audio clip by removing samples from the start or end.
+
+        This method will modify the audio clip inplace, trimming off samples 
+        from the specfied direction.
+
+        Parameters
+        ----------
+        direction : str
+            Where to remove audio samples from. Can be 'start' or 'end'. Default
+            is 'start'.
+        duration : float or int
+            How many samples to remove from the start or end of the audio clip.
+        units : str
+            Units to interpret the `duration` parameter as. Can be 'seconds' or
+            'samples'. Default is 'seconds'.
+
+        Returns
+        -------
+        AudioClip
+            This audio clip object with padding removed at the specified 
+            location.
+        
+        """
+        # convert duration to samples
+        if units == 'seconds':
+            trimSamples = int(duration * self.sampleRateHz)
+        elif units == 'samples':
+            trimSamples = int(duration)
+        else:
+            raise ValueError(
+                "Invalid value for `units`. Must be 'seconds' or 'samples'.")
+
+        if direction == 'start':
+            self._samples = self._samples[trimSamples:, :]
+        elif direction == 'end':
+            self._samples = self._samples[:-trimSamples, :]
+        else:
+            raise ValueError(
+                "Invalid value for `direction`. Must be 'start' or 'end'.")
+        
+        # ensure the samples are contiguous and right dtype
+        self._samples = np.ascontiguousarray(self._samples, dtype=np.float32)
+
+        # recompute the duration of the new clip
+        self._duration = len(self.samples) / float(self.sampleRateHz)
+
+        return self
+    
+    def trimmed(self, direction='start', duration=1.0, units='seconds'):
+        """Return a new audio clip with samples removed from the start or end.
+
+        This method will return a new audio clip with samples of silence removed
+        from the specified location. The original audio clip will not be 
+        modified.
+
+        Parameters
+        ----------
+        direction : str
+            Where to remove audio samples from. Can be 'start' or 'end'. Default
+            is 'start'.
+        duration : float or int
+            How many samples to remove from the start or end of the audio clip.
+        units : str
+            Units to interpret the `duration` parameter as. Can be 'seconds' or
+            'samples'. Default is 'seconds'.
+
+        Returns
+        -------
+        AudioClip
+            A new audio clip with padding removed at the specified location.
+        
+        """
+        # create a copy of the audio clip
+        newClip = self.copy()
+
+        # trim the copy
+        return newClip.trim(direction, duration, units)
+
+    
     # --------------------------------------------------------------------------
     # Audio analysis methods
     #
@@ -883,6 +1041,12 @@ class AudioClip:
         self._sampleRateHz = int(value)
         # recompute duration after updating sample rate
         self._duration = len(self._samples) / float(self._sampleRateHz)
+
+    @property
+    def totalSamples(self):
+        """Total number of audio samples stored in this object (`int`).
+        """
+        return self._samples.shape[0]  # number of rows
 
     @property
     def duration(self):

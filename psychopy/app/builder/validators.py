@@ -50,19 +50,17 @@ class ValidatorWarning:
         Symbolic constant representing the type of warning. Values can be one of
         `VALIDATOR_WARNING_NONE`, `VALIDATOR_WARNING_NAME`,
         `VALIDATOR_WARNING_SYNTAX` or `VALIDATOR_WARNING_FONT_MISSING`.
+    allowed : bool
+        If False, this warning should prevent the user from proceeding
 
     """
-    __slots__ = [
-        '_parent',
-        '_control',
-        '_msg',
-        '_kind']
 
-    def __init__(self, parent, control, msg="", kind=VALIDATOR_WARNING_NONE):
+    def __init__(self, parent, control, msg="", kind=VALIDATOR_WARNING_NONE, allowed=True):
         self.parent = parent
         self.control = control
         self.msg = msg
         self.kind = kind
+        self.allowed = allowed or self.kind in [VALIDATOR_WARNING_FONT_MISSING]
 
     @property
     def parent(self):
@@ -118,12 +116,6 @@ class ValidatorWarning:
         """`True` if this is a namespace warning (`bool`)."""
         return self._kind == VALIDATOR_WARNING_NAME
 
-    @property
-    def allowed(self):
-        """`True` if this is a non-critical message which doesn't disable the OK button"""
-        return self.kind in [VALIDATOR_WARNING_FONT_MISSING]
-
-
 class WarningManager:
     """Manager for warnings produced by validators associated with controls
     within the component properties dialog. Assumes that the `parent` dialog
@@ -159,11 +151,26 @@ class WarningManager:
 
     @property
     def OK(self):
-        """`True` if there are no warnings (`bool`)."""
+        """
+        Return
+        ======
+        bool
+            True if there are no messages which aren't `.allowed`
+        """
         if len(self._warnings) == 0:
             return True
         else:
             return all(warning.allowed for warning in self._warnings.values())
+    
+    @property
+    def isEmtpy(self):
+        """
+        Returns
+        -------
+        bool
+            True if there are no warnings at all, even allowed ones.
+        """
+        return len(self._warnings) == 0
 
     @property
     def parent(self):
@@ -200,7 +207,7 @@ class WarningManager:
         _, warnings = self._warnings.items()
         return [warning.control for warning in warnings]
 
-    def setWarning(self, control, msg='', kind=VALIDATOR_WARNING_NONE):
+    def setWarning(self, control, msg='', kind=VALIDATOR_WARNING_NONE, allowed=True):
         """Set a warning for a control. A control can only have one active
         warning associate with it at any given time.
 
@@ -213,10 +220,11 @@ class WarningManager:
         kind : int
             Symbolic constant representing the type of warning (e.g.,
             `VALIDATOR_WARN_SYNTAX`).
-
+        allowed : bool
+            If False, prevent the user from continuing
         """
         self._warnings[id(control)] = ValidatorWarning(
-            self.parent, control, msg, kind)
+            self.parent, control, msg, kind, allowed)
 
     def getWarning(self, control):
         """Get an active warning associated with the control.
@@ -500,7 +508,7 @@ class CodeSnippetValidator(BaseValidator):
             # get var names from val, check against namespace:
             code = experiment.getCodeFromParamStr(val, target="PsychoPy")
             try:
-                names = list(stringtools.getVariables(code))
+                names = list(stringtools.getVariableDefs(code))
                 parent.warnings.clearWarning(control)
             except (SyntaxError, TypeError) as e:
                 # empty '' compiles to a syntax error, ignore

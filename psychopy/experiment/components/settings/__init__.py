@@ -250,8 +250,8 @@ class SettingsComponent:
             "winBackend",
             "Screen",
             "Full-screen window",
-            "Show mouse",
             "Window size (pixels)",
+            "Show mouse",
             "Units",
             "color",
             "blendMode",
@@ -266,16 +266,36 @@ class SettingsComponent:
             fullScr, valType='bool', inputType="bool", allowedTypes=[],
             hint=_translate("Run the experiment full-screen (recommended)"),
             label=_translate("Full-screen window"), categ='Screen')
+        self.params['Window size (pixels)'] = Param(
+            winSize, valType='list', inputType="single", allowedTypes=[],
+            hint=_translate("Size of window (if not fullscreen)"),
+            label=_translate("Window size (pixels)"), categ='Screen'
+        )
+        self.depends.append({
+            'dependsOn': "Full-screen window",  # if...
+            'condition': "",  # matches
+            'param': "Window size (pixels)",  # then...
+            'true': "hide",  # should...
+            'false': "show",  # otherwise...
+        })
+        self.params['Show mouse'] = Param(
+            showMouse, valType='bool', inputType="bool", allowedTypes=[],
+            hint=_translate("Should the mouse be visible on screen? Only applicable for fullscreen experiments."),
+            label=_translate("Show mouse"), categ='Screen'
+        )
+        self.depends.append({
+            'dependsOn': "Full-screen window",  # if...
+            'condition': "",  # matches
+            'param': "Show mouse",  # then...
+            'true': "show",  # should...
+            'false': "hide",  # otherwise...
+        })
         self.params['winBackend'] = Param(
             winBackend, valType='str', inputType="choice", categ="Screen",
             allowedVals=plugins.getWindowBackends(),
             hint=_translate("What Python package should be used behind the scenes for drawing to the window?"),
             label=_translate("Window backend")
-        )
-        self.params['Window size (pixels)'] = Param(
-            winSize, valType='list', inputType="single", allowedTypes=[],
-            hint=_translate("Size of window (if not fullscreen)"),
-            label=_translate("Window size (pixels)"), categ='Screen')
+        )        
         self.params['Screen'] = Param(
             screen, valType='num', inputType="spin", allowedTypes=[],
             hint=_translate("Which physical screen to run on (1 or 2)"),
@@ -323,10 +343,6 @@ class SettingsComponent:
             hint=_translate("Should new stimuli be added or averaged with "
                             "the stimuli that have been drawn already"),
             label=_translate("Blend mode"), categ='Screen')
-        self.params['Show mouse'] = Param(
-            showMouse, valType='bool', inputType="bool", allowedTypes=[],
-            hint=_translate("Should the mouse be visible on screen? Only applicable for fullscreen experiments."),
-            label=_translate("Show mouse"), categ='Screen')
         self.params['measureFrameRate'] = Param(
             measureFrameRate, valType="bool", inputType="bool", categ="Screen",
             label=_translate("Measure frame rate?"),
@@ -1768,14 +1784,17 @@ class SettingsComponent:
             "    )\n"
         )
         buff.writeIndentedLines(code % inits)
-        # write any device setup code required by a component
-        for rt in self.exp.flow:
-            if isinstance(rt, Routine):
-                for comp in rt:
-                    if hasattr(comp, "writeDeviceCode"):
-                        comp.writeDeviceCode(buff)
-            elif isinstance(rt, BaseStandaloneRoutine):
-                rt.writeDeviceCode(buff)
+        # setup devices from config
+        for deviceName in self.exp.getRequiredDeviceNames():
+            if deviceName in prefs.devices:
+                # write device setup if possile
+                prefs.devices[deviceName].writeDeviceCode(buff)
+            elif deviceName is None:
+                # if default, let init code handle device
+                pass
+            else:
+                # alert if not
+                alert(4810, strFields={'deviceName': deviceName})
 
         code = (
             "# return True if completed successfully\n"

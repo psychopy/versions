@@ -181,6 +181,35 @@ def indicesFromString(indsString):
         pass
 
 
+def dictFromString(val):
+    # return as-is if already a dict
+    if isinstance(val, dict):
+        return val
+    # stringify
+    if not isinstance(val, str):
+        val = str(val)
+    # strip spaces
+    val = val.strip()
+    # make sure we have curly braces
+    if not val.startswith("{") and val.endswith("}"):
+        val = f"{{{val}}}"
+    # try to evaluate with ast (works for simple values)
+    try:
+        iterable = ast.literal_eval(val)
+        assert isinstance(iterable, dict)
+        return iterable
+    except (ValueError, SyntaxError, AssertionError):
+        pass  # e.g. "yes, no" won't work. We'll go on and try another way
+    # try manually if ast fails
+    parsed = {}
+    for item in val[1:-1].split(","):
+        if ":" in item:
+            key, val = item.split(":", maxsplit=1)
+            parsed[key.strip()] = val.strip()
+
+    return parsed 
+
+
 def listFromString(val, excludeEmpties=False):
     """Take a string that looks like a list (with commas and/or [] and make
     an actual python list"""
@@ -191,8 +220,7 @@ def listFromString(val, excludeEmpties=False):
     elif type(val) == list:
         return list(val)  # nothing to do
     elif type(val) != str:
-        raise ValueError("listFromString requires a string as its input not {}"
-                         .format(repr(val)))
+        return [val]
     # try to evaluate with ast (works for "'yes,'no'" or "['yes', 'no']")
     try:
         iterable = ast.literal_eval(val)
@@ -277,6 +305,10 @@ def importConditions(fileName, returnFieldNames=False, selection=""):
                     thisAttempt = pd.read_csv(
                         fileName, encoding='utf-8-sig', sep=sep, decimal=dec
                     )
+                    # read in the headers separately to bypass pandas sanitization
+                    thisAttempt.columns = pd.read_csv(
+                        fileName, encoding='utf-8-sig', sep=sep, decimal=dec, header=None, nrows=1
+                    ).iloc[0, :]
                     # if there's only one header, check that it doesn't contain delimiters
                     # (one column with delims probably means it's parsed without error but not
                     # recognised columns correctly)
@@ -335,12 +367,20 @@ def importConditions(fileName, returnFieldNames=False, selection=""):
         names are OK, return silently; else raise  with msg
         """
         fileName = pathToString(fileName)
+        # make sure all columns are named
         if not all(fieldNames):
             raise exceptions.ConditionsImportError(
                 "Conditions file %s: Missing parameter name(s); empty cell(s) in the first row?" % fileName,
                 translated=_translate("Conditions file %s: Missing parameter name(s); empty cell(s) in the first row?") % fileName
             )
+        # check each name
         for name in fieldNames:
+            # is this name duplicated?
+            if sum([otherName == name for otherName in fieldNames]) > 1:
+                raise exceptions.ConditionsImportError(_translate(
+                "Duplicate column name '{}'"
+            ).format(name))
+            # is this name a valid variable name?
             OK, msg, translated = isValidVariableName(name)
             if not OK:
                 # tailor message to importConditions

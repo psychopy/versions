@@ -29,6 +29,13 @@ class ButtonResponse(base.BaseResponse):
         # match an integer to channel
         if isinstance(other, int):
             return other == self.channel
+        # match a dict by converting it to a ButtonResponse, if possible
+        if isinstance(other, dict):
+            try:
+                return ButtonResponse(**other) == self
+            except:
+                # if it can't instantiate a ButtonResponse, it's not the same as this
+                return False
         
         return False
 
@@ -188,6 +195,9 @@ class ButtonBox:
     Builder-friendly wrapper around BaseButtonGroup.
     """
     def __init__(self, device):
+        # start off with None for device
+        self.device = None
+
         if isinstance(device, BaseButtonGroup):
             # if given a button group, use it
             self.device = device
@@ -198,10 +208,13 @@ class ButtonBox:
             else:
                 # don't use formatted string literals in _translate()
                 raise ValueError(_translate(
-                    "Could not find device named '{device}', make sure it has been set up "
+                    "Could not find device named '{}', make sure it has been set up "
                     "in DeviceManager."
                 ).format(device))
-
+        # if given None, use first button group we find in DeviceManager
+        for name, device in DeviceManager.getInitialisedDevices(BaseButtonGroup).items():
+            self.device = device
+            break
         # starting value for status (Builder)
         self.status = constants.NOT_STARTED
         # arrays to store info (Builder)

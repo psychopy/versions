@@ -30,12 +30,14 @@ from wx.lib import platebtn
 from wx.html import HtmlWindow
 
 import psychopy.app.plugin_manager.dialog
+from .dialogs.paramCtrls import EVT_PARAM_CHANGED
 from .validators import WarningManager
 from ..pavlovia_ui import sync, PavloviaMiniBrowser
 from ..pavlovia_ui.project import ProjectFrame
 from ..pavlovia_ui.search import SearchFrame
 from ..pavlovia_ui.user import UserFrame
 from ..pavlovia_ui.functions import logInPavlovia
+from ..deviceManager import DeviceManagerDlg
 from ...experiment import getAllElements, getAllCategories
 from ...experiment.routines import Routine, BaseStandaloneRoutine
 from psychopy.tools.versionchooser import parseVersionSafely, psychopyVersion
@@ -76,7 +78,11 @@ from psychopy.scripts.psyexpCompile import generateScript
 
 # Components which are always hidden
 alwaysHidden = [
-    'BaseComponent', 'BaseStandaloneRoutine', 'BaseValidatorRoutine'
+    'BaseComponent', 
+    'BaseDeviceComponent',
+    'BaseStandaloneRoutine', 
+    'BaseDeviceRoutine',
+    'BaseValidatorRoutine',
 ]
 
 
@@ -132,37 +138,45 @@ class BuilderFrame(BaseAuiFrame, handlers.ThemeMixin):
         self.generateScript = generateScript
 
         # default window title
-        self.winTitle = 'PsychoPy Builder (v{})'.format(self.app.version)
+        self.winTitle = title
 
+        # get last frame information, or default
         if fileName in self.appData['frames']:
             self.frameData = self.appData['frames'][fileName]
-        else:  # work out a new frame size/location
-            dispW, dispH = self.app.getPrimaryDisplaySize()
-            default = self.appData['defaultFrame']
-            default['winW'] = int(dispW * 0.75)
-            default['winH'] = int(dispH * 0.75)
-            if default['winX'] + default['winW'] > dispW:
-                default['winX'] = 5
-            if default['winY'] + default['winH'] > dispH:
-                default['winY'] = 5
-            self.frameData = dict(self.appData['defaultFrame'])  # copy
+        else:
+            self.frameData = dict(self.appData['defaultFrame'])
+            # work out best default size from screen size
+            i = wx.Display.GetFromPoint(wx.Point(
+                int(self.frameData['winX']), int(self.frameData['winY'])
+            ))
+            try:
+                disp = wx.Display(max(i, 0))
+            except:
+                disp = wx.Display(0)
+            dispW, dispH = list(disp.GetGeometry())[2:]
+            # set in frameData array
+            self.frameData['winW'] = dispW * 0.75
+            self.frameData['winH'] = dispH * 0.75
             # increment default for next frame
-            default['winX'] += 10
-            default['winY'] += 10
-
-        # we didn't have the key or the win was minimized / invalid
-        if self.frameData['winH'] == 0 or self.frameData['winW'] == 0:
-            self.frameData['winX'], self.frameData['winY'] = (0, 0)
-        if self.frameData['winY'] < 20:
-            self.frameData['winY'] = 20
-
-        BaseAuiFrame.__init__(self, parent=parent, id=id, title=title,
-                              pos=(int(self.frameData['winX']),
-                                   int(self.frameData['winY'])),
-                              size=(int(self.frameData['winW']),
-                                    int(self.frameData['winH'])),
-                              style=style)
-
+            self.frameData['winX'] += 10
+            self.frameData['winY'] += 10
+        # handle when last open frame was minimised or invalid
+        for key in ("winH", "winW", "winX", "winY"):
+            self.frameData[key] = max(self.frameData[key], 20)
+        # initialise
+        BaseAuiFrame.__init__(
+            self, 
+            parent=parent, 
+            id=id, 
+            size=(
+                int(self.frameData['winW']), int(self.frameData['winH'])
+            ),
+            pos=(
+                int(self.frameData['winX']), int(self.frameData['winY'])
+            ),
+            title=title,
+            style=style
+        )
         # detect retina displays (then don't use double-buffering)
         self.isRetina = \
             self.GetContentScaleFactor() != 1 and wx.Platform == '__WXMAC__'
@@ -242,7 +256,11 @@ class BuilderFrame(BaseAuiFrame, handlers.ThemeMixin):
         self._mgr.Update()
         # self.SetSizer(self.mainSizer)  # not necessary for aui type controls
         if self.frameData['auiPerspective']:
-            self._mgr.LoadPerspective(self.frameData['auiPerspective'])
+            backup = self._mgr.SavePerspective()
+            try:
+                self._mgr.LoadPerspective(self.frameData['auiPerspective'])
+            except:
+                self._mgr.LoadPerspective(backup)
         self.SetMinSize(wx.Size(600, 400))  # min size for the whole window
         self.SetSize(
             (int(self.frameData['winW']), int(self.frameData['winH'])))
@@ -438,6 +456,11 @@ class BuilderFrame(BaseAuiFrame, handlers.ThemeMixin):
         self.Bind(wx.EVT_MENU, self.app.openMonitorCenter, item)
 
         item = menu.Append(wx.ID_ANY,
+                           _translate("Device Manager"),
+                           _translate("Setup named devices for your Components to refer to"))
+        self.Bind(wx.EVT_MENU, self.openDeviceManager, item)
+
+        item = menu.Append(wx.ID_ANY,
                            _translate("Compile\t%s") % keys['compileScript'],
                            _translate("Compile the exp to a script"))
         self.Bind(wx.EVT_MENU, self.compileScript, item)
@@ -599,6 +622,12 @@ class BuilderFrame(BaseAuiFrame, handlers.ThemeMixin):
         self.Bind(wx.EVT_MENU, self.app.showNews, id=item.GetId())
 
         self.SetMenuBar(menuBar)
+    
+    def openDeviceManager(self, evt=None):
+        # create a device manager dialog
+        dlg = DeviceManagerDlg(self)
+        # show it modal to this window
+        dlg.ShowModal()
 
     def commandCloseFrame(self, event):
         """Defines Builder Frame Closing Event"""
@@ -1571,6 +1600,19 @@ class BuilderFrame(BaseAuiFrame, handlers.ThemeMixin):
             return True
 
     def openPluginManager(self, evt=None):
+        # check if the package index is currently being updated, show a message
+        # to tell the user to wait before opening the plugin manager
+        import psychopy.app.plugin_manager.packageIndex as packageIndex
+        if packageIndex.isIndexing():
+            msg = _translate("The package index is currently being updated. "
+                             "Please try again later.")
+            wx.MessageBox(
+                msg,
+                _translate("Package indexing in progress"),
+                style=wx.OK | wx.ICON_INFORMATION
+            )
+            return
+        
         dlg = psychopy.app.plugin_manager.dialog.EnvironmentManagerDlg(self)
         dlg.Show()
         
@@ -2725,7 +2767,9 @@ class StandaloneRoutineCanvas(scrolledpanel.ScrolledPanel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         # Setup categ notebook
+        self.warnings = WarningManager(self)
         self.ctrls = ParamNotebook(self, experiment=self.frame.exp, element=routine)
+        self.ctrls.Bind(EVT_PARAM_CHANGED, self.updateExperiment)
         self.paramCtrls = self.ctrls.paramCtrls
         self.sizer.Add(self.ctrls, border=12, proportion=1, flag=wx.ALIGN_CENTER | wx.TOP)
         # Make buttons
@@ -2734,10 +2778,9 @@ class StandaloneRoutineCanvas(scrolledpanel.ScrolledPanel):
         self.helpBtn.Bind(wx.EVT_BUTTON, self.onHelp)
         self.btnsSizer.Add(self.helpBtn, border=6, flag=wx.ALL | wx.EXPAND)
         self.btnsSizer.AddStretchSpacer(1)
-        # Add validator stuff
-        self.warnings = WarningManager(self)
+        # add warnings to sizer
         self.sizer.Add(self.warnings.output, border=3, flag=wx.EXPAND | wx.ALL)
-        # Add buttons to sizer
+        # add buttons to sizer
         self.sizer.Add(self.btnsSizer, border=3, proportion=0, flag=wx.EXPAND | wx.ALL)
         # Style
         self.SetupScrolling(scroll_y=True)
@@ -2757,12 +2800,15 @@ class StandaloneRoutineCanvas(scrolledpanel.ScrolledPanel):
         for name, routine in routines.items():
             if routine == self.routine:
                 # Update the routine dict keys to use the current name for this routine
-                self.frame.exp.routines[self.routine.params['name'].val] = self.frame.exp.routines.pop(name)
+                self.frame.exp.routines[self.routine.name] = self.frame.exp.routines.pop(name)
+                # update experiment namespace
+                self.frame.exp.namespace.remove(name)
+                self.frame.exp.namespace.add(self.routine.name)
         # Redraw the flow panel
         self.frame.flowPanel.canvas.draw()
         # Rename this page
         page = self.frame.routinePanel.GetPageIndex(self)
-        self.frame.routinePanel.SetPageText(page, self.routine.params['name'].val)
+        self.frame.routinePanel.SetPageText(page, self.routine.name)
         # Update save button
         self.frame.setIsModified(True)
 
@@ -4545,6 +4591,13 @@ class BuilderRibbon(ribbon.FrameRibbon):
             icon="monitors",
             tooltip=_translate("Monitor settings and calibration"),
             callback=parent.app.openMonitorCenter
+        )
+        # device manager
+        self.addButton(
+            section="experiment", name='devices', label=_translate('Device manager'),
+            icon="devices",
+            tooltip=_translate("Map devices from this machine to names in your experiment"),
+            callback=parent.openDeviceManager
         )
         # settings
         self.addButton(

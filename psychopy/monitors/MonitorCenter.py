@@ -372,28 +372,6 @@ class MainFrame(wx.Frame):
         calibBox = wx.StaticBoxSizer(boxLabel)
 
         photometerBox = wx.FlexGridSizer(cols=2, hgap=6, vgap=6)
-        # com port entry number
-        self.comPortLabel = wx.StaticText(parent, -1, " ", size=(150, 20))
-        # photometer button
-        # photom type choices should not need localization:
-        self._photomTypeItems = list([p.longName for p in hardware.getAllPhotometers()] + ["Get more..."])
-        self.ctrlPhotomType = wx.Choice(parent, -1, name="Type:",
-                                        choices=self._photomTypeItems)
-
-        _ports = list(hardware.getSerialPorts())
-        self._photomChoices = [_translate("Scan all ports")] + _ports
-        _size = self.ctrlPhotomType.GetSize() + [0, 5]
-        self.ctrlPhotomPort = wx.ComboBox(parent, -1, name="Port:",
-                                          value=self._photomChoices[0],
-                                          choices=self._photomChoices,
-                                          size=_size)
-
-        self.ctrlPhotomType.Bind(wx.EVT_CHOICE, self.onChangePhotomType)
-        self.btnFindPhotometer = wx.Button(parent, -1,
-                                           _translate("Get Photometer"))
-        self.Bind(wx.EVT_BUTTON,
-                  self.onBtnFindPhotometer, self.btnFindPhotometer)
-
         # gamma controls
         self.btnCalibrateGamma = wx.Button(
             parent, -1, _translate("Gamma Calibration..."))
@@ -419,12 +397,11 @@ class MainFrame(wx.Frame):
             parent, -1, _translate("Plot spectra"))
         self.Bind(wx.EVT_BUTTON,
                   self.plotSpectra, self.btnPlotSpectra)
-        photometerBox.AddMany([self.ctrlPhotomType, self.btnFindPhotometer,
-                               self.ctrlPhotomPort, (0, 0),
-                               self.comPortLabel, (0, 0),
-                               self.btnCalibrateGamma, (0, 0),
-                               self.btnTestGamma, self.btnPlotGamma,
-                               self.btnCalibrateColor, self.btnPlotSpectra])
+        photometerBox.AddMany([
+            self.btnCalibrateGamma, (0, 0),
+            self.btnTestGamma, self.btnPlotGamma,
+            self.btnCalibrateColor, self.btnPlotSpectra
+        ])
 
         # ----GAMMA------------
         # calibration grid
@@ -787,54 +764,56 @@ class MainFrame(wx.Frame):
         self.unSavedMonitor = True
 
     def onCalibGammaBtn(self, event):
-        if NO_MEASUREMENTS:
-            # recalculate from previous measure
-            lumsPre = self.currentMon.getLumsPre()
-            lumLevels = self.currentMon.getLevelsPre()
+        from psychopy.hardware import monitor, DeviceManager
+        from psychopy.visual import Window
+
+        # get calibration setup params
+        dlg = CalibrationSetupDlg(self)
+        if dlg.ShowModal() == wx.ID_OK:
+            params = dlg.getParams()
         else:
-            # present a dialogue to get details for calibration
-            calibDlg = GammaDlg(self, self.currentMon)
-            if calibDlg.ShowModal() != wx.ID_OK:
-                calibDlg.Destroy()
-                return 1
-            nPoints = int(calibDlg.ctrlNPoints.GetValue())
-            stimSize = unicodeToFloat(calibDlg.ctrlStimSize.GetValue())
-            useBits = calibDlg.ctrlUseBits.GetValue()
-            calibDlg.Destroy()
-            autoMode = calibDlg.methodChoiceBx.GetStringSelection()
-            # lib starts at zero but here we allow 1
-            screen = int(calibDlg.ctrlScrN.GetValue()) - 1
-
-            # run the calibration itself
-            lumLevels = monitors.DACrange(nPoints)
-            _size = self.currentMon.getSizePix()
-            lumsPre = monitors.getLumSeries(photometer=self.photom,
-                                            lumLevels=lumLevels,
-                                            useBits=useBits,
-                                            autoMode=autoMode,
-                                            winSize=_size,
-                                            stimSize=stimSize,
-                                            monitor=self.currentMon,
-                                            screen=screen)
-
-            # allow user to type in values
-            if autoMode == 'semi':
-                inputDlg = GammaLumValsDlg(parent=self, levels=lumLevels)
-                lumsPre = inputDlg.show()  # will be [] if user cancels
-                inputDlg.Destroy()
-
-        # fit the gamma curves
-        if lumsPre is None or len(lumsPre) > 1:
-            self.onCopyCalib(1)  # create a new dated calibration
-            self.currentMon.setLumsPre(lumsPre)  # save for future
-            self.currentMon.setLevelsPre(lumLevels)  # save for future
-            self.btnPlotGamma.Enable(True)
-            self.choiceLinearMethod.Enable()
-
-            # do the fits
-            self.doGammaFits(lumLevels, lumsPre)
-        else:
-            logging.warning('No lum values captured/entered')
+            # abort if cancelled
+            return
+        
+        # setup calibration procedure window
+        win = Window(
+            screen=int(params['screen']), 
+            checkTiming=False,
+            fullscr=True
+        )
+        # setup calibration procedure device
+        device = None
+        for profile in DeviceManager.getAvailableDevices(params['photometer']):
+            # instantiate from profile
+            device = DeviceManager.addDevice(**profile)
+            break
+        # catch error if no device found
+        if device is None:
+            win.close()
+            wx.MessageBox(
+                "Could not find any device matching '{photometer}', aborting calibration.".format(**params), 
+                parent=self,
+                style=wx.ICON_ERROR | wx.OK
+            )
+            return
+        
+        # run calibration
+        try:
+            gammaGrid = monitor.calibrateGamma(
+                win,
+                profile['deviceName'],
+                patchSize=float(params['patchSize']),
+                nPoints=float(params['nPoints'])
+            )
+        except Exception as err:
+            win.close()
+            raise err
+        # if gamma was got, set values
+        if gammaGrid is not None:
+            self.gammaGrid.setData(numpy.array(gammaGrid))
+        # teardown
+        win.close()
+        DeviceManager.removeDevice(profile['deviceName'])
 
     def doGammaFits(self, levels, lums):
         linMethod = self.currentMon.getLinearizeMethod()
@@ -1100,6 +1079,127 @@ class MainFrame(wx.Frame):
             plt.plot(nm, spectraRGB[2, :], 'b-', linewidth=2)
         figureCanvas.draw()  # update the canvas
         plotWindow.addCanvas(figureCanvas)
+
+
+class CalibrationSetupDlg(wx.Dialog):
+    """
+    Dialog getting params for a gamma calibration, which also runs said calibration
+    """
+    def __init__(self, parent):
+        from psychopy.app.builder.validators import WarningManager
+        from psychopy.experiment.params import Param
+        from psychopy.app.builder.dialogs.paramCtrls import ParamCtrl, EVT_PARAM_CHANGED
+
+        wx.Dialog.__init__(
+            self, 
+            parent, 
+            title=_translate("Calibrate gamma"),
+            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        )
+        # setup sizer
+        self.border = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.border)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.border.Add(
+            self.sizer, border=12, proportion=1, flag=wx.EXPAND | wx.ALL
+        )
+        # create warnings handler
+        self.warnings = WarningManager(self)
+        # define params
+        self.params = {}
+        self.params['screen'] = Param(
+            1, valType="code", inputType="single",
+            label=_translate("Screen"),
+            hint=_translate(
+                "Screen to run the calibration on"
+            )
+        )
+        def getPhotometers():
+            from psychopy.experiment.monitor import BasePhotometerDeviceBackend
+            from psychopy.preferences import prefs
+            # start with nothing
+            devices = [(None, "")]
+            # iterate through known photometer device backends
+            for cls in BasePhotometerDeviceBackend.__subclasses__():
+                # add their device class against their label
+                devices.append(
+                    (cls.deviceClass, cls.backendLabel)
+                )
+            
+            return devices
+        def getPhotometerValues():
+            return [val[0] for val in getPhotometers()]
+        def getPhotometerLabels():
+            return [val[1] for val in getPhotometers()]
+        self.params['photometer'] = Param(
+            getPhotometerValues()[0], valType="str", inputType="choice", 
+            allowedVals=getPhotometerValues, allowedLabels=getPhotometerLabels,
+            label=_translate("Photometer"),
+            hint=_translate(
+                "Photometer device, from the device manager, to use for this calibration"
+            )
+        )
+        self.params['patchSize'] = Param(
+            0.3, valType="code", inputType="single",
+            label=_translate("Patch size"),
+            hint=_translate(
+                "How much of the screen (0-1) the calibration patch should occupy"
+            )
+        )
+        self.params['nPoints'] = Param(
+            8, valType="code", inputType="single", 
+            label=_translate("Calibration points"),
+            hint=_translate(
+                "How many calibration points to use"
+            )
+        )
+        # add param ctrls
+        self.paramCtrls = {}
+        for key, param in self.params.items():
+            # add label
+            lbl = wx.StaticText(
+                self, label=param.label
+            )
+            self.sizer.Add(
+                lbl, border=6, flag=wx.EXPAND | wx.LEFT | wx.TOP | wx.RIGHT
+            )
+            # add ctrl
+            self.paramCtrls[key] = ParamCtrl(
+                self, 
+                'photometer', 
+                param, 
+                element=None, 
+                warnings=self.warnings
+            )
+            self.sizer.Add(
+                self.paramCtrls[key], border=6, flag=wx.EXPAND | wx.ALL
+            )
+        # add 
+        self.paramCtrls['photometer'].Bind(EVT_PARAM_CHANGED, self.onPhotometerChosen)
+        # add buttons
+        btns = self.CreateStdDialogButtonSizer(flags=wx.OK | wx.CANCEL)
+        self.border.Add(
+            btns, border=6, flag=wx.EXPAND | wx.ALL
+        )
+        for btn in btns.GetChildren():
+            if btn.Window is not None and btn.Window.Id == wx.ID_OK:
+                self.okBtn = btn.Window
+        # start off with OK disabled
+        self.okBtn.Disable()
+
+        self.Layout()
+        self.Fit()
+    
+    def onPhotometerChosen(self, evt=None):
+        self.okBtn.Enable(
+            bool(self.paramCtrls['photometer'].getValue())
+        )
+    
+    def getParams(self):
+        return {
+            key: ctrl.getValue() 
+            for key, ctrl in self.paramCtrls.items()
+        }
 
 
 class GammaLumValsDlg(wx.Dialog):

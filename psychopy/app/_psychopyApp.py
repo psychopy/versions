@@ -163,6 +163,8 @@ class _Showgui_Hack():
 
 class PsychoPyApp(wx.App, handlers.ThemeMixin):
     _called_from_test = False  # pytest needs to change this
+    # are we running a beta release?
+    beta = True
 
     def __init__(self, arg=0, testMode=False, startView=None, profiling=False, **kwargs):
         """With a wx.App some things get done here, before App.__init__
@@ -417,7 +419,7 @@ class PsychoPyApp(wx.App, handlers.ThemeMixin):
 
         if showSplash:
             # show splash screen
-            if str(__version__).endswith("beta"):
+            if self.beta:
                 splashFile = os.path.join(
                     self.prefs.paths['resources'], 'betasplash.png'
                 )
@@ -520,6 +522,10 @@ class PsychoPyApp(wx.App, handlers.ThemeMixin):
         if self.isRetina:
             self._codeFont.SetPointSize(int(self._codeFont.GetPointSize()*fontScale))
             self._mainFont.SetPointSize(int(self._mainFont.GetPointSize()*fontScale))
+        # apply calculated point size to themed font defaults
+        from psychopy.app.themes import fonts
+        fonts.AppFont.pointSize = self._mainFont.GetPointSize()
+        fonts.CodeFont.pointSize = self._codeFont.GetPointSize()
         # that gets most of the properties of _codeFont but the FaceName
         # FaceName is set in the setting of the theme:
         self.theme = prefs.app['theme']
@@ -821,10 +827,13 @@ class PsychoPyApp(wx.App, handlers.ThemeMixin):
         # have to reimport because it is only local to __init__ so far
         from . import coder
         if self.coder is None:
-            title = "PsychoPy Coder (IDE) (v%s)"
+            title = "PsychoPy Coder (v{version}{beta})".format(
+                version=self.version,
+                beta="beta" if self.beta else ""
+            )
             wx.BeginBusyCursor()
             self.coder = coder.CoderFrame(None, -1,
-                                          title=title % self.version,
+                                          title=title,
                                           files=fileList, app=self)
             self.updateWindowMenu()
             wx.EndBusyCursor()
@@ -846,9 +855,12 @@ class PsychoPyApp(wx.App, handlers.ThemeMixin):
         # have to reimport because it is only local to __init__ so far
         wx.BeginBusyCursor()
         from .builder.builder import BuilderFrame
-        title = "PsychoPy Builder (v%s)"
+        title = "PsychoPy Builder (v{version}{beta})".format(
+            version=self.version,
+            beta="beta" if self.beta else ""
+        )
         self.builder = BuilderFrame(None, -1,
-                                    title=title % self.version,
+                                    title=title,
                                     fileName=fileName, app=self)
         self.builder.Show(True)
         self.builder.Raise()
@@ -908,7 +920,11 @@ class PsychoPyApp(wx.App, handlers.ThemeMixin):
     def newRunnerFrame(self, event=None):
         # have to reimport because it is only local to __init__ so far
         from .runner.runner import RunnerFrame
-        title = "PsychoPy Runner (v{})".format(self.version)
+        
+        title = 'PsychoPy Runner (v{version}{beta})'.format(
+            version=self.version,
+            beta="beta" if self.beta else ""
+        )
         wx.BeginBusyCursor()
         self.runner = RunnerFrame(parent=None,
                                   id=-1,

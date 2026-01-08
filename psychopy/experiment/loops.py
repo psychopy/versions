@@ -93,7 +93,7 @@ class TrialHandler(_BaseLoopHandler):
         self.order = ['name']  # make name come first (others don't matter)
         self.params = {}
         self.params['name'] = Param(
-            name, valType='code', inputType="single", updates=None, allowedUpdates=None,
+            name, valType='code', inputType="name", updates=None, allowedUpdates=None,
             label=_translate('Name'),
             hint=_translate("Name of this loop"))
         self.params['nReps'] = Param(
@@ -107,7 +107,7 @@ class TrialHandler(_BaseLoopHandler):
             hint=_translate("A list of dictionaries describing the "
                             "parameters in each condition"))
         self.params['conditionsFile'] = Param(
-            conditionsFile, valType='file', inputType="table", updates=None, allowedUpdates=None,
+            conditionsFile, valType='file', inputType="conditions", updates=None, allowedUpdates=None,
             label=_translate('Conditions'),
             hint=_translate("Name of a file specifying the parameters for "
                             "each condition (.csv, .xlsx, or .pkl). Browse "
@@ -189,6 +189,7 @@ class TrialHandler(_BaseLoopHandler):
             "    originPath=-1, \n"
             "    trialList=%(trialList)s, \n"
             "    seed=%(random seed)s, \n"
+            "    isTrials=%(isTrials)s, \n"
             ")\n"
         )
         buff.writeIndentedLines(code % inits)
@@ -478,7 +479,7 @@ class StairHandler(_BaseLoopHandler):
         self.children = []
         self.params = {}
         self.params['name'] = Param(
-            name, valType='code',
+            name, valType='code', inputType="name",
             hint=_translate("Name of this loop"),
             label=_translate('Name'))
         self.params['nReps'] = Param(
@@ -560,15 +561,27 @@ class StairHandler(_BaseLoopHandler):
         if self.params['N reversals'].val in ("", None, 'None'):
             self.params['N reversals'].val = '0'
         # write the code
-        code = ('\n# --------Prepare to start Staircase "%(name)s" --------\n'
-                "# set up handler to look after next chosen value etc\n"
-                "%(name)s = data.StairHandler(startVal=%(start value)s, extraInfo=expInfo,\n"
-                "    stepSizes=%(step sizes)s, stepType=%(step type)s,\n"
-                "    nReversals=%(N reversals)s, nTrials=%(nReps)s, \n"
-                "    nUp=%(N up)s, nDown=%(N down)s,\n"
-                "    minVal=%(min value)s, maxVal=%(max value)s,\n"
-                "    originPath=-1, name='%(name)s')\n"
-                "thisExp.addLoop(%(name)s)  # add the loop to the experiment")
+        code = (
+            "\n"
+            "# --- Prepare to start Staircase '%(name)s' --- \n"
+            "# set up handler to look after next chosen value etc\n"
+            "%(name)s = data.StairHandler(\n"
+            "    startVal=%(start value)s, \n"
+            "    extraInfo=expInfo,\n"
+            "    stepSizes=%(step sizes)s, \n"
+            "    stepType=%(step type)s,\n"
+            "    nReversals=%(N reversals)s, \n"
+            "    nTrials=%(nReps)s, \n"
+            "    nUp=%(N up)s, \n"
+            "    nDown=%(N down)s,\n"
+            "    minVal=%(min value)s, \n"
+            "    maxVal=%(max value)s,\n"
+            "    originPath=-1, \n"
+            "    name='%(name)s',\n"
+            "    isTrials=%(isTrials)s, \n"
+            ")\n"
+            "thisExp.addLoop(%(name)s)  # add the loop to the experiment"
+        )
         buff.writeIndentedLines(code % self.params)
         code = "level = %s = %s  # initialise some vals\n"
         buff.writeIndented(code % (self.thisName, self.params['start value']))
@@ -633,7 +646,7 @@ class MultiStairHandler(_BaseLoopHandler):
         self.order = ['name']  # make name come first
         self.params = {}
         self.params['name'] = Param(
-            name, valType='code', inputType='single',
+            name, valType='code', inputType='name',
             label=_translate('Name'),
             hint=_translate("Name of this loop"))
         self.params['nReps'] = Param(
@@ -664,7 +677,7 @@ class MultiStairHandler(_BaseLoopHandler):
             hint=_translate('Where to loop from and to (see values currently'
                             ' shown in the flow view)'))
         self.params['conditions'] = Param(
-            list(conditions), valType='list', inputType='single',
+            list(conditions), valType='list', inputType='conditions',
             updates=None, allowedUpdates=None,
             label=_translate('Conditions'),
             hint=_translate("A list of dictionaries describing the "
@@ -692,7 +705,7 @@ class MultiStairHandler(_BaseLoopHandler):
                 return root / "staircaseTemplate.xltx"
 
         self.params['conditionsFile'] = Param(
-            conditionsFile, valType='file', inputType='table', updates=None, allowedUpdates=None,
+            conditionsFile, valType='file', inputType='conditions', updates=None, allowedUpdates=None,
             label=_translate('Conditions'),
             hint=_translate("An xlsx or csv file specifying the parameters "
                             "for each condition"),
@@ -718,20 +731,25 @@ class MultiStairHandler(_BaseLoopHandler):
         makeLoopIndex(self.params['name'].val)
         self.thisName = "condition"
         # create the MultistairHander
-        code = ("\n# set up handler to look after randomisation of trials etc\n"
-                "conditions = data.importConditions(%(conditionsFile)s)\n"
-                "%(name)s = data.MultiStairHandler(stairType=%(stairType)s, "
-                "name='%(name)s',\n"
-                "    nTrials=%(nReps)s,\n"
-                "    conditions=conditions,\n"
-                "    method=%(switchMethod)s,\n"
-                "    originPath=-1)\n"
-                "thisExp.addLoop(%(name)s)  # add the loop to the experiment\n"
-                "# initialise values for first condition\n"
-                "level = %(name)s._nextIntensity  # initialise some vals\n"
-                "condition = %(name)s.currentStaircase.condition\n"
-                # start the loop:
-                "\nfor level, condition in %(name)s:\n")
+        code = (
+            "\n# set up handler to look after randomisation of trials etc\n"
+            "conditions = data.importConditions(%(conditionsFile)s)\n"
+            "%(name)s = data.MultiStairHandler(\n"
+            "    stairType=%(stairType)s, "
+            "    name='%(name)s',\n"
+            "    nTrials=%(nReps)s,\n"
+            "    conditions=conditions,\n"
+            "    method=%(switchMethod)s,\n"
+            "    originPath=-1,\n"
+            "    isTrials=%(isTrials)s"
+            ")\n"
+            "thisExp.addLoop(%(name)s)  # add the loop to the experiment\n"
+            "# initialise values for first condition\n"
+            "level = %(name)s._nextIntensity  # initialise some vals\n"
+            "condition = %(name)s.currentStaircase.condition\n"
+            # start the loop:
+            "\nfor level, condition in %(name)s:\n"
+        )
         buff.writeIndentedLines(code % self.params)
 
         buff.setIndentLevel(1, relative=True)

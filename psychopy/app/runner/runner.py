@@ -924,7 +924,8 @@ class RunnerPanel(wx.Panel, ScriptProcess, handlers.ThemeMixin):
 
     def onItemDeselected(self, evt):
         """Set currentSelection, currentFile, currentExperiment and currentProject to None."""
-        self.expCtrl.SetItemState(self.currentSelection, 0, wx.LIST_STATE_SELECTED)
+        if self.currentSelection < self.expCtrl.ItemCount:
+            self.expCtrl.SetItemState(self.currentSelection, 0, wx.LIST_STATE_SELECTED)
         self.currentSelection = None
         self.currentFile = None
         self.currentExperiment = None
@@ -1011,8 +1012,15 @@ class RunnerPanel(wx.Panel, ScriptProcess, handlers.ThemeMixin):
         PsychoPy Experiment object
         """
         fileName = str(self.currentFile)
+        # if file doesn't exist, alert user and ask if they want to remove it from Runner
         if not os.path.exists(fileName):
-            raise FileNotFoundError("File not found: {}".format(fileName))
+            dlg = wx.MessageDialog(
+                None,
+                _translate("File {} does not exist in this location. Remove item from Runner?").format(fileName),
+                style=wx.YES | wx.NO
+            )
+            if dlg.ShowModal() == wx.ID_YES:
+                wx.CallAfter(self.removeTask, evt=None)
 
         # If not a Builder file, return
         if not fileName.endswith('.psyexp'):

@@ -1101,7 +1101,7 @@ class CoderFrame(BaseAuiFrame, handlers.ThemeMixin):
         self.showingReloadDialog = False
 
         # default window title string
-        self.winTitle = "PsychoPy Coder (v{})".format(self.app.version)
+        self.winTitle = title
 
         # we didn't have the key or the win was minimized/invalid
         if self.appData['winH'] == 0 or self.appData['winW'] == 0:
@@ -2856,6 +2856,17 @@ class CoderFrame(BaseAuiFrame, handlers.ThemeMixin):
         # UnitTestFrame.Show()
 
     def openPluginManager(self, evt=None):
+        import psychopy.app.plugin_manager.packageIndex as packageIndex
+        if packageIndex.isIndexing():
+            msg = _translate("The package index is currently being updated. "
+                             "Please try again later.")
+            wx.MessageBox(
+                msg,
+                _translate("Package indexing in progress"),
+                style=wx.OK | wx.ICON_INFORMATION
+            )
+            return
+        
         dlg = psychopy.app.plugin_manager.dialog.EnvironmentManagerDlg(self)
         dlg.Show()
         # Do post-close checks

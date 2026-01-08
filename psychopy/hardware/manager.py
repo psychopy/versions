@@ -152,6 +152,9 @@ class DeviceManager:
         if deviceClass in (None, "*"):
             # resolve "any" flags to BaseDevice
             deviceClass = "psychopy.hardware.base.BaseDevice"
+        # if it's already a type, return as is
+        if isinstance(deviceClass, type):
+            return deviceClass
         # get package and class names from deviceClass string
         parts = deviceClass.split(".")
         pkgName = ".".join(parts[:-1])
@@ -434,6 +437,52 @@ class DeviceManager:
         del DeviceManager.devices[deviceName]
 
         return True
+    
+    @staticmethod
+    def resolveDevice(device, deviceClass):
+        """
+        Resolve a value to a device, handling strings and using None to find/create a default 
+        device.
+
+        Parameters
+        ----------
+        device : any
+            Value to resolve
+        deviceClass : type or str
+            Class which the returned device should be an instance of (this can be a base class)
+        """
+        # resolve class
+        deviceClass = DeviceManager._resolveAlias(deviceClass)
+        # resolve device
+        if isinstance(device, deviceClass):
+            # if given a device directly, return it as is
+            return device
+        elif isinstance(device, str) and DeviceManager.hasDevice(device):
+            # if given the name of a managed device, get it
+            return DeviceManager.getDevice(device)
+        elif device is None:
+            # first try looking for extant devices
+            for cls in deviceClass.__subclasses__():
+                # add the first initialised device, if any
+                for thisDevice in DeviceManager.getInitialisedDevices(cls).values():
+                    return thisDevice
+            # if that fails, make one
+            for cls in deviceClass.__subclasses__():
+                # create a device from the first available profile
+                for profile in cls.getAvailableDevices():
+                    return cls(**{
+                        key: val for key, val in profile.items() if key not in ("deviceName", "deviceClass")
+                    })
+            # error if there are no available devices
+            raise DeviceNotConnectedError(
+                f"Could not find or create a default device for {deviceClass.__name__} as no "
+                f"devices are connected."
+            )
+        else:
+            raise ValueError(
+                f"Could not get device from '{device}', value is neither a {deviceClass.__name__} "
+                f"object or the name of one in DeviceManager."
+            )
 
     @staticmethod
     def getDevice(deviceName):
@@ -500,48 +549,15 @@ class DeviceManager:
         """
         from psychopy import experiment
 
-        # dict in which to store usages
         usages = {}
-
-        def _process(emt):
-            """
-            Process an element (Component or Routine) for device names and append them to the
-            usages dict.
-
-            Parameters
-            ----------
-            emt : Component or Routine
-                Element to process
-            """
-            # if we have a device name for this element...
-            if "deviceLabel" in emt.params:
-                # get init value so it lines up with boilerplate code
-                inits = experiment.getInitVals(emt.params)
-                # get value
-                deviceName = inits['deviceLabel'].val
-                # make sure device name is in usages dict
-                if deviceName not in usages:
-                    usages[deviceName] = []
-                # add any new usages
-                for cls in getattr(emt, "deviceClasses", []):
-                    if cls not in usages[deviceName]:
-                        usages[deviceName].append(cls)
 
         # process each experiment
         for file in experiments:
             # create experiment object
             exp = experiment.Experiment()
             exp.loadFromXML(file)
-
-            # iterate through routines
-            for rt in exp.routines.values():
-                if isinstance(rt, experiment.routines.BaseStandaloneRoutine):
-                    # for standalone routines, get device names from params
-                    _process(rt)
-                else:
-                    # for regular routines, get device names from each component
-                    for comp in rt:
-                        _process(comp)
+            # get info
+            usages.update(exp.getRequiredDeviceNames())
 
         return usages
 
@@ -641,6 +657,7 @@ class DeviceManager:
         """
         # if deviceClass is *, call for all types
         if deviceClass == "*":
+            DeviceManager.importAllComponentDeviceClasses()
             deviceClass = DeviceManager.deviceClasses
         # if given multiple types, call for each
         if isinstance(deviceClass, (list, tuple)):
@@ -782,6 +799,29 @@ class DeviceManager:
             device.clearListeners()
 
         return True
+    
+    @staticmethod
+    def importAllComponentDeviceClasses():
+        """
+        For all known Components, import the relevant device classes so they appear in 
+        DeviceManager.deviceClasses
+        """
+        from psychopy.experiment import getAllElements
+
+        # iterate through all detectable elements
+        for emt in getAllElements().values():
+            # if possible, get relevant device classes
+            if hasattr(emt, "backends"):
+                for cls in emt.backends:
+                    if hasattr(cls, "deviceClass"):
+                        # import it so we can detect it
+                        try:
+                            DeviceManager._resolveClassString(cls.deviceClass)
+                        except:
+                            logging.warn(
+                                f"Failed to load class {cls.deviceClass} from specification in "
+                                f"{cls.__name__} ({emt.__name__})"
+                            )
 
     @staticmethod
     def getResponseParams(deviceClass="*"):

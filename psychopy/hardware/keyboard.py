@@ -456,14 +456,11 @@ class KeyboardDevice(BaseResponseDevice, aliases=["keyboard"]):
 
     @staticmethod
     def getAvailableDevices():
-        devices = []
-        for profile in st.getKeyboards():
-            devices.append({
-                'deviceName': profile.get('device_name', "Unknown Keyboard"),
-                'device': profile.get('index', -1),
-                'bufferSize': profile.get('bufferSize', 10000),
-            })
-        return devices
+        return [{
+            'deviceName': "Keyboard",
+            'device': -1,
+            'bufferSize': 10000
+        }]
 
     def getKeys(self, keyList=None, ignoreKeys=None, waitRelease=True, clear=True):
         """

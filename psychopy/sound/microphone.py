@@ -347,6 +347,9 @@ class Microphone:
     def getRecording(self):
         return self.device.getRecording()
 
+    def getCurrentVolume(self):
+        return self.device.getCurrentVolume()
+
 
 if __name__ == "__main__":
     pass

@@ -249,10 +249,10 @@ class ImageStim(BaseVisualStim, DraggingMixin, ContainerMixin, ColorMixin,
 
         # If our image is a movie stim object, pull pixel data from the most
         # recent frame and write it to the memory
-        if hasattr(self.image, 'getVideoFrame'):
-            videoFrame = self.image.getVideoFrame()
-            if videoFrame is not None:
-                self._movieFrameToTexture(videoFrame)
+        if hasattr(self.image, 'colorTexture'):
+            if hasattr(self.image, 'update'):
+                self.image.update()
+            self._texID = self.image.colorTexture
 
         if win.USE_LEGACY_GL:
             self._drawLegacyGL(win)
@@ -313,90 +313,6 @@ class ImageStim(BaseVisualStim, DraggingMixin, ContainerMixin, ColorMixin,
         GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
         GL.glDisable(GL.GL_TEXTURE_2D)
 
-    def _movieFrameToTexture(self, movieSrc):
-        """Convert a movie frame to a texture and use it.
-
-        This method is used internally to copy pixel data from a camera object
-        into a texture. This enables the `ImageStim` to be used as a
-        'viewfinder' of sorts for the camera to view a live video stream on a
-        window.
-
-        Parameters
-        ----------
-        movieSrc : `~psychopy.hardware.camera.Camera`
-            Movie source object.
-
-        """
-        # get the most recent video frame and extract color data
-        colorData = movieSrc.colorData
-
-        # get the size of the movie frame and compute the buffer size
-        vidWidth, vidHeight = movieSrc.size
-        nBufferBytes = vidWidth * vidHeight * 3
-
-        # bind pixel unpack buffer
-        GL.glBindBuffer(GL.GL_PIXEL_UNPACK_BUFFER, self._pixbuffID)
-
-        # Free last storage buffer before mapping and writing new frame
-        # data. This allows the GPU to process the extant buffer in VRAM
-        # uploaded last cycle without being stalled by the CPU accessing it.
-        GL.glBufferData(
-            GL.GL_PIXEL_UNPACK_BUFFER,
-            nBufferBytes * ctypes.sizeof(GL.GLubyte),
-            None,
-            GL.GL_STREAM_DRAW)
-
-        # Map the buffer to client memory, `GL_WRITE_ONLY` to tell the
-        # driver to optimize for a one-way write operation if it can.
-        bufferPtr = GL.glMapBuffer(
-            GL.GL_PIXEL_UNPACK_BUFFER,
-            GL.GL_WRITE_ONLY)
-
-        bufferArray = numpy.ctypeslib.as_array(
-            ctypes.cast(bufferPtr, ctypes.POINTER(GL.GLubyte)),
-            shape=(nBufferBytes,))
-
-        # copy data
-        bufferArray[:] = colorData[:]
-
-        # Very important that we unmap the buffer data after copying, but
-        # keep the buffer bound for setting the texture.
-        GL.glUnmapBuffer(GL.GL_PIXEL_UNPACK_BUFFER)
-
-        # bind the texture in OpenGL
-        GL.glEnable(GL.GL_TEXTURE_2D)
-        GL.glActiveTexture(GL.GL_TEXTURE0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self._texID)
-
-        # copy the PBO to the texture
-        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
-        GL.glTexSubImage2D(
-            GL.GL_TEXTURE_2D, 0, 0, 0,
-            vidWidth, vidHeight,
-            GL.GL_RGB,
-            GL.GL_UNSIGNED_BYTE,
-            0)  # point to the presently bound buffer
-
-        # update texture filtering only if needed
-        if self.interpolate:
-            texFilter = GL.GL_LINEAR
-        else:
-            texFilter = GL.GL_NEAREST
-
-        GL.glTexParameteri(
-            GL.GL_TEXTURE_2D,
-            GL.GL_TEXTURE_MAG_FILTER,
-            texFilter)
-        GL.glTexParameteri(
-            GL.GL_TEXTURE_2D,
-            GL.GL_TEXTURE_MIN_FILTER,
-            texFilter)
-
-        # important to unbind the PBO
-        GL.glBindBuffer(GL.GL_PIXEL_UNPACK_BUFFER, 0)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-        GL.glDisable(GL.GL_TEXTURE_2D)
-
     @attributeSetter
     def image(self, value):
         """The image file to be presented (most formats supported).
@@ -411,33 +327,37 @@ class ImageStim(BaseVisualStim, DraggingMixin, ContainerMixin, ColorMixin,
         """
         self.__dict__['image'] = self._imName = value
 
-        # If given a color array, get it in rgb1
-        if isinstance(value, colors.Color):
-            value = value.render('rgb1')
-
         wasLumImage = self.isLumImage
-        if type(value) != numpy.ndarray and value == "color":
-            datatype = GL.GL_FLOAT
-        else:
+        if hasattr(value, 'colorTexture'):
+            # reference to object that provides texture data
+            value = value.colorTexture
             datatype = GL.GL_UNSIGNED_BYTE
-
-        if type(value) != numpy.ndarray and value in (None, "None", "none"):
-            self.isLumImage = True
+            self.isLumImage = hasattr(value, 'isLumImage') and value.isLumImage
+            self.flipVert = True
         else:
-            self.isLumImage = self._createTexture(
-                value, id=self._texID,
-                stim=self,
-                pixFormat=GL.GL_RGB,
-                dataType=datatype,
-                maskParams=self.maskParams,
-                forcePOW2=False,
-                wrapping=False)
+            # If given a color array, get it in rgb1
+            if isinstance(value, colors.Color):
+                value = value.render('rgb1')
+
+            if type(value) != numpy.ndarray and value == "color":
+                datatype = GL.GL_FLOAT
+            else:
+                datatype = GL.GL_UNSIGNED_BYTE
+
+            if type(value) != numpy.ndarray and value in (None, "None", "none"):
+                self.isLumImage = True
+            else:
+                self.isLumImage = self._createTexture(
+                    value, id=self._texID,
+                    stim=self,
+                    pixFormat=GL.GL_RGB,
+                    dataType=datatype,
+                    maskParams=self.maskParams,
+                    forcePOW2=False,
+                    wrapping=False)
 
         # update size
         self.size = self._requestedSize
-
-        if hasattr(value, 'getVideoFrame'):  # make sure we invert vertices
-            self.flipVert = True
 
         # if we switched to/from lum image then need to update shader rule
         if wasLumImage != self.isLumImage:
