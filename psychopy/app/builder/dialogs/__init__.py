@@ -147,12 +147,16 @@ class ParamCtrls():
             'set every repeat': _translate('set every repeat'),
             'set every frame': _translate('set every frame'),
         }
-        if param.allowedUpdates is not None and len(param.allowedUpdates):
+        # work out what update labels should be there
+        allowedUpdates = copy.copy(param.allowedUpdates or [])
+        if len(allowedUpdates) and param.updates not in allowedUpdates + [None]:
+            allowedUpdates.append(param.updates)
+        # work out ctrl labels
+        if allowedUpdates is not None and len(allowedUpdates):
             # updates = display-only version of allowed updates
-            updateLabels = [_localizedUpdateLbls.get(upd, upd) for upd in param.allowedUpdates]
+            updateLabels = [_localizedUpdateLbls.get(upd, upd) for upd in allowedUpdates]
             # allowedUpdates = extend version of allowed updates that includes
             # "set during:static period"
-            allowedUpdates = copy.copy(param.allowedUpdates)
             for routineName, routine in list(self.exp.routines.items()):
                 for static in routine.getStatics():
                     # Note: replacing following line with

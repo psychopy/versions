@@ -101,7 +101,7 @@ class MouseComponent(BaseComponent):
                          )
         self.params['saveParamsClickable'] = Param(
             'name,', valType='list', inputType="single", categ='Data',
-            updates='constant', allowedUpdates=[], direct=False,
+            updates='set every repeat', direct=False,
             hint=msg,
             label=_translate("Store params for clicked"))
 
