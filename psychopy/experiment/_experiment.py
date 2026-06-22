@@ -236,7 +236,11 @@ class Experiment:
 
     @property
     def runMode(self):
-        return int(self.settings.params['runMode'].val)
+        # handle string
+        if isinstance(self.settings.params['runMode'].val, str):
+            return self.settings.params['runMode'].val not in ("0", "False", "false")
+        
+        return bool(self.settings.params['runMode'])
 
     @runMode.setter
     def runMode(self, value):
@@ -564,7 +568,7 @@ class Experiment:
         with codecs.open(str(filename), 'wb', encoding='utf-8-sig') as f:
             f.write(pretty)
         # if useVersion is less than current version, create a sanitized legacy variant
-        if self.settings.params['Use version'].val and makeLegacy:
+        if self.settings.params['Use version'].val not in (None, "", "latest") and makeLegacy:
             # create sanitized legacy experiment object
             legacy = self.sanitizeForVersion(self.settings.params['Use version'].val)
             # construct a legacy variant of the filename

@@ -57,7 +57,7 @@ participantIdAliases = ('participant', 'Participant', 'Subject', 'Observer')
 # class ProjIDParam(Param):
 #     @property
 #     def allowedVals(self):
-#         from psychopy.app.projects import catalog
+#         from psychopy.projects import catalog
 #         allowed = list(catalog.keys())
 #         # always allow the current val!
 #         if self.val not in allowed:
@@ -69,11 +69,6 @@ participantIdAliases = ('participant', 'Participant', 'Subject', 'Observer')
 #     @allowedVals.setter
 #     def allowedVals(self, allowed):
 #         pass
-
-
-def getSoundBackends():
-    from psychopy.sound.sound import Sound
-    return list(Sound.getBackends())
 
 
 class SettingsComponent:
@@ -143,9 +138,9 @@ class SettingsComponent:
         # if filename is the default value fetch the builder pref for the
         # folder instead
         if filename is None:
-            filename = ("u'xxxx/%s_%s_%s' % (expInfo['participant'], expName,"
-                        " expInfo['date'])")
-        if filename.startswith("u'xxxx"):
+            filename = ("'xxxx/' + expInfo['participant'] + '_' + expName + '_'"
+                        " + expInfo['date']")
+        if filename.startswith("'xxxx"):
             folder = self.exp.prefsBuilder['savedDataFolder'].strip()
             filename = filename.replace("xxxx", folder)
 
@@ -392,8 +387,9 @@ class SettingsComponent:
             hint=_translate("Force audio to stereo (2-channel) output"),
             label=_translate("Force stereo"))
         self.params['Audio lib'] = Param(
-            'ptb', valType='str', inputType="choice",
-            allowedVals=getSoundBackends,
+            "use prefs", valType='str', inputType="choice",
+            allowedVals=["use prefs", "ptb", "sounddevice"],
+            allowedLabels=[_translate("From preferences..."), "psychtoolbox", "sounddevice"],
             hint=_translate("Which Python sound engine do you want to play your sounds?"),
             label=_translate("Audio library"), categ='Audio')
 
@@ -553,7 +549,7 @@ class SettingsComponent:
                 if legKey not in backendValues:
                     backendValues.append(legKey)
                     backendLabels.append(legLbl)
-        except:
+        except Exception:
             # if it doesn't work, just stick with the known backends from plugins
             pass
 
@@ -738,7 +734,7 @@ class SettingsComponent:
         return self.getType().replace('Component', '')
 
     def writeUseVersion(self, buff):
-        if self.params['Use version'].val:
+        if self.params['Use version'].val not in (None, "", "latest"):
             code = ('\nimport psychopy\n'
                     'psychopy.useVersion({})\n\n')
             val = repr(self.params['Use version'].val)
@@ -1163,7 +1159,7 @@ class SettingsComponent:
         if isinstance(colPriority, str):
             try:
                 colPriority = ast.literal_eval(colPriority)
-            except:
+            except (ValueError, SyntaxError):
                 raise ValueError(_translate(
                     "Could not interpret value as dict: {}"
                 ).format(colPriority))

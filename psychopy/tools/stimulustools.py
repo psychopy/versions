@@ -79,7 +79,7 @@ def serialize(obj, includeClass=True):
     # convert possible file paths into Path
     try:
         pathVal = Path(obj)
-    except:
+    except (TypeError, ValueError):
         pass
     else:
         if pathVal.is_file() or pathVal.is_dir():
@@ -97,7 +97,7 @@ def serialize(obj, includeClass=True):
         json.dumps(obj)
     except TypeError:
         pass
-    except:
+    except Exception:
         # if we got something other than a TypeError, substitute None
         return None
     else:
@@ -129,26 +129,22 @@ def serialize(obj, includeClass=True):
     # start off with an empty dict
     arr = {}
     # get init args
-    initArgs = inspect.getargspec(obj.__init__)
-    # if there are variable args, raise an error
-    if initArgs.varargs:
-        raise SerializationError("Cannot serialize object with variable args.")
-    # how many init args are required?
-    nReq = len(initArgs.args) - len(initArgs.defaults)
-    # get required params
-    for param in initArgs.args[:nReq]:
+    initArgs = inspect.signature(obj.__init__)
+    # get attributes corresponding to init args
+    for key, param in initArgs.parameters.items():
         # skip self
-        if param == "self":
+        if KeyError == "self":
             continue
+        # raise error if parameters are variable - these aren't serializable
+        if param.kind in (inspect._VAR_POSITIONAL, inspect._VAR_KEYWORD):
+            raise SerializationError("Cannot serialize object with variable args.")
         # get attribute
-        arr[param] = _getAttr(obj, param)
-    # get optional params
-    for param in initArgs.args[nReq:]:
-        # get attribute, but don't worry if it fails
         try:
-            arr[param] = _getAttr(obj, param)
-        except SerializationError:
-            pass
+            arr[key] = _getAttr(obj, key)
+        except SerializationError as err:
+            # if it fails, only error if param was required
+            if param.default is inspect._empty:
+                raise err
     
     # add class
     if includeClass:

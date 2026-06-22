@@ -24,7 +24,7 @@ class TextboxComponent(BaseVisualComponent):
 
     def __init__(self, exp, parentName, name='textbox',
                  # effectively just a display-value
-                 text=_translate('Any text\n\nincluding line breaks'),
+                 text=_translate('Text can be **bold**, *italic*, ***bold italic*** or [color=red]colorful[/color]. To use a regular asterisk, remember to \*escape\* it.\n\nLine breaks are allowed!'),
                  placeholder=_translate("Type here..."),
                  font='Arial', units='from exp settings', bold=False, italic=False,
                  color='white', colorSpace='rgb', opacity="",
@@ -35,7 +35,7 @@ class TextboxComponent(BaseVisualComponent):
                  startType='time (s)', startVal=0.0,
                  stopType='duration (s)', stopVal=1.0,
                  startEstim='', durationEstim='',
-                 overflow="visible", languageStyle='LTR', fillColor="None",
+                 overflow="visible", languageStyle='LTR', formattingSyntax="md", fillColor="None",
                  borderColor="None", borderWidth=2,
                  flipHoriz=False,
                  flipVert=False,
@@ -121,6 +121,13 @@ class TextboxComponent(BaseVisualComponent):
             allowedVals=['LTR', 'RTL', 'Arabic'],
             hint=_translate("Handle right-to-left (RTL) languages and Arabic reshaping"),
             label=_translate("Language style"))
+        self.params['formattingSyntax'] = Param(
+            formattingSyntax, valType='str', inputType="choice", categ='Formatting',
+            allowedVals=['md', 'html', 'raw'],
+            allowedLabels=['Markdown', 'HTML (online only)', 'No formatting'],
+            hint=_translate("Syntax to use for inline text formatting"),
+            label=_translate("Formatting style")
+        )
         self.params['italic'] = Param(
             italic, valType='bool', inputType="bool", allowedTypes=[], categ='Formatting',
             updates='constant',
@@ -226,7 +233,9 @@ class TextboxComponent(BaseVisualComponent):
             "     padding=%(padding)s, alignment=%(alignment)s,\n"
             "     anchor=%(anchor)s, overflow=%(overflow)s,\n"
             "     fillColor=%(fillColor)s, borderColor=%(borderColor)s,\n"
-            "     flipHoriz=%(flipHoriz)s, flipVert=%(flipVert)s, languageStyle=%(languageStyle)s,\n"
+            "     flipHoriz=%(flipHoriz)s, flipVert=%(flipVert)s, \n"
+            "     languageStyle=%(languageStyle)s,\n"
+            "     formattingSyntax=%(formattingSyntax)s,\n"
             "     editable=%(editable)s,\n"
             "     name='%(name)s',\n"
             "     depth=%(depth)s, autoLog=%(autoLog)s,\n"
@@ -266,6 +275,7 @@ class TextboxComponent(BaseVisualComponent):
                 "  color: %(color)s, colorSpace: %(colorSpace)s,\n"
                 "  fillColor: %(fillColor)s, borderColor: %(borderColor)s,\n"
                 "  languageStyle: %(languageStyle)s,\n"
+                "  formattingSyntax: %(formattingSyntax)s,\n"
                 "  bold: %(bold)s, italic: %(italic)s,\n"
                 "  opacity: %(opacity)s,\n"
                 "  padding: %(padding)s,\n"

@@ -15,17 +15,18 @@ import re
 import time
 import subprocess
 import traceback
+import threading
 
 import pandas
 from packaging.version import Version
 
 from psychopy import logging, prefs, exceptions
 from psychopy.tools.filetools import DictStorage, KnownProjects
-from psychopy import app
+import psychopy_app as app
 from psychopy.localization import _translate
 import wx
 
-from ..app.errorDlg import exceptionCallback
+# from ..app.errorDlg import exceptionCallback
 from ..tools.apptools import SortTerm
 
 try:
@@ -43,7 +44,6 @@ import gitlab
 import gitlab.v4.objects
 
 # for authentication
-from . import sshkeys
 from uuid import uuid4
 
 from .gitignore import gitIgnoreText
@@ -137,7 +137,7 @@ def login(tokenOrUsername, refreshToken=None, rememberMe=True):
     """
     currentSession = getCurrentSession()
     if not currentSession:
-        exceptionCallback(exc_type=requests.exceptions.ConnectionError)
+        # exceptionCallback(exc_type=requests.exceptions.ConnectionError)
         return
     # would be nice here to test whether this is a token or username
     logging.debug('pavloviaTokensCurrently: {}'.format(knownUsers))
@@ -261,11 +261,15 @@ class User(dict):
 
     @property
     def session(self):
-        # Cache session if not cached
-        if not hasattr(self, "_session"):
-            self._session = getCurrentSession()
-        # Return cached session
-        return self._session
+        # get session
+        if hasattr(self, "_session"):
+            session = self._session
+        else:
+            session = self._session = getCurrentSession()
+        # make sure token is in date
+        session.doRefreshToken()
+
+        return session
 
     def saveLocal(self):
         """Saves the data on the current user in the pavlovia/users json file"""
@@ -297,6 +301,7 @@ class PavloviaSession:
         self.userFullName = None
         self.remember_me = remember_me
         self.authenticated = False
+        self.expired = None
         self.setToken(token)
         logging.debug("PavloviaLoggedIn")
 
@@ -326,6 +331,9 @@ class PavloviaSession:
         a PavloviaProject object
 
         """
+        # make sure token is in date
+        self.doRefreshToken()
+
         if not self.user:
             raise exceptions.NoUserError("Tried to create project with no user logged in")
         # NB gitlab also supports "internal" (public to registered users)
@@ -415,6 +423,9 @@ class PavloviaSession:
         A list of OSFProject objects
 
         """
+        # make sure token is in date
+        self.doRefreshToken()
+        
         rawProjs = self.gitlab.projects.list(
                 search=search_str,
                 as_list=False)  # iterator not list for auto-pagination
@@ -431,6 +442,9 @@ class PavloviaSession:
         """Finds all readable projects of a given user_id
         (None for current user)
         """
+        # make sure token is in date
+        self.doRefreshToken()
+        
         try:
             own = self.gitlab.projects.list(owned=True, search=searchStr)
         except Exception as e:
@@ -472,11 +486,57 @@ class PavloviaSession:
         """Returns a namespace object for the given name if an exact match is
         found
         """
+        # make sure token is in date
+        self.doRefreshToken()
+        
         spaces = self.gitlab.namespaces.list(search=namespace)
         # might be more than one, with
         for thisSpace in spaces:
             if thisSpace.path == namespace:
                 return thisSpace
+    
+    def doRefreshToken(self, refreshToken=None):
+        """
+        Refresh the current authentication token
+
+        Parameters
+        ----------
+        refreshToken : str, optional
+            Refresh token to use, if None (default) then will use the stored refresh token
+        """
+        # if token isn't expired, do nothing
+        if self.expired is False:
+            return
+        # if not logged in yet, do nothing
+        if refreshToken is None and self.__dict__['refreshToken'] is None:
+            return
+        # refresh auth token
+        resp = requests.post(
+            "https://gitlab.pavlovia.org/oauth/token",
+            params={
+                'client_id': client_id,
+                'refresh_token': refreshToken or self.__dict__['refreshToken'],
+                'grant_type': "refresh_token",
+                'redirect_uri': redirect_url,
+                'code_verifier': code_verifier
+            }
+        ).json()
+        # start again with new token
+        self.setToken(
+            resp['access_token'],
+            refreshToken=resp['refresh_token']
+        )
+        # mark as not expired
+        self.expired = False
+        # start countdown to token expiry
+        def expire():
+            # wait until token expires
+            time.sleep(
+                resp['expires_in']
+            )
+            # mark expired
+            self.expired = True
+        threading.Thread(target=expire, daemon=True).start()
 
     def startSession(self, token, refreshToken=None):
         """Start a gitlab session as best we can
@@ -503,25 +563,11 @@ class PavloviaSession:
             except gitlab.exceptions.GitlabAuthenticationError as err:
                 if refreshToken is None:
                     # if there isn't a refresh token, log back in from scratch to get one
-                    from psychopy.app.pavlovia_ui.functions import logInPavlovia
+                    from psychopy_app.pavlovia_ui.functions import logInPavlovia
                     logInPavlovia(None)
                     return
                 # refresh auth token
-                resp = requests.post(
-                    "https://gitlab.pavlovia.org/oauth/token",
-                    params={
-                        'client_id': client_id,
-                        'refresh_token': refreshToken,
-                        'grant_type': "refresh_token",
-                        'redirect_uri': redirect_url,
-                        'code_verifier': code_verifier
-                    }
-                ).json()
-                # start again with new token
-                self.setToken(
-                    resp['access_token'],
-                    refreshToken=resp['refresh_token']
-                )
+                self.doRefreshToken(refreshToken)
                 return
             except gitlab.exceptions.GitlabParsingError as err:
                 raise ConnectionError(
@@ -616,8 +662,11 @@ class PavloviaSearch(pandas.DataFrame):
             filterBy = {}
         # Ensure filter is a FilterTerm
         filterBy = self.FilterTerm(filterBy)
-        # Do search
+        # get session
         session = getCurrentSession()
+        # make sure token is in date
+        session.doRefreshToken()
+        # do search
         if mine:
             # Display experiments by current user
             data = session.session.get(
@@ -698,6 +747,9 @@ class PavloviaProject(dict):
         # Set local root
         if localRoot is not None:
             self.localRoot = localRoot
+        # set preferred merge strategy
+        if self.repo and not self.repo.config_reader().has_option("pull", "rebase"):
+            self.repo.config_writer().set_value("pull", "rebase", False).release()
 
     def __getitem__(self, key):
         # Get either from self or project.attributes
@@ -780,12 +832,15 @@ class PavloviaProject(dict):
 
     @property
     def session(self):
-        # If previous value is cached, return it
+        # get session
         if hasattr(self, "_session"):
-            return self._session
-        # Get and cache current session
-        self._session = getCurrentSession()
-        return self._session
+            session = self._session
+        else:
+            session = self._session = getCurrentSession()
+        # make sure token is in date
+        session.doRefreshToken()
+
+        return session
 
     @property
     def project(self):
@@ -1192,13 +1247,14 @@ class PavloviaProject(dict):
             infoStream = getInfoStream()
         if infoStream:
             infoStream.write("Pushing to Pavlovia for the first time...\n")
-        # construct initial commit
-        self.stageFiles(infoStream=infoStream)
-        info = self.commit(
-            _translate("Push initial project files")
-        )
-        if infoStream and len(info):
-            infoStream.write("{}\n".format(info))
+        # construct initial commit (if not already committed)
+        diffs = self.stageFiles(infoStream=infoStream)
+        if diffs:
+            info = self.commit(
+                _translate("Push initial project files")
+            )
+            if infoStream and len(info):
+                infoStream.write("{}\n".format(info))
         # push
         info = self.repo.git.push('-u', self.remoteWithToken, 'master')
         self.project.attributes['default_branch'] = 'master'
@@ -1339,6 +1395,8 @@ class PavloviaProject(dict):
             except git.exc.GitCommandError:
                 if infoStream:
                     infoStream.SetValue(traceback.format_exc())
+            
+            return len(files)
         else:
             diffsDict, diffsList = self.getChanges()
             if diffsDict['untracked']:
@@ -1347,6 +1405,8 @@ class PavloviaProject(dict):
                 self.repo.git.add(diffsDict['deleted'])
             if diffsDict['changed']:
                 self.repo.git.add(diffsDict['changed'])
+
+            return len(diffsList)
 
     def getStagedFiles(self):
         """Retrieves the files that are already staged ready for commit"""
@@ -1535,7 +1595,7 @@ def getProject(filename):
         # remove extra slashes from project name
         projectName = projectName.replace("/", "")
         # Try to log in if not logged in
-        if not session.user:
+        if projectName in knownProjects and not session.user:
             if nameSpace in knownUsers:
                 # Log in if user is known
                 login(nameSpace, rememberMe=True)
@@ -1639,10 +1699,11 @@ def getCurrentSession():
     """
     global _existingSession
     if _existingSession:
+        _existingSession.doRefreshToken()
         return _existingSession
     else:
         _existingSession = PavloviaSession()
-    return _existingSession
+        return _existingSession
 
 
 def refreshSession():
@@ -1654,6 +1715,7 @@ def refreshSession():
         )
     else:
         _existingSession = PavloviaSession()
+    
     return _existingSession
 
 

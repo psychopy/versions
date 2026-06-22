@@ -104,7 +104,7 @@ class BaseStandaloneRoutine:
         # try to load SVG
         try:
             iconSVG = cls.iconSVG.read_text("utf-8")
-        except:
+        except (OSError, AttributeError):
             iconSVG = None
         # include basic info
         profile = {
@@ -125,6 +125,8 @@ class BaseStandaloneRoutine:
         # make an object for defaults
         exp = Experiment()
         defaults = cls(exp)
+        # store help link
+        profile['helpLink'] = getattr(defaults, 'url', None)
         # order params
         order = [
             name for name in defaults.order if name in defaults.params
